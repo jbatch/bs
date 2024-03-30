@@ -13,7 +13,7 @@ function onInput(line: string) {
   const diagnostics = [...parser.diagnostics, ...binder.diagnostics];
 
   if (diagnostics.length > 0) {
-    for (let diagnosic of parser.diagnostics) {
+    for (let diagnosic of diagnostics) {
       console.log(diagnosic);
     }
     console.log();

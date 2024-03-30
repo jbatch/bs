@@ -6,6 +6,8 @@ import {
   BoundExpression,
   BoundUnaryOperatorKind,
   Type,
+  bindBinaryOperator,
+  bindUnaryOperator,
 } from './BoundExpression';
 
 export class Binder {
@@ -34,20 +36,30 @@ export class Binder {
   bindBinaryExpression(expression: ExpressionSyntax): BoundExpression {
     assert(expression.kind === 'BinaryExpression');
     const left = this.bindExpression(expression.left);
-    // TODO calculate correct type for binary expression
-    const type = left.type;
-    const operatorKind = this.bindBinaryOperatorKind(expression.operator);
     const right = this.bindExpression(expression.right);
-    return { kind: 'BinaryExpression', type, left, operatorKind, right };
+    const operator = bindBinaryOperator(expression.operator.kind, left.type, right.type);
+    if (operator === undefined) {
+      this.diagnostics.push(
+        `Binary operator ${expression.kind} is not defined for types: ${left.type} and ${right.type}`
+      );
+      return left;
+    }
+    const type = operator.resultType;
+    return { kind: 'BinaryExpression', type, left, operator, right };
   }
 
   bindUnaryExpression(expression: ExpressionSyntax): BoundExpression {
     assert(expression.kind === 'UnaryExpression');
     const operand = this.bindExpression(expression.operand);
-    // TODO calculate correct type for unary expression
     const type = operand.type;
-    const operatorKind = this.bindUnaryOperatorKind(expression.operator);
-    return { kind: 'UnaryExpression', type, operand, operatorKind };
+    const operator = bindUnaryOperator(expression.operator.kind, operand.type);
+    if (operator === undefined) {
+      this.diagnostics.push(
+        `Unary operator ${expression.kind} is not defined for type: ${operand.type}`
+      );
+      return operand;
+    }
+    return { kind: 'UnaryExpression', type, operand, operator };
   }
 
   bindParenthesizedExpression(expression: ExpressionSyntax): BoundExpression {
