@@ -1,29 +1,12 @@
 import assert from 'node:assert';
-import { ExpressionSyntax } from './Parser';
-import { SyntaxToken } from './Lexer';
-
-type BoundUnaryOperatorKind = 'Identity' | 'Negation';
-type BoundBinaryOperatorKind = 'Addition' | 'Subtraction' | 'Multiplication' | 'Division';
-type Type = 'number';
-export type BoundExpression =
-  | {
-      kind: 'UnaryExpression';
-      type: Type;
-      operand: BoundExpression;
-      operatorKind: BoundUnaryOperatorKind;
-    }
-  | {
-      kind: 'BinaryExpression';
-      type: Type;
-      left: BoundExpression;
-      operatorKind: BoundBinaryOperatorKind;
-      right: BoundExpression;
-    }
-  | {
-      kind: 'LiteralExpression';
-      type: Type;
-      value: number | string;
-    };
+import { SyntaxToken } from './SyntaxToken';
+import { ExpressionSyntax } from './Expression';
+import {
+  BoundBinaryOperatorKind,
+  BoundExpression,
+  BoundUnaryOperatorKind,
+  Type,
+} from './BoundExpression';
 
 export class Binder {
   diagnostics: string[] = [];
@@ -97,10 +80,20 @@ export class Binder {
   }
 
   getLiteralType(value: any): Type {
-    if (typeof value !== 'number') {
-      this.diagnostics.push(`Unexpected literal type ${typeof value}`);
+    switch (typeof value) {
+      case 'number':
+        return 'number';
+      case 'boolean':
+        return 'boolean';
+      case 'bigint':
+      case 'string':
+      case 'symbol':
+      case 'undefined':
+      case 'object':
+      case 'function':
+        this.diagnostics.push(`Unexpected literal type ${typeof value}`);
+        return 'number';
     }
-    return 'number';
   }
 }
 

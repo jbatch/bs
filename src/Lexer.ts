@@ -1,18 +1,5 @@
-export type SyntaxToken =
-  | (
-      | { kind: 'NumberToken'; position: number; text?: string; value?: number | string }
-      | { kind: 'WhitespaceToken'; position: number; text?: string; value?: undefined }
-      | { kind: 'PlusToken'; position: number; text?: '+'; value?: undefined }
-      | { kind: 'MinusToken'; position: number; text?: '-'; value?: undefined }
-      | { kind: 'StarToken'; position: number; text?: '*'; value?: undefined }
-      | { kind: 'SlashToken'; position: number; text?: '/'; value?: undefined }
-      | { kind: 'OpenParenthesisToken'; position: number; text?: '('; value?: undefined }
-      | { kind: 'CloseParenthesisToken'; position: number; text?: ')'; value?: undefined }
-      | { kind: 'BadToken'; position: number; text?: string; value?: undefined }
-      | { kind: 'EndOfFileToken'; position: number; text?: '\0'; value?: undefined }
-    ) & { children: [] };
-
-export type SyntaxKind = SyntaxToken['kind'];
+import { getKeyword } from './SyntaxHelper';
+import { SyntaxToken } from './SyntaxToken';
 
 export class Lexer {
   text: string;
@@ -29,6 +16,13 @@ export class Lexer {
 
   isWhitepsace(char: string) {
     return /\s/.test(char);
+  }
+
+  isLetter(char: string) {
+    if (char === undefined) {
+      return false;
+    }
+    return /[a-zA-Z]/.test(char);
   }
 
   nextToken(): SyntaxToken {
@@ -58,8 +52,19 @@ export class Lexer {
       while (this.isWhitepsace(current)) {
         current = this.text[++this.position];
       }
-      var text = this.text.substring(start, this.position);
+      const text = this.text.substring(start, this.position);
       return { kind: 'WhitespaceToken', position: start, text, children: [] };
+    }
+
+    if (this.isLetter(current)) {
+      var start = this.position;
+
+      while (this.isLetter(current)) {
+        current = this.text[++this.position];
+      }
+      const text = this.text.substring(start, this.position);
+      const token = getKeyword(text, this.position);
+      return token;
     }
 
     switch (current) {

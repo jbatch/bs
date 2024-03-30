@@ -1,4 +1,4 @@
-import { SyntaxKind } from './Lexer';
+import { SyntaxKind, SyntaxToken } from './SyntaxToken';
 
 export function getBinaryOperatorPrecedence(kind: SyntaxKind) {
   switch (kind) {
@@ -20,5 +20,16 @@ export function getUnaryOperatorPrecedence(kind: SyntaxKind) {
       return 3;
     default:
       return 0;
+  }
+}
+
+export function getKeyword(text: string, position: number): SyntaxToken {
+  switch (text) {
+    case 'true':
+      return { kind: 'TrueKeyword', position, text, value: true, children: [] };
+    case 'false':
+      return { kind: 'FalseKeyword', position, text, value: false, children: [] };
+    default:
+      return { kind: 'IdentifierToken', position, text, children: [] };
   }
 }

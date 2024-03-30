@@ -1,5 +1,6 @@
 import assert from 'node:assert';
-import { BoundExpression } from './Binder';
+import { BoundExpression } from './BoundExpression';
+import { EvaluationResult } from './EvaluationResult';
 
 export class Evaluator {
   root: BoundExpression;
@@ -7,11 +8,11 @@ export class Evaluator {
     this.root = root;
   }
 
-  evaluate(): number | string {
+  evaluate(): EvaluationResult {
     return this.evaluateExpression(this.root);
   }
 
-  evaluateExpression(node: BoundExpression): number | string {
+  evaluateExpression(node: BoundExpression): EvaluationResult {
     if (node.kind === 'LiteralExpression') {
       return node.value!;
     }

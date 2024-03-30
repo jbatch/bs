@@ -1,33 +1,8 @@
-import { Lexer, SyntaxKind, SyntaxToken } from './Lexer';
+import { ExpressionSyntax, SyntaxNode } from './Expression';
+import { Lexer } from './Lexer';
 import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
+import { SyntaxKind, SyntaxToken } from './SyntaxToken';
 
-type SyntaxNode = ExpressionSyntax | SyntaxToken;
-export type ExpressionSyntax =
-  | {
-      kind: 'LiteralExpression';
-      literal: SyntaxToken;
-      children: SyntaxNode[];
-    }
-  | {
-      kind: 'BinaryExpression';
-      left: ExpressionSyntax;
-      operator: SyntaxToken;
-      right: ExpressionSyntax;
-      children: SyntaxNode[];
-    }
-  | {
-      kind: 'UnaryExpression';
-      operator: SyntaxToken;
-      operand: ExpressionSyntax;
-      children: SyntaxNode[];
-    }
-  | {
-      kind: 'ParenthesizedExpression';
-      open: SyntaxToken;
-      expression: ExpressionSyntax;
-      close: SyntaxToken;
-      children: SyntaxNode[];
-    };
 type SyntaxTree = { root: ExpressionSyntax };
 
 export class Parser {
@@ -57,6 +32,12 @@ export class Parser {
     return this.tokens[this.position];
   }
 
+  nextToken(): SyntaxToken {
+    const token = this.current();
+    this.position++;
+    return token;
+  }
+
   matchToken(kind: SyntaxKind): SyntaxToken {
     const current = this.current();
     if (current.kind === kind) {
@@ -78,8 +59,7 @@ export class Parser {
     let left: ExpressionSyntax;
     var unaryPrecedence = getUnaryOperatorPrecedence(this.current().kind);
     if (unaryPrecedence !== 0 && unaryPrecedence >= parentPrecedence) {
-      const operator = this.current();
-      this.position++;
+      const operator = this.nextToken();
       const operand = this.parseExpression(unaryPrecedence);
       const children = [operator, operand];
       left = { kind: 'UnaryExpression', operator, operand, children };
@@ -93,8 +73,7 @@ export class Parser {
         break;
       }
 
-      const operator = this.current();
-      this.position++;
+      const operator = this.nextToken();
       const right = this.parseExpression(precedence - 1 * 2);
       const children = [left, operator, right];
       left = { kind: 'BinaryExpression', left, operator, right, children };
@@ -105,16 +84,25 @@ export class Parser {
   parsePrimaryExpression(): ExpressionSyntax {
     const current = this.current();
     if (current.kind == 'OpenParenthesisToken') {
-      const open = current;
-      this.position++;
-      const expression = this.parseExpression();
-      const close = this.matchToken('CloseParenthesisToken');
-      const children = [open, expression, close];
-      return { kind: 'ParenthesizedExpression', open, expression, close, children };
     }
-
-    const literal = this.matchToken('NumberToken');
-    return { kind: 'LiteralExpression', literal, children: [] };
+    switch (current.kind) {
+      case 'OpenParenthesisToken': {
+        const open = this.nextToken();
+        const expression = this.parseExpression();
+        const close = this.matchToken('CloseParenthesisToken');
+        const children = [open, expression, close];
+        return { kind: 'ParenthesizedExpression', open, expression, close, children };
+      }
+      case 'TrueKeyword':
+      case 'FalseKeyword': {
+        const literal = this.nextToken();
+        return { kind: 'LiteralExpression', literal, children: [] };
+      }
+      default: {
+        const literal = this.matchToken('NumberToken');
+        return { kind: 'LiteralExpression', literal, children: [] };
+      }
+    }
   }
 
   prettyPrint(node: SyntaxNode, indent: string = '', isLast: boolean = true) {
