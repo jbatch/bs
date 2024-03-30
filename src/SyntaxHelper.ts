@@ -2,11 +2,15 @@ import { SyntaxKind, SyntaxToken } from './SyntaxToken';
 
 export function getBinaryOperatorPrecedence(kind: SyntaxKind) {
   switch (kind) {
-    case 'PlusToken':
-    case 'MinusToken':
-      return 2;
     case 'StarToken':
     case 'SlashToken':
+      return 4;
+    case 'PlusToken':
+    case 'MinusToken':
+      return 3;
+    case 'AmpersandAmpersandToken':
+      return 2;
+    case 'PipePipeToken':
       return 1;
     default:
       return 0;
@@ -17,7 +21,8 @@ export function getUnaryOperatorPrecedence(kind: SyntaxKind) {
   switch (kind) {
     case 'PlusToken':
     case 'MinusToken':
-      return 3;
+    case 'BangToken':
+      return 5;
     default:
       return 0;
   }

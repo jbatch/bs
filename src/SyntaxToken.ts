@@ -8,6 +8,9 @@ export type SyntaxToken =
       | { kind: 'SlashToken'; position: number; text?: '/'; value?: undefined }
       | { kind: 'OpenParenthesisToken'; position: number; text?: '('; value?: undefined }
       | { kind: 'CloseParenthesisToken'; position: number; text?: ')'; value?: undefined }
+      | { kind: 'BangToken'; position: number; text?: '!'; value?: undefined }
+      | { kind: 'AmpersandAmpersandToken'; position: number; text?: '&&'; value?: undefined }
+      | { kind: 'PipePipeToken'; position: number; text?: '||'; value?: undefined }
       | { kind: 'IdentifierToken'; position: number; text?: string; value?: undefined }
       | { kind: 'TrueKeyword'; position: number; text?: 'true'; value?: true }
       | { kind: 'FalseKeyword'; position: number; text?: 'false'; value?: false }

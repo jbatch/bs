@@ -25,7 +25,7 @@ export class Binder {
   }
 
   bindLiteralExpression(expression: ExpressionSyntax): BoundExpression {
-    assert(expression.kind === 'LiteralExpression' && expression.literal.value);
+    assert(expression.kind === 'LiteralExpression' && expression.literal.value !== undefined);
     const value = expression.literal.value;
     var type = this.getLiteralType(value);
     return { kind: 'LiteralExpression', type, value };
@@ -61,6 +61,8 @@ export class Binder {
         return 'Identity';
       case 'MinusToken':
         return 'Negation';
+      case 'BangToken':
+        return 'LogicalNegation';
     }
     throw new Error(`Invalid unary operator kind ${operator.kind}`);
   }
@@ -75,6 +77,10 @@ export class Binder {
         return 'Multiplication';
       case 'SlashToken':
         return 'Division';
+      case 'AmpersandAmpersandToken':
+        return 'LogicalAnd';
+      case 'PipePipeToken':
+        return 'LogicalOr';
     }
     throw new Error(`Invalid binary operator kind ${operator.kind}`);
   }

@@ -25,12 +25,30 @@ export class Lexer {
     return /[a-zA-Z]/.test(char);
   }
 
+  current() {
+    return this.peek(0);
+  }
+
+  lookAhead() {
+    return this.peek(1);
+  }
+
+  peek(offset: number) {
+    const index = this.position + offset;
+
+    if (index >= this.text.length) {
+      return '\0';
+    }
+
+    return this.text[index];
+  }
+
   nextToken(): SyntaxToken {
     if (this.position >= this.text.length) {
       return { kind: 'EndOfFileToken', position: this.position, text: '\0', children: [] };
     }
 
-    let current = this.text[this.position];
+    let current = this.current();
 
     if (this.isDigit(current)) {
       const start = this.position;
@@ -90,6 +108,30 @@ export class Lexer {
           text: current,
           children: [],
         };
+      case '!':
+        return { kind: 'BangToken', position: this.position++, text: current, children: [] };
+      case '&': {
+        if (this.lookAhead() === '&') {
+          this.position += 2;
+          return {
+            kind: 'AmpersandAmpersandToken',
+            position: this.position - 2,
+            text: '&&',
+            children: [],
+          };
+        }
+      }
+      case '|': {
+        if (this.lookAhead() === '|') {
+          this.position += 2;
+          return {
+            kind: 'PipePipeToken',
+            position: this.position - 2,
+            text: '||',
+            children: [],
+          };
+        }
+      }
     }
 
     this.diagnostics.push(`Input error: unexpected character ${current}`);

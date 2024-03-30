@@ -23,9 +23,13 @@ function onInput(line: string) {
 
   parser.prettyPrint(tree.root);
 
-  const evaluator = new Evaluator(boundRoot);
-  console.log();
-  console.log(evaluator.evaluate());
+  try {
+    const evaluator = new Evaluator(boundRoot);
+    console.log();
+    console.log(evaluator.evaluate());
+  } catch (error: any) {
+    console.error(error.message);
+  }
   rl.prompt();
 }
 

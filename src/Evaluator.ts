@@ -1,5 +1,10 @@
 import assert from 'node:assert';
-import { BoundExpression } from './BoundExpression';
+import {
+  BoundBinaryOperatorKind,
+  BoundExpression,
+  BoundUnaryOperatorKind,
+  Type,
+} from './BoundExpression';
 import { EvaluationResult } from './EvaluationResult';
 
 export class Evaluator {
@@ -22,35 +27,74 @@ export class Evaluator {
 
       switch (node.operatorKind) {
         case 'Identity':
+          assert(node.operand.type === 'number');
           return operand;
         case 'Negation':
+          assert(node.operand.type === 'number');
           return -operand;
+        case 'LogicalNegation':
+          assert(node.operand.type === 'boolean');
+          return !operand;
         default:
           throw new Error(`Invalid unary operator ${node}`);
       }
     }
 
     if (node.kind === 'BinaryExpression') {
-      // TODO handle binary opressions for non-number types
-      assert(node.left.type === 'number');
-      assert(node.right.type === 'number');
-      const left = this.evaluateExpression(node.left) as number;
-      const right = this.evaluateExpression(node.right) as number;
+      const left = this.evaluateExpression(node.left);
+      const right = this.evaluateExpression(node.right);
 
       switch (node.operatorKind) {
         case 'Addition':
-          return left + right;
+          this.assertBinaryNumberOperation(node.left.type, node.right.type, node.operatorKind);
+          return +left + +right;
         case 'Subtraction':
-          return left - right;
+          this.assertBinaryNumberOperation(node.left.type, node.right.type, node.operatorKind);
+          assert(node.left.type === 'number');
+          return +left - +right;
         case 'Multiplication':
-          return left * right;
+          this.assertBinaryNumberOperation(node.left.type, node.right.type, node.operatorKind);
+          assert(node.left.type === 'number');
+          return +left * +right;
         case 'Division':
-          return left / right;
+          this.assertBinaryNumberOperation(node.left.type, node.right.type, node.operatorKind);
+          assert(node.left.type === 'number');
+          return +left / +right;
+        case 'LogicalAnd':
+          this.assertBinaryBooleanOperation(node.left.type, node.right.type, node.operatorKind);
+          assert(node.left.type === 'boolean');
+          return left && right;
+        case 'LogicalOr':
+          this.assertBinaryBooleanOperation(node.left.type, node.right.type, node.operatorKind);
+          assert(node.left.type === 'boolean');
+          return left || right;
         default:
           throw new Error(`Unexpected binary operator ${node}`);
       }
     }
 
     throw new Error(`Unexpected expression type ${node}`);
+  }
+
+  assertBinaryNumberOperation(t1: Type, t2: Type, operation: BoundBinaryOperatorKind) {
+    assert(
+      t1 === 'number' && t2 === 'number',
+      `TypeError: cannot evaluate ${operation} for types: ${t1} and ${t2}`
+    );
+  }
+
+  assertBinaryBooleanOperation(t1: Type, t2: Type, operation: BoundBinaryOperatorKind) {
+    assert(
+      t1 === 'boolean' && t2 === 'boolean',
+      `TypeError: cannot evaluate ${operation} for types: ${t1} and ${t2}`
+    );
+  }
+
+  assertUnaryNumberOperation(t1: Type, operation: BoundUnaryOperatorKind) {
+    assert(t1 === 'number', `TypeError: cannot evaluate ${operation} for type: ${t1}`);
+  }
+
+  assertUnaryBooleanOperation(t1: Type, t2: Type, operation: BoundUnaryOperatorKind) {
+    assert(t1 === 'boolean', `TypeError: cannot evaluate ${operation} for type: ${t1}`);
   }
 }

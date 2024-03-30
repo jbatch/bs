@@ -1,8 +1,14 @@
 import { EvaluationResult } from './EvaluationResult';
 
-export type BoundUnaryOperatorKind = 'Identity' | 'Negation';
+export type BoundUnaryOperatorKind = 'Identity' | 'Negation' | 'LogicalNegation';
 
-export type BoundBinaryOperatorKind = 'Addition' | 'Subtraction' | 'Multiplication' | 'Division';
+export type BoundBinaryOperatorKind =
+  | 'Addition'
+  | 'Subtraction'
+  | 'Multiplication'
+  | 'Division'
+  | 'LogicalAnd'
+  | 'LogicalOr';
 
 export type Type = 'number' | 'boolean';
 
