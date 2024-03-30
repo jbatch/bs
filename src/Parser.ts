@@ -1,4 +1,5 @@
 import { Lexer, SyntaxKind, SyntaxToken } from './Lexer';
+import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
 
 type SyntaxNode = ExpressionSyntax | SyntaxToken;
 export type ExpressionSyntax =
@@ -12,6 +13,12 @@ export type ExpressionSyntax =
       left: ExpressionSyntax;
       operator: SyntaxToken;
       right: ExpressionSyntax;
+      children: SyntaxNode[];
+    }
+  | {
+      kind: 'UnaryExpression';
+      operator: SyntaxToken;
+      operand: ExpressionSyntax;
       children: SyntaxNode[];
     }
   | {
@@ -67,31 +74,28 @@ export class Parser {
     return { root: expression };
   }
 
-  parseExpression() {
-    return this.parseTerm();
-  }
-
-  parseTerm(): ExpressionSyntax {
-    let left = this.parseFactor();
-    const current = this.current();
-    while (this.current().kind == 'PlusToken' || this.current().kind == 'MinusToken') {
-      const operator = current;
+  parseExpression(parentPrecedence: number = 0): ExpressionSyntax {
+    let left: ExpressionSyntax;
+    var unaryPrecedence = getUnaryOperatorPrecedence(this.current().kind);
+    if (unaryPrecedence !== 0 && unaryPrecedence >= parentPrecedence) {
+      const operator = this.current();
       this.position++;
-      const right = this.parseFactor();
-
-      const children = [left, operator, right];
-      left = { kind: 'BinaryExpression', left, operator, right, children };
+      const operand = this.parseExpression(unaryPrecedence);
+      const children = [operator, operand];
+      left = { kind: 'UnaryExpression', operator, operand, children };
+    } else {
+      left = this.parsePrimaryExpression();
     }
-    return left;
-  }
 
-  parseFactor(): ExpressionSyntax {
-    let left = this.parsePrimaryExpression();
-    const current = this.current();
-    while (this.current().kind == 'StarToken' || this.current().kind == 'SlashToken') {
-      const operator = current;
+    while (true) {
+      var precedence = getBinaryOperatorPrecedence(this.current().kind);
+      if (precedence === 0 || precedence <= parentPrecedence) {
+        break;
+      }
+
+      const operator = this.current();
       this.position++;
-      const right = this.parsePrimaryExpression();
+      const right = this.parseExpression(precedence - 1 * 2);
       const children = [left, operator, right];
       left = { kind: 'BinaryExpression', left, operator, right, children };
     }

@@ -36,6 +36,19 @@ class Evaluator {
       return node.number.value!;
     }
 
+    if (node.kind === 'UnaryExpression') {
+      var operand = this.evaluateExpression(node.operand);
+
+      switch (node.operator.kind) {
+        case 'PlusToken':
+          return operand;
+        case 'MinusToken':
+          return -operand;
+        default:
+          throw new Error(`Invalid unary operator ${node.operator.kind}`);
+      }
+    }
+
     if (node.kind === 'BinaryExpression') {
       const left = this.evaluateExpression(node.left);
       const right = this.evaluateExpression(node.right);
