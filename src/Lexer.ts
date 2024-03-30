@@ -1,6 +1,6 @@
 export type SyntaxToken =
   | (
-      | { kind: 'NumberToken'; position: number; text?: string; value?: number }
+      | { kind: 'NumberToken'; position: number; text?: string; value?: number | string }
       | { kind: 'WhitespaceToken'; position: number; text?: string; value?: undefined }
       | { kind: 'PlusToken'; position: number; text?: '+'; value?: undefined }
       | { kind: 'MinusToken'; position: number; text?: '-'; value?: undefined }

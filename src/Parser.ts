@@ -4,8 +4,8 @@ import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './Synta
 type SyntaxNode = ExpressionSyntax | SyntaxToken;
 export type ExpressionSyntax =
   | {
-      kind: 'NumberExpression';
-      number: SyntaxToken;
+      kind: 'LiteralExpression';
+      literal: SyntaxToken;
       children: SyntaxNode[];
     }
   | {
@@ -113,8 +113,8 @@ export class Parser {
       return { kind: 'ParenthesizedExpression', open, expression, close, children };
     }
 
-    const number = this.matchToken('NumberToken');
-    return { kind: 'NumberExpression', number, children: [] };
+    const literal = this.matchToken('NumberToken');
+    return { kind: 'LiteralExpression', literal, children: [] };
   }
 
   prettyPrint(node: SyntaxNode, indent: string = '', isLast: boolean = true) {
@@ -122,8 +122,8 @@ export class Parser {
     process.stdout.write(indent);
     process.stdout.write(marker);
     process.stdout.write(node.kind);
-    if (node.kind === 'NumberExpression' && node.number.value) {
-      process.stdout.write(' ' + node.number.value.toString());
+    if (node.kind === 'LiteralExpression' && node.literal.value) {
+      process.stdout.write(' ' + node.literal.value.toString());
     }
     console.log();
     indent += isLast ? '   ' : '│  ';

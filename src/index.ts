@@ -1,12 +1,18 @@
 import readline from 'readline';
-import { ExpressionSyntax, Parser } from './Parser';
+import { Parser } from './Parser';
+import { Binder } from './Binder';
+import { Evaluator } from './Evaluator';
 
 const rl = readline.createInterface(process.stdin, process.stdout);
 
-rl.on('line', (line) => {
+function onInput(line: string) {
   const parser = new Parser(line);
   var tree = parser.parse();
-  if (parser.diagnostics.length > 0) {
+  const binder = new Binder();
+  const boundRoot = binder.bindExpression(tree.root);
+  const diagnostics = [...parser.diagnostics, ...binder.diagnostics];
+
+  if (diagnostics.length > 0) {
     for (let diagnosic of parser.diagnostics) {
       console.log(diagnosic);
     }
@@ -14,77 +20,19 @@ rl.on('line', (line) => {
     rl.prompt();
     return;
   }
+
   parser.prettyPrint(tree.root);
-  const evaluator = new Evaluator(tree.root);
+
+  const evaluator = new Evaluator(boundRoot);
   console.log();
   console.log(evaluator.evaluate());
   rl.prompt();
-});
-
-class Evaluator {
-  root: ExpressionSyntax;
-  constructor(root: ExpressionSyntax) {
-    this.root = root;
-  }
-
-  evaluate(): number {
-    return this.evaluateExpression(this.root);
-  }
-
-  evaluateExpression(node: ExpressionSyntax): number {
-    if (node.kind === 'NumberExpression') {
-      return node.number.value!;
-    }
-
-    if (node.kind === 'UnaryExpression') {
-      var operand = this.evaluateExpression(node.operand);
-
-      switch (node.operator.kind) {
-        case 'PlusToken':
-          return operand;
-        case 'MinusToken':
-          return -operand;
-        default:
-          throw new Error(`Invalid unary operator ${node.operator.kind}`);
-      }
-    }
-
-    if (node.kind === 'BinaryExpression') {
-      const left = this.evaluateExpression(node.left);
-      const right = this.evaluateExpression(node.right);
-
-      switch (node.operator.kind) {
-        case 'PlusToken':
-          return left + right;
-        case 'MinusToken':
-          return left - right;
-        case 'StarToken':
-          return left * right;
-        case 'SlashToken':
-          return left / right;
-        default:
-          throw new Error(`Unexpected binary operator ${node.operator.kind}`);
-      }
-    }
-
-    if (node.kind === 'ParenthesizedExpression') {
-      return this.evaluateExpression(node.expression);
-    }
-
-    throw new Error(`Unexpected expression type ${node}`);
-  }
 }
+
+rl.on('line', onInput);
+
 function main() {
-  const parser = new Parser('(1 + 2) * 3');
-  var tree = parser.parse();
-  parser.prettyPrint(tree.root);
-
-  const evaluator = new Evaluator(tree.root);
-  console.log();
-  console.log(evaluator.evaluate());
-
-  rl.setPrompt('> ');
-  rl.prompt();
+  onInput('(1 + 2) * 3');
 }
 
 main();
