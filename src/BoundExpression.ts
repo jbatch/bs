@@ -9,7 +9,9 @@ export type BoundBinaryOperatorKind =
   | 'Multiplication'
   | 'Division'
   | 'LogicalAnd'
-  | 'LogicalOr';
+  | 'LogicalOr'
+  | 'Equals'
+  | 'NotEquals';
 
 export type Type = 'number' | 'boolean';
 
@@ -38,15 +40,31 @@ type BoundBinaryOperator = {
   syntaxKind: SyntaxKind;
   leftType: Type;
   rightType: Type;
-  resultType: Type;
+  type: Type;
 };
 
 function boundBinaryOperator(
   kind: BoundBinaryOperatorKind,
   syntaxKind: SyntaxKind,
-  type: Type
+  operandType: Type,
+  type?: Type
 ): BoundBinaryOperator {
-  return { kind, syntaxKind, leftType: type, rightType: type, resultType: type };
+  if (type === undefined) {
+    return {
+      kind,
+      syntaxKind,
+      leftType: operandType,
+      rightType: operandType,
+      type: operandType,
+    };
+  }
+  return {
+    kind,
+    syntaxKind,
+    leftType: operandType,
+    rightType: operandType,
+    type,
+  };
 }
 
 const BINARY_OPERATORS: BoundBinaryOperator[] = [
@@ -55,6 +73,10 @@ const BINARY_OPERATORS: BoundBinaryOperator[] = [
   boundBinaryOperator('Multiplication', 'StarToken', 'number'),
   boundBinaryOperator('LogicalAnd', 'AmpersandAmpersandToken', 'boolean'),
   boundBinaryOperator('LogicalOr', 'PipePipeToken', 'boolean'),
+  boundBinaryOperator('Equals', 'EqualsEqualsToken', 'number', 'boolean'),
+  boundBinaryOperator('NotEquals', 'BangEqualsToken', 'number', 'boolean'),
+  boundBinaryOperator('Equals', 'EqualsEqualsToken', 'boolean', 'boolean'),
+  boundBinaryOperator('NotEquals', 'BangEqualsToken', 'boolean', 'boolean'),
 ];
 
 export function bindBinaryOperator(
@@ -71,7 +93,7 @@ type BoundUnaryOperator = {
   kind: BoundUnaryOperatorKind;
   syntaxKind: SyntaxKind;
   operandType: Type;
-  resultType: Type;
+  type: Type;
 };
 
 function boundUnaryOperator(
@@ -79,7 +101,7 @@ function boundUnaryOperator(
   syntaxKind: SyntaxKind,
   type: Type
 ): BoundUnaryOperator {
-  return { kind, syntaxKind, operandType: type, resultType: type };
+  return { kind, syntaxKind, operandType: type, type };
 }
 
 const UNARY_OPERATORS: BoundUnaryOperator[] = [

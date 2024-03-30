@@ -11,6 +11,8 @@ export type SyntaxToken =
       | { kind: 'BangToken'; position: number; text?: '!'; value?: undefined }
       | { kind: 'AmpersandAmpersandToken'; position: number; text?: '&&'; value?: undefined }
       | { kind: 'PipePipeToken'; position: number; text?: '||'; value?: undefined }
+      | { kind: 'EqualsEqualsToken'; position: number; text?: '=='; value?: undefined }
+      | { kind: 'BangEqualsToken'; position: number; text?: '!='; value?: undefined }
       | { kind: 'IdentifierToken'; position: number; text?: string; value?: undefined }
       | { kind: 'TrueKeyword'; position: number; text?: 'true'; value?: true }
       | { kind: 'FalseKeyword'; position: number; text?: 'false'; value?: false }

@@ -40,11 +40,11 @@ export class Binder {
     const operator = bindBinaryOperator(expression.operator.kind, left.type, right.type);
     if (operator === undefined) {
       this.diagnostics.push(
-        `Binary operator ${expression.kind} is not defined for types: ${left.type} and ${right.type}`
+        `Binary operator ${expression.operator.text} is not defined for types: ${left.type} and ${right.type}`
       );
       return left;
     }
-    const type = operator.resultType;
+    const type = operator.type;
     return { kind: 'BinaryExpression', type, left, operator, right };
   }
 
@@ -55,7 +55,7 @@ export class Binder {
     const operator = bindUnaryOperator(expression.operator.kind, operand.type);
     if (operator === undefined) {
       this.diagnostics.push(
-        `Unary operator ${expression.kind} is not defined for type: ${operand.type}`
+        `Unary operator ${expression.operator.kind} is not defined for type: ${operand.type}`
       );
       return operand;
     }

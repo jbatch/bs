@@ -109,6 +109,10 @@ export class Lexer {
           children: [],
         };
       case '!':
+        if (this.lookAhead() === '=') {
+          this.position += 2;
+          return { kind: 'BangEqualsToken', position: this.position - 2, text: '!=', children: [] };
+        }
         return { kind: 'BangToken', position: this.position++, text: current, children: [] };
       case '&': {
         if (this.lookAhead() === '&') {
@@ -128,6 +132,17 @@ export class Lexer {
             kind: 'PipePipeToken',
             position: this.position - 2,
             text: '||',
+            children: [],
+          };
+        }
+      }
+      case '=': {
+        if (this.lookAhead() === '=') {
+          this.position += 2;
+          return {
+            kind: 'EqualsEqualsToken',
+            position: this.position - 2,
+            text: '==',
             children: [],
           };
         }

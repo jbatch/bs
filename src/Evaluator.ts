@@ -44,20 +44,19 @@ export class Evaluator {
         case 'Addition':
           return +left + +right;
         case 'Subtraction':
-          assert(node.left.type === 'number');
           return +left - +right;
         case 'Multiplication':
-          assert(node.left.type === 'number');
           return +left * +right;
         case 'Division':
-          assert(node.left.type === 'number');
           return +left / +right;
         case 'LogicalAnd':
-          assert(node.left.type === 'boolean');
           return left && right;
         case 'LogicalOr':
-          assert(node.left.type === 'boolean');
           return left || right;
+        case 'Equals':
+          return left == right;
+        case 'NotEquals':
+          return left != right;
         default:
           throw new Error(`Unexpected binary operator ${node}`);
       }

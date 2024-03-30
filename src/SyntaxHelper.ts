@@ -4,9 +4,12 @@ export function getBinaryOperatorPrecedence(kind: SyntaxKind) {
   switch (kind) {
     case 'StarToken':
     case 'SlashToken':
-      return 4;
+      return 5;
     case 'PlusToken':
     case 'MinusToken':
+      return 4;
+    case 'EqualsEqualsToken':
+    case 'BangEqualsToken':
       return 3;
     case 'AmpersandAmpersandToken':
       return 2;
@@ -22,7 +25,7 @@ export function getUnaryOperatorPrecedence(kind: SyntaxKind) {
     case 'PlusToken':
     case 'MinusToken':
     case 'BangToken':
-      return 5;
+      return 6;
     default:
       return 0;
   }
