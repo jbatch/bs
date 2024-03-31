@@ -1,5 +1,14 @@
 import { DiagnosticBag } from './Diagnostic';
-import { ExpressionSyntax, SyntaxNode } from './Expression';
+import {
+  AssignmentExpression,
+  BinaryExpression,
+  ExpressionSyntax,
+  LiteralExpression,
+  NameExpression,
+  ParenthesizedExpression,
+  SyntaxNode,
+  UnaryExpression,
+} from './Expression';
 import { Lexer } from './Lexer';
 import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
 import { SyntaxKind, SyntaxToken, textSpan } from './SyntaxToken';
@@ -78,9 +87,7 @@ export class Parser {
       const identifier = this.nextToken();
       const equals = this.nextToken();
       const expression = this.parseAssignmentExpression();
-      const children = [identifier, equals, expression];
-
-      return { kind: 'AssignmentExpression', identifier, equals, expression, children };
+      return AssignmentExpression(identifier, equals, expression);
     }
     return this.parseBinaryExpression();
   }
@@ -91,8 +98,7 @@ export class Parser {
     if (unaryPrecedence !== 0 && unaryPrecedence >= parentPrecedence) {
       const operator = this.nextToken();
       const operand = this.parseBinaryExpression(unaryPrecedence);
-      const children = [operator, operand];
-      left = { kind: 'UnaryExpression', operator, operand, children };
+      left = UnaryExpression(operator, operand);
     } else {
       left = this.parsePrimaryExpression();
     }
@@ -105,8 +111,7 @@ export class Parser {
 
       const operator = this.nextToken();
       const right = this.parseBinaryExpression(precedence);
-      const children = [left, operator, right];
-      left = { kind: 'BinaryExpression', left, operator, right, children };
+      left = BinaryExpression(left, operator, right);
     }
     return left;
   }
@@ -120,22 +125,21 @@ export class Parser {
         const open = this.nextToken();
         const expression = this.parseExpression();
         const close = this.matchToken('CloseParenthesisToken');
-        const children = [open, expression, close];
-        return { kind: 'ParenthesizedExpression', open, expression, close, children };
+        return ParenthesizedExpression(open, expression, close);
       }
       case 'TrueKeyword':
       case 'FalseKeyword': {
         const literal = this.nextToken();
-        return { kind: 'LiteralExpression', literal, children: [] };
+        return LiteralExpression(literal);
       }
       case 'IdentifierToken': {
         const identifier = this.nextToken();
-        return { kind: 'NameExpression', identifier, children: [] };
+        return NameExpression(identifier);
       }
 
       default: {
         const literal = this.matchToken('NumberToken');
-        return { kind: 'LiteralExpression', literal, children: [] };
+        return LiteralExpression(literal);
       }
     }
   }
@@ -146,7 +150,10 @@ export class Parser {
     process.stdout.write(marker);
     process.stdout.write(node.kind);
     if (node.kind === 'LiteralExpression' && node.literal.value) {
-      process.stdout.write(' ' + node.literal.value.toString());
+      process.stdout.write(' (' + node.literal.value.toString() + ')');
+    }
+    if (node.kind === 'IdentifierToken' && node.text) {
+      process.stdout.write(' (' + node.text + ')');
     }
     console.log();
     indent += isLast ? '   ' : '│  ';
