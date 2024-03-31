@@ -1,6 +1,23 @@
 import { DiagnosticBag } from './Diagnostic';
 import { getKeyword } from './SyntaxHelper';
-import { SyntaxToken, textSpan } from './SyntaxToken';
+import {
+  EndOfFileToken,
+  NumberToken,
+  PlusToken,
+  SyntaxToken,
+  WhitespaceToken,
+  textSpan,
+  MinusToken,
+  StarToken,
+  SlashToken,
+  OpenParenthesisToken,
+  CloseParenthesisToken,
+  BangEqualsToken,
+  BangToken,
+  AmpersandAmpersandToken,
+  PipePipeToken,
+  EqualsEqualsToken,
+} from './SyntaxToken';
 
 export class Lexer {
   text: string;
@@ -47,7 +64,7 @@ export class Lexer {
   nextToken(): SyntaxToken {
     if (this.position >= this.text.length) {
       const span = textSpan(this.position, 1);
-      return { kind: 'EndOfFileToken', span, text: '\0', children: [] };
+      return EndOfFileToken(span);
     }
 
     let current = this.current();
@@ -66,7 +83,7 @@ export class Lexer {
       }
 
       const span = textSpan(start, text.length);
-      return { kind: 'NumberToken', span, text, value, children: [] };
+      return NumberToken(span, text, value);
     }
 
     if (this.isWhitepsace(current)) {
@@ -76,7 +93,7 @@ export class Lexer {
       }
       const text = this.text.substring(start, this.position);
       const span = textSpan(start, text.length);
-      return { kind: 'WhitespaceToken', span, text, children: [] };
+      return WhitespaceToken(span, text);
     }
 
     if (this.isLetter(current)) {
@@ -92,94 +109,39 @@ export class Lexer {
 
     switch (current) {
       case '+':
-        return {
-          kind: 'PlusToken',
-          span: textSpan(this.position++, 1),
-          text: current,
-          children: [],
-        };
+        return PlusToken(textSpan(this.position++, 1));
       case '-':
-        return {
-          kind: 'MinusToken',
-          span: textSpan(this.position++, 1),
-          text: current,
-          children: [],
-        };
+        return MinusToken(textSpan(this.position++, 1));
       case '*':
-        return {
-          kind: 'StarToken',
-          span: textSpan(this.position++, 1),
-          text: current,
-          children: [],
-        };
+        return StarToken(textSpan(this.position++, 1));
       case '/':
-        return {
-          kind: 'SlashToken',
-          span: textSpan(this.position++, 1),
-          text: current,
-          children: [],
-        };
+        return SlashToken(textSpan(this.position++, 1));
       case '(':
-        return {
-          kind: 'OpenParenthesisToken',
-          span: textSpan(this.position++, 1),
-          text: current,
-          children: [],
-        };
+        return OpenParenthesisToken(textSpan(this.position++, 1));
       case ')':
-        return {
-          kind: 'CloseParenthesisToken',
-          span: textSpan(this.position++, 1),
-          text: current,
-          children: [],
-        };
+        return CloseParenthesisToken(textSpan(this.position++, 1));
       case '!':
         if (this.lookAhead() === '=') {
           this.position += 2;
-          return {
-            kind: 'BangEqualsToken',
-            span: textSpan(this.position - 2, 2),
-            text: '!=',
-            children: [],
-          };
+          return BangEqualsToken(textSpan(this.position - 2, 2));
         }
-        return {
-          kind: 'BangToken',
-          span: textSpan(this.position++, 1),
-          text: current,
-          children: [],
-        };
+        return BangToken(textSpan(this.position++, 1));
       case '&': {
         if (this.lookAhead() === '&') {
           this.position += 2;
-          return {
-            kind: 'AmpersandAmpersandToken',
-            span: textSpan(this.position - 2, 2),
-            text: '&&',
-            children: [],
-          };
+          return AmpersandAmpersandToken(textSpan(this.position - 2, 2));
         }
       }
       case '|': {
         if (this.lookAhead() === '|') {
           this.position += 2;
-          return {
-            kind: 'PipePipeToken',
-            span: textSpan(this.position - 2, 2),
-            text: '||',
-            children: [],
-          };
+          return PipePipeToken(textSpan(this.position - 2, 2));
         }
       }
       case '=': {
         if (this.lookAhead() === '=') {
           this.position += 2;
-          return {
-            kind: 'EqualsEqualsToken',
-            span: textSpan(this.position - 2, 2),
-            text: '==',
-            children: [],
-          };
+          return EqualsEqualsToken(textSpan(this.position - 2, 2));
         }
       }
     }

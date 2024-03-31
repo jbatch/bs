@@ -23,6 +23,66 @@ export type SyntaxToken =
       | { kind: 'FalseKeyword'; span: TextSpan; text?: 'false'; value?: false }
       | { kind: 'BadToken'; span: TextSpan; text?: string; value?: undefined }
       | { kind: 'EndOfFileToken'; span: TextSpan; text?: '\0'; value?: undefined }
-    ) & { children: [] };
+    ) & { children: SyntaxToken[] };
+
+// Tokens
+export function NumberToken(span: TextSpan, text: string, value: number | string): SyntaxToken {
+  return { kind: 'NumberToken', span, text, value, children: [] };
+}
+export function WhitespaceToken(span: TextSpan, text: string): SyntaxToken {
+  return { kind: 'WhitespaceToken', span, text, value: undefined, children: [] };
+}
+export function PlusToken(span: TextSpan): SyntaxToken {
+  return { kind: 'PlusToken', span, text: '+', value: undefined, children: [] };
+}
+export function MinusToken(span: TextSpan): SyntaxToken {
+  return { kind: 'MinusToken', span, text: '-', value: undefined, children: [] };
+}
+export function StarToken(span: TextSpan): SyntaxToken {
+  return { kind: 'StarToken', span, text: '*', value: undefined, children: [] };
+}
+export function SlashToken(span: TextSpan): SyntaxToken {
+  return { kind: 'SlashToken', span, text: '/', value: undefined, children: [] };
+}
+export function OpenParenthesisToken(span: TextSpan): SyntaxToken {
+  return { kind: 'OpenParenthesisToken', span, text: '(', value: undefined, children: [] };
+}
+export function CloseParenthesisToken(span: TextSpan): SyntaxToken {
+  return { kind: 'CloseParenthesisToken', span, text: ')', value: undefined, children: [] };
+}
+export function BangToken(span: TextSpan): SyntaxToken {
+  return { kind: 'BangToken', span, text: '!', value: undefined, children: [] };
+}
+export function AmpersandAmpersandToken(span: TextSpan): SyntaxToken {
+  return { kind: 'AmpersandAmpersandToken', span, text: '&&', value: undefined, children: [] };
+}
+export function PipePipeToken(span: TextSpan): SyntaxToken {
+  return { kind: 'PipePipeToken', span, text: '||', value: undefined, children: [] };
+}
+export function EqualsEqualsToken(span: TextSpan): SyntaxToken {
+  return { kind: 'EqualsEqualsToken', span, text: '==', value: undefined, children: [] };
+}
+export function BangEqualsToken(span: TextSpan): SyntaxToken {
+  return { kind: 'BangEqualsToken', span, text: '!=', value: undefined, children: [] };
+}
+export function IdentifierToken(span: TextSpan, text: string): SyntaxToken {
+  return { kind: 'IdentifierToken', span, text, value: undefined, children: [] };
+}
+
+// Keywords
+export function TrueKeyword(span: TextSpan): SyntaxToken {
+  return { kind: 'TrueKeyword', span, text: 'true', value: true, children: [] };
+}
+export function FalseKeyword(span: TextSpan): SyntaxToken {
+  return { kind: 'FalseKeyword', span, text: 'false', value: false, children: [] };
+}
+
+// Should not be used
+export function BadToken(span: TextSpan, text: string): SyntaxToken {
+  return { kind: 'BadToken', span, text, value: undefined, children: [] };
+}
+export function EndOfFileToken(span: TextSpan): SyntaxToken {
+  return { kind: 'EndOfFileToken', span, text: '\0', value: undefined, children: [] };
+}
 
 export type SyntaxKind = SyntaxToken['kind'];
