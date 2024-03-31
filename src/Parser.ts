@@ -74,7 +74,7 @@ export class Parser {
       }
 
       const operator = this.nextToken();
-      const right = this.parseExpression(precedence - 1 * 2);
+      const right = this.parseExpression(precedence);
       const children = [left, operator, right];
       left = { kind: 'BinaryExpression', left, operator, right, children };
     }

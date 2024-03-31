@@ -12,6 +12,7 @@ function onInput(line: string) {
   const boundRoot = binder.bindExpression(tree.root);
   const diagnostics = [...parser.diagnostics, ...binder.diagnostics];
 
+  parser.prettyPrint(tree.root);
   if (diagnostics.length > 0) {
     for (let diagnosic of diagnostics) {
       console.log(diagnosic);
@@ -20,8 +21,6 @@ function onInput(line: string) {
     rl.prompt();
     return;
   }
-
-  parser.prettyPrint(tree.root);
 
   try {
     const evaluator = new Evaluator(boundRoot);
@@ -36,7 +35,7 @@ function onInput(line: string) {
 rl.on('line', onInput);
 
 function main() {
-  onInput('(1 + 2) * 3');
+  onInput('1 + 2 == 3');
 }
 
 main();
