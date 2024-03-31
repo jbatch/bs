@@ -1,10 +1,11 @@
+import { DiagnosticBag } from './Diagnostic';
 import { getKeyword } from './SyntaxHelper';
-import { SyntaxToken } from './SyntaxToken';
+import { SyntaxToken, textSpan } from './SyntaxToken';
 
 export class Lexer {
   text: string;
   position: number = 0;
-  diagnostics: string[] = [];
+  diagnostics: DiagnosticBag = new DiagnosticBag();
 
   constructor(text: string) {
     this.text = text;
@@ -45,7 +46,8 @@ export class Lexer {
 
   nextToken(): SyntaxToken {
     if (this.position >= this.text.length) {
-      return { kind: 'EndOfFileToken', position: this.position, text: '\0', children: [] };
+      const span = textSpan(this.position, 1);
+      return { kind: 'EndOfFileToken', span, text: '\0', children: [] };
     }
 
     let current = this.current();
@@ -59,10 +61,12 @@ export class Lexer {
       var text = this.text.substring(start, this.position);
       const value = parseInt(text);
       if (isNaN(value)) {
-        this.diagnostics.push(`Invalid number "${text}"`);
+        const span = textSpan(start, text.length);
+        this.diagnostics.reportInvalidNumber(span, text);
       }
 
-      return { kind: 'NumberToken', position: start, text, value, children: [] };
+      const span = textSpan(start, text.length);
+      return { kind: 'NumberToken', span, text, value, children: [] };
     }
 
     if (this.isWhitepsace(current)) {
@@ -71,7 +75,8 @@ export class Lexer {
         current = this.text[++this.position];
       }
       const text = this.text.substring(start, this.position);
-      return { kind: 'WhitespaceToken', position: start, text, children: [] };
+      const span = textSpan(start, text.length);
+      return { kind: 'WhitespaceToken', span, text, children: [] };
     }
 
     if (this.isLetter(current)) {
@@ -81,45 +86,75 @@ export class Lexer {
         current = this.text[++this.position];
       }
       const text = this.text.substring(start, this.position);
-      const token = getKeyword(text, this.position);
+      const token = getKeyword(text, this.position - text.length);
       return token;
     }
 
     switch (current) {
       case '+':
-        return { kind: 'PlusToken', position: this.position++, text: current, children: [] };
+        return {
+          kind: 'PlusToken',
+          span: textSpan(this.position++, 1),
+          text: current,
+          children: [],
+        };
       case '-':
-        return { kind: 'MinusToken', position: this.position++, text: current, children: [] };
+        return {
+          kind: 'MinusToken',
+          span: textSpan(this.position++, 1),
+          text: current,
+          children: [],
+        };
       case '*':
-        return { kind: 'StarToken', position: this.position++, text: current, children: [] };
+        return {
+          kind: 'StarToken',
+          span: textSpan(this.position++, 1),
+          text: current,
+          children: [],
+        };
       case '/':
-        return { kind: 'SlashToken', position: this.position++, text: current, children: [] };
+        return {
+          kind: 'SlashToken',
+          span: textSpan(this.position++, 1),
+          text: current,
+          children: [],
+        };
       case '(':
         return {
           kind: 'OpenParenthesisToken',
-          position: this.position++,
+          span: textSpan(this.position++, 1),
           text: current,
           children: [],
         };
       case ')':
         return {
           kind: 'CloseParenthesisToken',
-          position: this.position++,
+          span: textSpan(this.position++, 1),
           text: current,
           children: [],
         };
       case '!':
         if (this.lookAhead() === '=') {
           this.position += 2;
-          return { kind: 'BangEqualsToken', position: this.position - 2, text: '!=', children: [] };
+          return {
+            kind: 'BangEqualsToken',
+            span: textSpan(this.position - 2, 2),
+            text: '!=',
+            children: [],
+          };
         }
-        return { kind: 'BangToken', position: this.position++, text: current, children: [] };
+        return {
+          kind: 'BangToken',
+          span: textSpan(this.position++, 1),
+          text: current,
+          children: [],
+        };
       case '&': {
         if (this.lookAhead() === '&') {
           this.position += 2;
           return {
             kind: 'AmpersandAmpersandToken',
-            position: this.position - 2,
+            span: textSpan(this.position - 2, 2),
             text: '&&',
             children: [],
           };
@@ -130,7 +165,7 @@ export class Lexer {
           this.position += 2;
           return {
             kind: 'PipePipeToken',
-            position: this.position - 2,
+            span: textSpan(this.position - 2, 2),
             text: '||',
             children: [],
           };
@@ -141,7 +176,7 @@ export class Lexer {
           this.position += 2;
           return {
             kind: 'EqualsEqualsToken',
-            position: this.position - 2,
+            span: textSpan(this.position - 2, 2),
             text: '==',
             children: [],
           };
@@ -149,7 +184,7 @@ export class Lexer {
       }
     }
 
-    this.diagnostics.push(`Input error: unexpected character ${current}`);
-    return { kind: 'BadToken', position: this.position, text: current, children: [] };
+    this.diagnostics.reportBadCharacter(this.position, current);
+    return { kind: 'BadToken', span: textSpan(this.position, 1), text: current, children: [] };
   }
 }

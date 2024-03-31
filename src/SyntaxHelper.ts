@@ -1,4 +1,4 @@
-import { SyntaxKind, SyntaxToken } from './SyntaxToken';
+import { SyntaxKind, SyntaxToken, textSpan } from './SyntaxToken';
 
 export function getBinaryOperatorPrecedence(kind: SyntaxKind) {
   switch (kind) {
@@ -34,10 +34,22 @@ export function getUnaryOperatorPrecedence(kind: SyntaxKind) {
 export function getKeyword(text: string, position: number): SyntaxToken {
   switch (text) {
     case 'true':
-      return { kind: 'TrueKeyword', position, text, value: true, children: [] };
+      return {
+        kind: 'TrueKeyword',
+        span: textSpan(position, text.length),
+        text,
+        value: true,
+        children: [],
+      };
     case 'false':
-      return { kind: 'FalseKeyword', position, text, value: false, children: [] };
+      return {
+        kind: 'FalseKeyword',
+        span: textSpan(position, text.length),
+        text,
+        value: false,
+        children: [],
+      };
     default:
-      return { kind: 'IdentifierToken', position, text, children: [] };
+      return { kind: 'IdentifierToken', span: textSpan(position, text.length), text, children: [] };
   }
 }

@@ -1,14 +1,15 @@
+import { DiagnosticBag } from './Diagnostic';
 import { ExpressionSyntax, SyntaxNode } from './Expression';
 import { Lexer } from './Lexer';
 import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
-import { SyntaxKind, SyntaxToken } from './SyntaxToken';
+import { SyntaxKind, SyntaxToken, textSpan } from './SyntaxToken';
 
 type SyntaxTree = { root: ExpressionSyntax };
 
 export class Parser {
   tokens: SyntaxToken[];
   position: number = 0;
-  diagnostics: string[] = [];
+  diagnostics: DiagnosticBag = new DiagnosticBag();
 
   constructor(text: string) {
     this.tokens = [];
@@ -22,7 +23,7 @@ export class Parser {
         this.tokens.push(token);
       }
     } while (token.kind !== 'EndOfFileToken');
-    this.diagnostics.push(...lexer.diagnostics);
+    this.diagnostics.addBag(lexer.diagnostics);
   }
 
   current(): SyntaxToken {
@@ -44,8 +45,16 @@ export class Parser {
       this.position++;
       return current;
     }
-    this.diagnostics.push(`Syntax error: unexpected token ${current.kind} expected ${kind}`);
-    return { kind, position: this.position, text: undefined, value: undefined, children: [] };
+
+    this.diagnostics.reportUnexpectedToken(current.span, current.kind, kind);
+    this.position++;
+    return {
+      kind,
+      span: textSpan(this.position, 1),
+      text: undefined,
+      value: undefined,
+      children: [],
+    };
   }
 
   parse(): SyntaxTree {

@@ -2,6 +2,7 @@ import readline from 'readline';
 import { Parser } from './Parser';
 import { Binder } from './Binder';
 import { Evaluator } from './Evaluator';
+import { DiagnosticBag } from './Diagnostic';
 
 const rl = readline.createInterface(process.stdin, process.stdout);
 
@@ -10,12 +11,24 @@ function onInput(line: string) {
   var tree = parser.parse();
   const binder = new Binder();
   const boundRoot = binder.bindExpression(tree.root);
-  const diagnostics = [...parser.diagnostics, ...binder.diagnostics];
+  const diagnostics = new DiagnosticBag();
+  diagnostics.addBag(parser.diagnostics);
+  diagnostics.addBag(binder.diagnostics);
 
   parser.prettyPrint(tree.root);
-  if (diagnostics.length > 0) {
-    for (let diagnosic of diagnostics) {
-      console.log(diagnosic);
+  if (diagnostics.hasDiagnostics()) {
+    for (let diagnostic of diagnostics.diagnostics) {
+      console.log(diagnostic.message);
+
+      const prefix = line.substring(0, diagnostic.span.start);
+      const error = line.substring(diagnostic.span.start, diagnostic.span.end);
+      const suffix = line.substring(diagnostic.span.end);
+
+      write('    ');
+      write(prefix);
+      write('\x1b[31m' + error + '\x1b[0m');
+      write(suffix);
+      console.log();
     }
     console.log();
     rl.prompt();
@@ -33,6 +46,10 @@ function onInput(line: string) {
 }
 
 rl.on('line', onInput);
+
+function write(s: string) {
+  process.stdout.write(s);
+}
 
 function main() {
   onInput('1 + 2 == 3');
