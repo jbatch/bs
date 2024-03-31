@@ -2,9 +2,14 @@ import assert from 'node:assert';
 import { SyntaxToken, TextSpan } from './SyntaxToken';
 import { ExpressionSyntax } from './Expression';
 import {
+  BoundAssignmentExpression,
+  BoundBinaryExpression,
   BoundBinaryOperatorKind,
   BoundExpression,
+  BoundLiteralExpression,
+  BoundUnaryExpression,
   BoundUnaryOperatorKind,
+  BoundVariableExpression,
   Type,
   bindBinaryOperator,
   bindUnaryOperator,
@@ -40,7 +45,7 @@ export class Binder {
     assert(expression.kind === 'LiteralExpression');
     const value = expression.literal.value ?? 0;
     var type = this.getLiteralType(expression.literal.span, value);
-    return { kind: 'LiteralExpression', type, value };
+    return BoundLiteralExpression(type, value);
   }
 
   bindBinaryExpression(expression: ExpressionSyntax): BoundExpression {
@@ -58,7 +63,7 @@ export class Binder {
       return left;
     }
     const type = operator.type;
-    return { kind: 'BinaryExpression', type, left, operator, right };
+    return BoundBinaryExpression(type, left, operator, right);
   }
 
   bindUnaryExpression(expression: ExpressionSyntax): BoundExpression {
@@ -74,7 +79,7 @@ export class Binder {
       );
       return operand;
     }
-    return { kind: 'UnaryExpression', type, operand, operator };
+    return BoundUnaryExpression(type, operator, operand);
   }
 
   bindParenthesizedExpression(expression: ExpressionSyntax): BoundExpression {
@@ -87,11 +92,11 @@ export class Binder {
     const name = expression.identifier.text!;
     if (this.variables[name] === undefined) {
       this.diagnostics.reportUndefinedName(expression.identifier.span, name);
-      return { kind: 'LiteralExpression', type: 'number', value: 0 };
+      return BoundLiteralExpression('number', 0);
     }
     const value = this.variables[name];
     const type = this.getLiteralType(expression.identifier.span, value);
-    return { kind: 'VariableExpression', type, name };
+    return BoundVariableExpression(type, name);
   }
 
   bindAssignmentExpression(expression: ExpressionSyntax): BoundExpression {
@@ -101,7 +106,7 @@ export class Binder {
     const type = boundExpression.type;
     const defaultValue = this.getDefaultValueForType(type);
     this.variables[name] = defaultValue;
-    return { kind: 'AssignmentExpression', type, name, expression: boundExpression };
+    return BoundAssignmentExpression(type, name, boundExpression);
   }
 
   bindUnaryOperatorKind(operator: SyntaxToken): BoundUnaryOperatorKind {
