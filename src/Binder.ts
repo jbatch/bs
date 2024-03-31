@@ -12,7 +12,12 @@ import {
 import { DiagnosticBag } from './Diagnostic';
 
 export class Binder {
+  variables: Record<string, any>;
   diagnostics: DiagnosticBag = new DiagnosticBag();
+
+  constructor(variables: Record<string, any>) {
+    this.variables = variables;
+  }
 
   bindExpression(expression: ExpressionSyntax) {
     switch (expression.kind) {
@@ -24,6 +29,10 @@ export class Binder {
         return this.bindUnaryExpression(expression);
       case 'ParenthesizedExpression':
         return this.bindParenthesizedExpression(expression);
+      case 'NameExpression':
+        return this.bindNameExpression(expression);
+      case 'AssignmentExpression':
+        return this.bindAssignmentExpression(expression);
     }
   }
 
@@ -73,6 +82,28 @@ export class Binder {
     return this.bindExpression(expression.expression);
   }
 
+  bindNameExpression(expression: ExpressionSyntax): BoundExpression {
+    assert(expression.kind === 'NameExpression');
+    const name = expression.identifier.text!;
+    if (this.variables[name] === undefined) {
+      this.diagnostics.reportUndefinedName(expression.identifier.span, name);
+      return { kind: 'LiteralExpression', type: 'number', value: 0 };
+    }
+    const value = this.variables[name];
+    const type = this.getLiteralType(expression.identifier.span, value);
+    return { kind: 'VariableExpression', type, name };
+  }
+
+  bindAssignmentExpression(expression: ExpressionSyntax): BoundExpression {
+    assert(expression.kind === 'AssignmentExpression');
+    const name = expression.identifier.text!;
+    const boundExpression = this.bindExpression(expression.expression);
+    const type = boundExpression.type;
+    const defaultValue = this.getDefaultValueForType(type);
+    this.variables[name] = defaultValue;
+    return { kind: 'AssignmentExpression', type, name, expression: boundExpression };
+  }
+
   bindUnaryOperatorKind(operator: SyntaxToken): BoundUnaryOperatorKind {
     switch (operator.kind) {
       case 'PlusToken':
@@ -117,6 +148,15 @@ export class Binder {
       case 'function':
         this.diagnostics.reportUnexpectedLiteralType(span, typeof value);
         return 'number';
+    }
+  }
+
+  getDefaultValueForType(type: Type) {
+    switch (type) {
+      case 'number':
+        return 0;
+      case 'boolean':
+        return false;
     }
   }
 }

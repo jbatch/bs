@@ -61,4 +61,9 @@ export class DiagnosticBag {
     const message = `Binary operator '${operatorText}' is not defined for types ${leftType} and ${rightType}.`;
     this.report(message, span);
   }
+
+  reportUndefinedName(span: TextSpan, name: string) {
+    const message = `Unknown variable '${name}'`;
+    this.report(message, span);
+  }
 }

@@ -9,8 +9,10 @@ import { EvaluationResult } from './EvaluationResult';
 
 export class Evaluator {
   root: BoundExpression;
-  constructor(root: BoundExpression) {
+  variables: Record<string, any>;
+  constructor(root: BoundExpression, variables: Record<string, any>) {
     this.root = root;
+    this.variables = variables;
   }
 
   evaluate(): EvaluationResult {
@@ -20,6 +22,16 @@ export class Evaluator {
   evaluateExpression(node: BoundExpression): EvaluationResult {
     if (node.kind === 'LiteralExpression') {
       return node.value!;
+    }
+
+    if (node.kind === 'VariableExpression') {
+      return this.variables[node.name];
+    }
+
+    if (node.kind === 'AssignmentExpression') {
+      var value = this.evaluateExpression(node.expression);
+      this.variables[node.name] = value;
+      return value;
     }
 
     if (node.kind === 'UnaryExpression') {

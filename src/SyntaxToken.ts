@@ -14,6 +14,7 @@ export type SyntaxToken =
       | { kind: 'OpenParenthesisToken'; span: TextSpan; text?: '('; value?: undefined }
       | { kind: 'CloseParenthesisToken'; span: TextSpan; text?: ')'; value?: undefined }
       | { kind: 'BangToken'; span: TextSpan; text?: '!'; value?: undefined }
+      | { kind: 'EqualsToken'; span: TextSpan; text?: '='; value?: undefined }
       | { kind: 'AmpersandAmpersandToken'; span: TextSpan; text?: '&&'; value?: undefined }
       | { kind: 'PipePipeToken'; span: TextSpan; text?: '||'; value?: undefined }
       | { kind: 'EqualsEqualsToken'; span: TextSpan; text?: '=='; value?: undefined }
@@ -52,6 +53,9 @@ export function CloseParenthesisToken(span: TextSpan): SyntaxToken {
 }
 export function BangToken(span: TextSpan): SyntaxToken {
   return { kind: 'BangToken', span, text: '!', value: undefined, children: [] };
+}
+export function EqualsToken(span: TextSpan): SyntaxToken {
+  return { kind: 'EqualsToken', span, text: '=', value: undefined, children: [] };
 }
 export function AmpersandAmpersandToken(span: TextSpan): SyntaxToken {
   return { kind: 'AmpersandAmpersandToken', span, text: '&&', value: undefined, children: [] };

@@ -27,4 +27,16 @@ export type ExpressionSyntax =
       expression: ExpressionSyntax;
       close: SyntaxToken;
       children: SyntaxNode[];
+    }
+  | {
+      kind: 'NameExpression';
+      identifier: SyntaxToken;
+      children: SyntaxNode[];
+    }
+  | {
+      kind: 'AssignmentExpression';
+      identifier: SyntaxToken;
+      equals: SyntaxToken;
+      expression: ExpressionSyntax;
+      children: SyntaxNode[];
     };

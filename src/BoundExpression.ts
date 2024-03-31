@@ -33,6 +33,17 @@ export type BoundExpression =
       kind: 'LiteralExpression';
       type: Type;
       value: EvaluationResult;
+    }
+  | {
+      kind: 'VariableExpression';
+      type: Type;
+      name: string;
+    }
+  | {
+      kind: 'AssignmentExpression';
+      type: Type;
+      name: string;
+      expression: BoundExpression;
     };
 
 type BoundBinaryOperator = {

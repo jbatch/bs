@@ -17,6 +17,7 @@ import {
   AmpersandAmpersandToken,
   PipePipeToken,
   EqualsEqualsToken,
+  EqualsToken,
 } from './SyntaxToken';
 
 export class Lexer {
@@ -142,6 +143,8 @@ export class Lexer {
         if (this.lookAhead() === '=') {
           this.position += 2;
           return EqualsEqualsToken(textSpan(this.position - 2, 2));
+        } else {
+          return EqualsToken(textSpan(this.position++, 1));
         }
       }
     }

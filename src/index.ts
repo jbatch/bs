@@ -5,11 +5,12 @@ import { Evaluator } from './Evaluator';
 import { DiagnosticBag } from './Diagnostic';
 
 const rl = readline.createInterface(process.stdin, process.stdout);
+const variables = {};
 
 function onInput(line: string) {
   const parser = new Parser(line);
   var tree = parser.parse();
-  const binder = new Binder();
+  const binder = new Binder(variables);
   const boundRoot = binder.bindExpression(tree.root);
   const diagnostics = new DiagnosticBag();
   diagnostics.addBag(parser.diagnostics);
@@ -36,7 +37,7 @@ function onInput(line: string) {
   }
 
   try {
-    const evaluator = new Evaluator(boundRoot);
+    const evaluator = new Evaluator(boundRoot, variables);
     console.log();
     console.log(evaluator.evaluate());
   } catch (error: any) {

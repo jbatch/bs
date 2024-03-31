@@ -27,10 +27,15 @@ export class Parser {
   }
 
   current(): SyntaxToken {
-    if (this.position >= this.tokens.length) {
+    return this.peek(0);
+  }
+
+  peek(offset: number) {
+    const index = this.position + offset;
+    if (index >= this.tokens.length) {
       return this.tokens[this.tokens.length - 1];
     }
-    return this.tokens[this.position];
+    return this.tokens[index];
   }
 
   nextToken(): SyntaxToken {
@@ -64,12 +69,28 @@ export class Parser {
     return { root: expression };
   }
 
-  parseExpression(parentPrecedence: number = 0): ExpressionSyntax {
+  parseExpression(): ExpressionSyntax {
+    return this.parseAssignmentExpression();
+  }
+
+  parseAssignmentExpression(): ExpressionSyntax {
+    if (this.peek(0).kind === 'IdentifierToken' && this.peek(1).kind === 'EqualsToken') {
+      const identifier = this.nextToken();
+      const equals = this.nextToken();
+      const expression = this.parseAssignmentExpression();
+      const children = [identifier, equals, expression];
+
+      return { kind: 'AssignmentExpression', identifier, equals, expression, children };
+    }
+    return this.parseBinaryExpression();
+  }
+
+  parseBinaryExpression(parentPrecedence: number = 0): ExpressionSyntax {
     let left: ExpressionSyntax;
     var unaryPrecedence = getUnaryOperatorPrecedence(this.current().kind);
     if (unaryPrecedence !== 0 && unaryPrecedence >= parentPrecedence) {
       const operator = this.nextToken();
-      const operand = this.parseExpression(unaryPrecedence);
+      const operand = this.parseBinaryExpression(unaryPrecedence);
       const children = [operator, operand];
       left = { kind: 'UnaryExpression', operator, operand, children };
     } else {
@@ -83,7 +104,7 @@ export class Parser {
       }
 
       const operator = this.nextToken();
-      const right = this.parseExpression(precedence);
+      const right = this.parseBinaryExpression(precedence);
       const children = [left, operator, right];
       left = { kind: 'BinaryExpression', left, operator, right, children };
     }
@@ -107,6 +128,11 @@ export class Parser {
         const literal = this.nextToken();
         return { kind: 'LiteralExpression', literal, children: [] };
       }
+      case 'IdentifierToken': {
+        const identifier = this.nextToken();
+        return { kind: 'NameExpression', identifier, children: [] };
+      }
+
       default: {
         const literal = this.matchToken('NumberToken');
         return { kind: 'LiteralExpression', literal, children: [] };
