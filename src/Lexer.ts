@@ -1,4 +1,5 @@
 import { DiagnosticBag } from './Diagnostic';
+import { SourceText } from './SourceText';
 import { getKeywordOrIdentifier } from './SyntaxHelper';
 import {
   EndOfFileToken,
@@ -22,12 +23,12 @@ import {
 } from './SyntaxToken';
 
 export class Lexer {
-  text: string;
+  source: SourceText;
   position: number = 0;
   diagnostics: DiagnosticBag = new DiagnosticBag();
 
-  constructor(text: string) {
-    this.text = text;
+  constructor(source: SourceText) {
+    this.source = source;
   }
 
   private isDigit(char: string) {
@@ -56,15 +57,15 @@ export class Lexer {
   private peek(offset: number) {
     const index = this.position + offset;
 
-    if (index >= this.text.length) {
+    if (index >= this.source.length) {
       return '\0';
     }
 
-    return this.text[index];
+    return this.source.text[index];
   }
 
   nextToken(): SyntaxToken {
-    if (this.position >= this.text.length) {
+    if (this.position >= this.source.length) {
       const span = textSpan(this.position, 1);
       return EndOfFileToken(span);
     }
@@ -134,7 +135,7 @@ export class Lexer {
     while (this.isLetter(this.current())) {
       this.position++;
     }
-    const text = this.text.substring(start, this.position);
+    const text = this.source.text.substring(start, this.position);
     const token = getKeywordOrIdentifier(text, this.position - text.length);
     return token;
   }
@@ -144,7 +145,7 @@ export class Lexer {
     while (this.isWhitepsace(this.current())) {
       this.position++;
     }
-    const text = this.text.substring(start, this.position);
+    const text = this.source.text.substring(start, this.position);
     const span = textSpan(start, text.length);
     return WhitespaceToken(span, text);
   }
@@ -155,7 +156,7 @@ export class Lexer {
       this.position++;
     }
 
-    var text = this.text.substring(start, this.position);
+    var text = this.source.text.substring(start, this.position);
     const span = textSpan(start, text.length);
     const value = parseInt(text);
     if (isNaN(value)) {

@@ -10,6 +10,7 @@ import {
   UnaryExpression,
 } from './Expression';
 import { Lexer } from './Lexer';
+import { SourceText } from './SourceText';
 import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
 import { SyntaxKind, SyntaxToken, textSpan } from './SyntaxToken';
 
@@ -19,8 +20,10 @@ export class Parser {
   tokens: SyntaxToken[];
   position: number = 0;
   diagnostics: DiagnosticBag = new DiagnosticBag();
+  source: SourceText;
 
-  constructor(text: string) {
+  constructor(text: SourceText) {
+    this.source = text;
     this.tokens = [];
 
     const lexer = new Lexer(text);
