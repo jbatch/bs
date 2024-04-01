@@ -35,6 +35,13 @@ export class Parser {
     this.diagnostics.addBag(lexer.diagnostics);
   }
 
+  parse(): SyntaxTree {
+    const expression = this.parseExpression();
+
+    const eof = this.matchToken('EndOfFileToken');
+    return { root: expression };
+  }
+
   private current(): SyntaxToken {
     return this.peek(0);
   }
@@ -69,13 +76,6 @@ export class Parser {
       value: undefined,
       children: [],
     };
-  }
-
-  parse(): SyntaxTree {
-    const expression = this.parseExpression();
-
-    const eof = this.matchToken('EndOfFileToken');
-    return { root: expression };
   }
 
   private parseExpression(): ExpressionSyntax {
@@ -118,8 +118,6 @@ export class Parser {
 
   private parsePrimaryExpression(): ExpressionSyntax {
     const current = this.current();
-    if (current.kind == 'OpenParenthesisToken') {
-    }
     switch (current.kind) {
       case 'OpenParenthesisToken': {
         const open = this.nextToken();
