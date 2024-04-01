@@ -1,28 +1,26 @@
 import assert from 'node:assert';
-import { TokenSyntax } from '../parsing/TokenSyntax';
 import { TextSpan } from '../text/TextSpan';
 import { ExpressionSyntax } from '../parsing/Expression';
 import {
   BoundAssignmentExpression,
   BoundBinaryExpression,
-  BoundBinaryOperatorKind,
   BoundExpression,
   BoundLiteralExpression,
   BoundUnaryExpression,
-  BoundUnaryOperatorKind,
   BoundVariableExpression,
   Type,
   bindBinaryOperator,
   bindUnaryOperator,
 } from './BoundExpression';
 import { DiagnosticBag } from '../reporting/Diagnostic';
+import { BoundScope } from './BoundScope';
 
 export class Binder {
-  variables: Record<string, any>;
+  scope: BoundScope;
   diagnostics: DiagnosticBag = new DiagnosticBag();
 
-  constructor(variables: Record<string, any>) {
-    this.variables = variables;
+  constructor(parent: BoundScope) {
+    this.scope = new BoundScope(parent);
   }
 
   bindExpression(expression: ExpressionSyntax) {
@@ -91,12 +89,12 @@ export class Binder {
   private bindNameExpression(expression: ExpressionSyntax): BoundExpression {
     assert(expression.kind === 'NameExpression');
     const name = expression.identifier.text!;
-    if (this.variables[name] === undefined) {
+    const variable = this.scope.tryLookup(name);
+    if (variable === undefined) {
       this.diagnostics.reportUndefinedName(expression.identifier.span, name);
       return BoundLiteralExpression('number', 0);
     }
-    const value = this.variables[name];
-    const type = this.getLiteralType(expression.identifier.span, value);
+    const type = variable.type;
     return BoundVariableExpression(type, name);
   }
 
@@ -105,39 +103,11 @@ export class Binder {
     const name = expression.identifier.text!;
     const boundExpression = this.bindExpression(expression.expression);
     const type = boundExpression.type;
-    const defaultValue = this.getDefaultValueForType(type);
-    this.variables[name] = defaultValue;
+    const variable = { name, type };
+    if (!this.scope.tryDeclare(variable)) {
+      this.diagnostics.reportVariableAlreadyDeclared(expression.identifier.span, name);
+    }
     return BoundAssignmentExpression(type, name, boundExpression);
-  }
-
-  private bindUnaryOperatorKind(operator: TokenSyntax): BoundUnaryOperatorKind {
-    switch (operator.kind) {
-      case 'PlusToken':
-        return 'Identity';
-      case 'MinusToken':
-        return 'Negation';
-      case 'BangToken':
-        return 'LogicalNegation';
-    }
-    throw new Error(`Invalid unary operator kind ${operator.kind}`);
-  }
-
-  private bindBinaryOperatorKind(operator: TokenSyntax): BoundBinaryOperatorKind {
-    switch (operator.kind) {
-      case 'PlusToken':
-        return 'Addition';
-      case 'MinusToken':
-        return 'Subtraction';
-      case 'StarToken':
-        return 'Multiplication';
-      case 'SlashToken':
-        return 'Division';
-      case 'AmpersandAmpersandToken':
-        return 'LogicalAnd';
-      case 'PipePipeToken':
-        return 'LogicalOr';
-    }
-    throw new Error(`Invalid binary operator kind ${operator.kind}`);
   }
 
   private getLiteralType(span: TextSpan, value: any): Type {

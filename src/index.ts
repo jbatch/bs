@@ -6,8 +6,10 @@ import { textSpan } from './text/TextSpan';
 import { Evaluator } from './evaluation/Evaluator';
 import { SourceText } from './text/SourceText';
 import { BoundExpression } from './binding/BoundExpression';
+import { BoundScope } from './binding/BoundScope';
 
 const variables = {};
+let globalScope = new BoundScope();
 
 function printDiagnostic(sourceText: SourceText, diagnostic: Diagnostic) {
   const lineIndex = sourceText.getLineIndex(diagnostic.span.start);
@@ -69,9 +71,11 @@ async function main() {
   process.exit(0);
 }
 
-const { diagnostics, expression } = parseCode('1 + 2 == 3');
+const { diagnostics, expression, boundScope } = parseCode('1 + 2 == 3');
 if (!diagnostics.hasDiagnostics()) {
   evaluateBoundExpression(expression);
+  // Only update global scope if no issues occured in parsing.
+  globalScope = boundScope;
 }
 main();
 
@@ -89,8 +93,9 @@ function parseCode(inputText: string) {
   const parser = new Parser(inputText);
   const sourceText = parser.source;
   const compilationUnit = parser.parse();
-  const binder = new Binder(variables);
+  const binder = new Binder(globalScope);
   const expression = binder.bindExpression(compilationUnit.expression);
+  const boundScope = binder.scope;
 
   const diagnostics = new DiagnosticBag();
   diagnostics.addBag(parser.diagnostics);
@@ -104,7 +109,9 @@ function parseCode(inputText: string) {
       printDiagnostic(sourceText, diagnostic);
     }
     Terminal.writeLine();
+  } else {
+    globalScope = binder.scope;
   }
 
-  return { diagnostics, expression };
+  return { diagnostics, expression, boundScope };
 }

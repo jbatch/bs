@@ -67,4 +67,9 @@ export class DiagnosticBag {
     const message = `Unknown variable '${name}'`;
     this.report(message, span);
   }
+
+  reportVariableAlreadyDeclared(span: TextSpan, name: string) {
+    const message = `Variable ${name} is already declared in scope`;
+    this.report(message, span);
+  }
 }
