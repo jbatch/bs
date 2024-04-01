@@ -16,7 +16,7 @@ export class DiagnosticBag {
     this.diagnostics.push(...other.diagnostics);
   }
 
-  report(message: string, span: TextSpan) {
+  private report(message: string, span: TextSpan) {
     const diagnostic = { message, span };
     this.diagnostics.push(diagnostic);
   }
