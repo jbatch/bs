@@ -17,15 +17,15 @@ export class Evaluator {
   private evaluateExpression(node: BoundExpression): EvaluationResult {
     switch (node.kind) {
       case 'UnaryExpression':
-        this.evaluateUnaryExpression(node);
+        return this.evaluateUnaryExpression(node);
       case 'BinaryExpression':
-        this.evaluateBinaryExpression(node);
+        return this.evaluateBinaryExpression(node);
       case 'LiteralExpression':
-        this.evaluateLiteralExpression(node);
+        return this.evaluateLiteralExpression(node);
       case 'VariableExpression':
-        this.evaluateVariableExpression(node);
+        return this.evaluateVariableExpression(node);
       case 'AssignmentExpression':
-        this.evaluateAssignmentExpression(node);
+        return this.evaluateAssignmentExpression(node);
     }
 
     throw new Error(`Unexpected expression type ${node}`);

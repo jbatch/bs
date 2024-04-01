@@ -41,14 +41,14 @@ export class Binder {
     }
   }
 
-  bindLiteralExpression(expression: ExpressionSyntax): BoundExpression {
+  private bindLiteralExpression(expression: ExpressionSyntax): BoundExpression {
     assert(expression.kind === 'LiteralExpression');
     const value = expression.literal.value ?? 0;
     var type = this.getLiteralType(expression.literal.span, value);
     return BoundLiteralExpression(type, value);
   }
 
-  bindBinaryExpression(expression: ExpressionSyntax): BoundExpression {
+  private bindBinaryExpression(expression: ExpressionSyntax): BoundExpression {
     assert(expression.kind === 'BinaryExpression');
     const left = this.bindExpression(expression.left);
     const right = this.bindExpression(expression.right);
@@ -66,7 +66,7 @@ export class Binder {
     return BoundBinaryExpression(type, left, operator, right);
   }
 
-  bindUnaryExpression(expression: ExpressionSyntax): BoundExpression {
+  private bindUnaryExpression(expression: ExpressionSyntax): BoundExpression {
     assert(expression.kind === 'UnaryExpression');
     const operand = this.bindExpression(expression.operand);
     const type = operand.type;
@@ -82,12 +82,12 @@ export class Binder {
     return BoundUnaryExpression(type, operator, operand);
   }
 
-  bindParenthesizedExpression(expression: ExpressionSyntax): BoundExpression {
+  private bindParenthesizedExpression(expression: ExpressionSyntax): BoundExpression {
     assert(expression.kind === 'ParenthesizedExpression');
     return this.bindExpression(expression.expression);
   }
 
-  bindNameExpression(expression: ExpressionSyntax): BoundExpression {
+  private bindNameExpression(expression: ExpressionSyntax): BoundExpression {
     assert(expression.kind === 'NameExpression');
     const name = expression.identifier.text!;
     if (this.variables[name] === undefined) {
@@ -99,7 +99,7 @@ export class Binder {
     return BoundVariableExpression(type, name);
   }
 
-  bindAssignmentExpression(expression: ExpressionSyntax): BoundExpression {
+  private bindAssignmentExpression(expression: ExpressionSyntax): BoundExpression {
     assert(expression.kind === 'AssignmentExpression');
     const name = expression.identifier.text!;
     const boundExpression = this.bindExpression(expression.expression);
@@ -109,7 +109,7 @@ export class Binder {
     return BoundAssignmentExpression(type, name, boundExpression);
   }
 
-  bindUnaryOperatorKind(operator: SyntaxToken): BoundUnaryOperatorKind {
+  private bindUnaryOperatorKind(operator: SyntaxToken): BoundUnaryOperatorKind {
     switch (operator.kind) {
       case 'PlusToken':
         return 'Identity';
@@ -121,7 +121,7 @@ export class Binder {
     throw new Error(`Invalid unary operator kind ${operator.kind}`);
   }
 
-  bindBinaryOperatorKind(operator: SyntaxToken): BoundBinaryOperatorKind {
+  private bindBinaryOperatorKind(operator: SyntaxToken): BoundBinaryOperatorKind {
     switch (operator.kind) {
       case 'PlusToken':
         return 'Addition';
@@ -139,7 +139,7 @@ export class Binder {
     throw new Error(`Invalid binary operator kind ${operator.kind}`);
   }
 
-  getLiteralType(span: TextSpan, value: any): Type {
+  private getLiteralType(span: TextSpan, value: any): Type {
     switch (typeof value) {
       case 'number':
         return 'number';
@@ -156,7 +156,7 @@ export class Binder {
     }
   }
 
-  getDefaultValueForType(type: Type) {
+  private getDefaultValueForType(type: Type) {
     switch (type) {
       case 'number':
         return 0;
@@ -164,8 +164,4 @@ export class Binder {
         return false;
     }
   }
-}
-
-function isNumber(value: string | number): value is number {
-  return typeof value === 'number';
 }

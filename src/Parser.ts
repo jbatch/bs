@@ -142,7 +142,7 @@ export class Parser {
     }
   }
 
-  private prettyPrint(node: SyntaxNode, indent: string = '', isLast: boolean = true) {
+  prettyPrint(node: SyntaxNode, indent: string = '', isLast: boolean = true) {
     const marker = isLast ? '└──' : '├──';
     process.stdout.write(indent);
     process.stdout.write(marker);
