@@ -35,11 +35,11 @@ export class Parser {
     this.diagnostics.addBag(lexer.diagnostics);
   }
 
-  current(): SyntaxToken {
+  private current(): SyntaxToken {
     return this.peek(0);
   }
 
-  peek(offset: number) {
+  private peek(offset: number) {
     const index = this.position + offset;
     if (index >= this.tokens.length) {
       return this.tokens[this.tokens.length - 1];
@@ -47,13 +47,13 @@ export class Parser {
     return this.tokens[index];
   }
 
-  nextToken(): SyntaxToken {
+  private nextToken(): SyntaxToken {
     const token = this.current();
     this.position++;
     return token;
   }
 
-  matchToken(kind: SyntaxKind): SyntaxToken {
+  private matchToken(kind: SyntaxKind): SyntaxToken {
     const current = this.current();
     if (current.kind === kind) {
       this.position++;
@@ -78,11 +78,11 @@ export class Parser {
     return { root: expression };
   }
 
-  parseExpression(): ExpressionSyntax {
+  private parseExpression(): ExpressionSyntax {
     return this.parseAssignmentExpression();
   }
 
-  parseAssignmentExpression(): ExpressionSyntax {
+  private parseAssignmentExpression(): ExpressionSyntax {
     if (this.peek(0).kind === 'IdentifierToken' && this.peek(1).kind === 'EqualsToken') {
       const identifier = this.nextToken();
       const equals = this.nextToken();
@@ -92,7 +92,7 @@ export class Parser {
     return this.parseBinaryExpression();
   }
 
-  parseBinaryExpression(parentPrecedence: number = 0): ExpressionSyntax {
+  private parseBinaryExpression(parentPrecedence: number = 0): ExpressionSyntax {
     let left: ExpressionSyntax;
     var unaryPrecedence = getUnaryOperatorPrecedence(this.current().kind);
     if (unaryPrecedence !== 0 && unaryPrecedence >= parentPrecedence) {
@@ -116,7 +116,7 @@ export class Parser {
     return left;
   }
 
-  parsePrimaryExpression(): ExpressionSyntax {
+  private parsePrimaryExpression(): ExpressionSyntax {
     const current = this.current();
     if (current.kind == 'OpenParenthesisToken') {
     }
@@ -144,7 +144,7 @@ export class Parser {
     }
   }
 
-  prettyPrint(node: SyntaxNode, indent: string = '', isLast: boolean = true) {
+  private prettyPrint(node: SyntaxNode, indent: string = '', isLast: boolean = true) {
     const marker = isLast ? '└──' : '├──';
     process.stdout.write(indent);
     process.stdout.write(marker);
