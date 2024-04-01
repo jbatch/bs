@@ -6,19 +6,19 @@ import {
   LiteralExpression,
   NameExpression,
   ParenthesizedExpression,
-  SyntaxNode,
   UnaryExpression,
 } from './Expression';
 import { Lexer } from './Lexer';
 import { SourceText } from '../text/SourceText';
 import { textSpan } from '../text/TextSpan';
 import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
-import { SyntaxKind, SyntaxToken } from './SyntaxToken';
+import { TokenSyntax, TokenSyntaxKind } from './TokenSyntax';
+import { SyntaxKind, SyntaxNode } from './SyntaxNode';
 
 type SyntaxTree = { root: ExpressionSyntax };
 
 export class Parser {
-  tokens: SyntaxToken[];
+  tokens: TokenSyntax[];
   position: number = 0;
   diagnostics: DiagnosticBag = new DiagnosticBag();
   source: SourceText;
@@ -28,7 +28,7 @@ export class Parser {
     this.tokens = [];
 
     const lexer = new Lexer(this.source);
-    let token: SyntaxToken;
+    let token: TokenSyntax;
     do {
       token = lexer.nextToken();
 
@@ -46,7 +46,7 @@ export class Parser {
     return { root: expression };
   }
 
-  private current(): SyntaxToken {
+  private current(): TokenSyntax {
     return this.peek(0);
   }
 
@@ -58,13 +58,13 @@ export class Parser {
     return this.tokens[index];
   }
 
-  private nextToken(): SyntaxToken {
+  private nextToken(): TokenSyntax {
     const token = this.current();
     this.position++;
     return token;
   }
 
-  private matchToken(kind: SyntaxKind): SyntaxToken {
+  private matchToken(kind: TokenSyntaxKind): TokenSyntax {
     const current = this.current();
     if (current.kind === kind) {
       this.position++;

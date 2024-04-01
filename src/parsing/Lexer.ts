@@ -5,7 +5,7 @@ import {
   EndOfFileToken,
   NumberToken,
   PlusToken,
-  SyntaxToken,
+  TokenSyntax,
   WhitespaceToken,
   MinusToken,
   StarToken,
@@ -19,7 +19,7 @@ import {
   EqualsEqualsToken,
   EqualsToken,
   BadToken,
-} from '../parsing/SyntaxToken';
+} from './TokenSyntax';
 import { textSpan } from '../text/TextSpan';
 
 export class Lexer {
@@ -64,7 +64,7 @@ export class Lexer {
     return this.source.text[index];
   }
 
-  nextToken(): SyntaxToken {
+  nextToken(): TokenSyntax {
     if (this.position >= this.source.length) {
       const span = textSpan(this.position, 1);
       return EndOfFileToken(span);
@@ -150,7 +150,7 @@ export class Lexer {
     return WhitespaceToken(span, text);
   }
 
-  private readNumber(): SyntaxToken {
+  private readNumber(): TokenSyntax {
     const start = this.position;
     while (this.isDigit(this.current())) {
       this.position++;

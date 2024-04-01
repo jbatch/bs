@@ -71,7 +71,7 @@ async function main() {
         printDiagnostic(parser, diagnostic);
       }
       Terminal.writeLine();
-      return;
+      continue;
     }
 
     // Evaluate

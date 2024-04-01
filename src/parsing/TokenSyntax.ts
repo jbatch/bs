@@ -1,6 +1,6 @@
 import { TextSpan } from '../text/TextSpan';
 
-export type SyntaxToken =
+export type TokenSyntax =
   | // Tokens
   (
       | { kind: 'NumberToken'; span: TextSpan; text?: string; value?: number | string }
@@ -23,85 +23,85 @@ export type SyntaxToken =
       | { kind: 'FalseKeyword'; span: TextSpan; text?: 'false'; value?: false }
       | { kind: 'BadToken'; span: TextSpan; text?: string; value?: undefined }
       | { kind: 'EndOfFileToken'; span: TextSpan; text?: '\0'; value?: undefined }
-    ) & { children: SyntaxToken[] };
+    ) & { children: TokenSyntax[] };
+
+export type TokenSyntaxKind = TokenSyntax['kind'];
 
 // Tokens
-export function NumberToken(span: TextSpan, text: string, value: number | string): SyntaxToken {
+export function NumberToken(span: TextSpan, text: string, value: number | string): TokenSyntax {
   return { kind: 'NumberToken', span, text, value, children: [] };
 }
 
-export function WhitespaceToken(span: TextSpan, text: string): SyntaxToken {
+export function WhitespaceToken(span: TextSpan, text: string): TokenSyntax {
   return { kind: 'WhitespaceToken', span, text, value: undefined, children: [] };
 }
 
-export function PlusToken(span: TextSpan): SyntaxToken {
+export function PlusToken(span: TextSpan): TokenSyntax {
   return { kind: 'PlusToken', span, text: '+', value: undefined, children: [] };
 }
 
-export function MinusToken(span: TextSpan): SyntaxToken {
+export function MinusToken(span: TextSpan): TokenSyntax {
   return { kind: 'MinusToken', span, text: '-', value: undefined, children: [] };
 }
 
-export function StarToken(span: TextSpan): SyntaxToken {
+export function StarToken(span: TextSpan): TokenSyntax {
   return { kind: 'StarToken', span, text: '*', value: undefined, children: [] };
 }
 
-export function SlashToken(span: TextSpan): SyntaxToken {
+export function SlashToken(span: TextSpan): TokenSyntax {
   return { kind: 'SlashToken', span, text: '/', value: undefined, children: [] };
 }
 
-export function OpenParenthesisToken(span: TextSpan): SyntaxToken {
+export function OpenParenthesisToken(span: TextSpan): TokenSyntax {
   return { kind: 'OpenParenthesisToken', span, text: '(', value: undefined, children: [] };
 }
 
-export function CloseParenthesisToken(span: TextSpan): SyntaxToken {
+export function CloseParenthesisToken(span: TextSpan): TokenSyntax {
   return { kind: 'CloseParenthesisToken', span, text: ')', value: undefined, children: [] };
 }
 
-export function BangToken(span: TextSpan): SyntaxToken {
+export function BangToken(span: TextSpan): TokenSyntax {
   return { kind: 'BangToken', span, text: '!', value: undefined, children: [] };
 }
 
-export function EqualsToken(span: TextSpan): SyntaxToken {
+export function EqualsToken(span: TextSpan): TokenSyntax {
   return { kind: 'EqualsToken', span, text: '=', value: undefined, children: [] };
 }
 
-export function AmpersandAmpersandToken(span: TextSpan): SyntaxToken {
+export function AmpersandAmpersandToken(span: TextSpan): TokenSyntax {
   return { kind: 'AmpersandAmpersandToken', span, text: '&&', value: undefined, children: [] };
 }
 
-export function PipePipeToken(span: TextSpan): SyntaxToken {
+export function PipePipeToken(span: TextSpan): TokenSyntax {
   return { kind: 'PipePipeToken', span, text: '||', value: undefined, children: [] };
 }
 
-export function EqualsEqualsToken(span: TextSpan): SyntaxToken {
+export function EqualsEqualsToken(span: TextSpan): TokenSyntax {
   return { kind: 'EqualsEqualsToken', span, text: '==', value: undefined, children: [] };
 }
 
-export function BangEqualsToken(span: TextSpan): SyntaxToken {
+export function BangEqualsToken(span: TextSpan): TokenSyntax {
   return { kind: 'BangEqualsToken', span, text: '!=', value: undefined, children: [] };
 }
 
-export function IdentifierToken(span: TextSpan, text: string): SyntaxToken {
+export function IdentifierToken(span: TextSpan, text: string): TokenSyntax {
   return { kind: 'IdentifierToken', span, text, value: undefined, children: [] };
 }
 
 // Keywords
-export function TrueKeyword(span: TextSpan): SyntaxToken {
+export function TrueKeyword(span: TextSpan): TokenSyntax {
   return { kind: 'TrueKeyword', span, text: 'true', value: true, children: [] };
 }
 
-export function FalseKeyword(span: TextSpan): SyntaxToken {
+export function FalseKeyword(span: TextSpan): TokenSyntax {
   return { kind: 'FalseKeyword', span, text: 'false', value: false, children: [] };
 }
 
 // Should not be used
-export function BadToken(span: TextSpan, text: string): SyntaxToken {
+export function BadToken(span: TextSpan, text: string): TokenSyntax {
   return { kind: 'BadToken', span, text, value: undefined, children: [] };
 }
 
-export function EndOfFileToken(span: TextSpan): SyntaxToken {
+export function EndOfFileToken(span: TextSpan): TokenSyntax {
   return { kind: 'EndOfFileToken', span, text: '\0', value: undefined, children: [] };
 }
-
-export type SyntaxKind = SyntaxToken['kind'];

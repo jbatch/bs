@@ -1,5 +1,5 @@
 import { EvaluationResult } from '../evaluation/EvaluationResult';
-import { SyntaxKind } from '../parsing/SyntaxToken';
+import { SyntaxKind } from '../parsing/SyntaxNode';
 
 export type BoundUnaryOperatorKind = 'Identity' | 'Negation' | 'LogicalNegation';
 

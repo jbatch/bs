@@ -1,54 +1,53 @@
-import { SyntaxToken } from '../parsing/SyntaxToken';
-
-export type SyntaxNode = ExpressionSyntax | SyntaxToken;
+import { SyntaxNode } from './SyntaxNode';
+import { TokenSyntax } from './TokenSyntax';
 
 export type ExpressionSyntax =
   | {
       kind: 'LiteralExpression';
-      literal: SyntaxToken;
+      literal: TokenSyntax;
       children: SyntaxNode[];
     }
   | {
       kind: 'BinaryExpression';
       left: ExpressionSyntax;
-      operator: SyntaxToken;
+      operator: TokenSyntax;
       right: ExpressionSyntax;
       children: SyntaxNode[];
     }
   | {
       kind: 'UnaryExpression';
-      operator: SyntaxToken;
+      operator: TokenSyntax;
       operand: ExpressionSyntax;
       children: SyntaxNode[];
     }
   | {
       kind: 'ParenthesizedExpression';
-      open: SyntaxToken;
+      open: TokenSyntax;
       expression: ExpressionSyntax;
-      close: SyntaxToken;
+      close: TokenSyntax;
       children: SyntaxNode[];
     }
   | {
       kind: 'NameExpression';
-      identifier: SyntaxToken;
+      identifier: TokenSyntax;
       children: SyntaxNode[];
     }
   | {
       kind: 'AssignmentExpression';
-      identifier: SyntaxToken;
-      equals: SyntaxToken;
+      identifier: TokenSyntax;
+      equals: TokenSyntax;
       expression: ExpressionSyntax;
       children: SyntaxNode[];
     };
 
-export function LiteralExpression(literal: SyntaxToken): ExpressionSyntax {
+export function LiteralExpression(literal: TokenSyntax): ExpressionSyntax {
   const children = [literal];
   return { kind: 'LiteralExpression', literal, children };
 }
 
 export function BinaryExpression(
   left: ExpressionSyntax,
-  operator: SyntaxToken,
+  operator: TokenSyntax,
   right: ExpressionSyntax
 ): ExpressionSyntax {
   const children = [left, operator, right];
@@ -56,7 +55,7 @@ export function BinaryExpression(
 }
 
 export function UnaryExpression(
-  operator: SyntaxToken,
+  operator: TokenSyntax,
   operand: ExpressionSyntax
 ): ExpressionSyntax {
   const children = [operator, operand];
@@ -64,21 +63,21 @@ export function UnaryExpression(
 }
 
 export function ParenthesizedExpression(
-  open: SyntaxToken,
+  open: TokenSyntax,
   expression: ExpressionSyntax,
-  close: SyntaxToken
+  close: TokenSyntax
 ): ExpressionSyntax {
   const children = [open, expression, close];
   return { kind: 'ParenthesizedExpression', open, expression, close, children };
 }
 
-export function NameExpression(identifier: SyntaxToken): ExpressionSyntax {
+export function NameExpression(identifier: TokenSyntax): ExpressionSyntax {
   return { kind: 'NameExpression', identifier, children: [identifier] };
 }
 
 export function AssignmentExpression(
-  identifier: SyntaxToken,
-  equals: SyntaxToken,
+  identifier: TokenSyntax,
+  equals: TokenSyntax,
   expression: ExpressionSyntax
 ): ExpressionSyntax {
   const children = [identifier, equals, expression];

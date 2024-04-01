@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { SyntaxToken } from '../parsing/SyntaxToken';
+import { TokenSyntax } from '../parsing/TokenSyntax';
 import { TextSpan } from '../text/TextSpan';
 import { ExpressionSyntax } from '../parsing/Expression';
 import {
@@ -110,7 +110,7 @@ export class Binder {
     return BoundAssignmentExpression(type, name, boundExpression);
   }
 
-  private bindUnaryOperatorKind(operator: SyntaxToken): BoundUnaryOperatorKind {
+  private bindUnaryOperatorKind(operator: TokenSyntax): BoundUnaryOperatorKind {
     switch (operator.kind) {
       case 'PlusToken':
         return 'Identity';
@@ -122,7 +122,7 @@ export class Binder {
     throw new Error(`Invalid unary operator kind ${operator.kind}`);
   }
 
-  private bindBinaryOperatorKind(operator: SyntaxToken): BoundBinaryOperatorKind {
+  private bindBinaryOperatorKind(operator: TokenSyntax): BoundBinaryOperatorKind {
     switch (operator.kind) {
       case 'PlusToken':
         return 'Addition';

@@ -1,5 +1,5 @@
 import { Type } from '../binding/BoundExpression';
-import { SyntaxKind } from '../parsing/SyntaxToken';
+import { SyntaxKind } from '../parsing/SyntaxNode';
 import { TextSpan, textSpan } from '../text/TextSpan';
 
 export type Diagnostic = { message: string; span: TextSpan };
