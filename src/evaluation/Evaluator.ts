@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { BoundExpression } from './BoundExpression';
+import { BoundExpression } from '../binding/BoundExpression';
 import { EvaluationResult } from './EvaluationResult';
 
 export class Evaluator {

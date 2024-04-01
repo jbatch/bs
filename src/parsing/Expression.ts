@@ -1,4 +1,4 @@
-import { SyntaxToken } from './SyntaxToken';
+import { SyntaxToken } from '../parsing/SyntaxToken';
 
 export type SyntaxNode = ExpressionSyntax | SyntaxToken;
 

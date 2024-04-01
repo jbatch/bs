@@ -1,11 +1,5 @@
-import {
-  FalseKeyword,
-  IdentifierToken,
-  SyntaxKind,
-  SyntaxToken,
-  TrueKeyword,
-  textSpan,
-} from './SyntaxToken';
+import { FalseKeyword, IdentifierToken, SyntaxKind, SyntaxToken, TrueKeyword } from './SyntaxToken';
+import { textSpan } from '../text/TextSpan';
 
 export function getBinaryOperatorPrecedence(kind: SyntaxKind) {
   switch (kind) {

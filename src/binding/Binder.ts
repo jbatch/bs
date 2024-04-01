@@ -1,6 +1,7 @@
 import assert from 'node:assert';
-import { SyntaxToken, TextSpan } from './SyntaxToken';
-import { ExpressionSyntax } from './Expression';
+import { SyntaxToken } from '../parsing/SyntaxToken';
+import { TextSpan } from '../text/TextSpan';
+import { ExpressionSyntax } from '../parsing/Expression';
 import {
   BoundAssignmentExpression,
   BoundBinaryExpression,
@@ -14,7 +15,7 @@ import {
   bindBinaryOperator,
   bindUnaryOperator,
 } from './BoundExpression';
-import { DiagnosticBag } from './Diagnostic';
+import { DiagnosticBag } from '../reporting/Diagnostic';
 
 export class Binder {
   variables: Record<string, any>;

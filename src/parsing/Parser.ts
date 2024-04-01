@@ -1,4 +1,4 @@
-import { DiagnosticBag } from './Diagnostic';
+import { DiagnosticBag } from '../reporting/Diagnostic';
 import {
   AssignmentExpression,
   BinaryExpression,
@@ -10,9 +10,10 @@ import {
   UnaryExpression,
 } from './Expression';
 import { Lexer } from './Lexer';
-import { SourceText } from './SourceText';
+import { SourceText } from '../text/SourceText';
+import { textSpan } from '../text/TextSpan';
 import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
-import { SyntaxKind, SyntaxToken, textSpan } from './SyntaxToken';
+import { SyntaxKind, SyntaxToken } from './SyntaxToken';
 
 type SyntaxTree = { root: ExpressionSyntax };
 
@@ -22,11 +23,11 @@ export class Parser {
   diagnostics: DiagnosticBag = new DiagnosticBag();
   source: SourceText;
 
-  constructor(text: SourceText) {
-    this.source = text;
+  constructor(text: string) {
+    this.source = new SourceText(text);
     this.tokens = [];
 
-    const lexer = new Lexer(text);
+    const lexer = new Lexer(this.source);
     let token: SyntaxToken;
     do {
       token = lexer.nextToken();

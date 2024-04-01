@@ -1,22 +1,5 @@
-import { TextSpan, textSpan } from './SyntaxToken';
-
-export class TextLine {
-  start: number;
-  end: number;
-  length: number;
-  lengthIncludingLineBreak: number;
-  span: TextSpan;
-  spanIncludingLineBreak: TextSpan;
-
-  constructor(start: number, length: number, lineBreakLength: number) {
-    this.start = start;
-    this.end = start + length;
-    this.length = length;
-    this.lengthIncludingLineBreak = length + lineBreakLength;
-    this.span = textSpan(start, length);
-    this.spanIncludingLineBreak = textSpan(start, this.lengthIncludingLineBreak);
-  }
-}
+import { TextSpan } from './TextSpan';
+import { TextLine } from './TextLine';
 
 export class SourceText {
   text: string;
@@ -50,6 +33,10 @@ export class SourceText {
     }
 
     return lower - 1;
+  }
+
+  public getText(span: TextSpan) {
+    return this.text.substring(span.start, span.end);
   }
 
   private parseLines(): TextLine[] {

@@ -1,5 +1,5 @@
-import { DiagnosticBag } from './Diagnostic';
-import { SourceText } from './SourceText';
+import { DiagnosticBag } from '../reporting/Diagnostic';
+import { SourceText } from '../text/SourceText';
 import { getKeywordOrIdentifier } from './SyntaxHelper';
 import {
   EndOfFileToken,
@@ -7,7 +7,6 @@ import {
   PlusToken,
   SyntaxToken,
   WhitespaceToken,
-  textSpan,
   MinusToken,
   StarToken,
   SlashToken,
@@ -20,7 +19,8 @@ import {
   EqualsEqualsToken,
   EqualsToken,
   BadToken,
-} from './SyntaxToken';
+} from '../parsing/SyntaxToken';
+import { textSpan } from '../text/TextSpan';
 
 export class Lexer {
   source: SourceText;

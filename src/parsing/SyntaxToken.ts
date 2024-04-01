@@ -1,11 +1,8 @@
-export type TextSpan = { start: number; end: number; length: number };
-
-export function textSpan(start: number, length: number): TextSpan {
-  return { start, end: start + length, length };
-}
+import { TextSpan } from '../text/TextSpan';
 
 export type SyntaxToken =
-  | (
+  | // Tokens
+  (
       | { kind: 'NumberToken'; span: TextSpan; text?: string; value?: number | string }
       | { kind: 'WhitespaceToken'; span: TextSpan; text?: string; value?: undefined }
       | { kind: 'PlusToken'; span: TextSpan; text?: '+'; value?: undefined }
@@ -21,6 +18,7 @@ export type SyntaxToken =
       | { kind: 'EqualsEqualsToken'; span: TextSpan; text?: '=='; value?: undefined }
       | { kind: 'BangEqualsToken'; span: TextSpan; text?: '!='; value?: undefined }
       | { kind: 'IdentifierToken'; span: TextSpan; text?: string; value?: undefined }
+      // Keywords
       | { kind: 'TrueKeyword'; span: TextSpan; text?: 'true'; value?: true }
       | { kind: 'FalseKeyword'; span: TextSpan; text?: 'false'; value?: false }
       | { kind: 'BadToken'; span: TextSpan; text?: string; value?: undefined }
