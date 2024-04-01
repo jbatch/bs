@@ -13,9 +13,7 @@ import { SourceText } from '../text/SourceText';
 import { textSpan } from '../text/TextSpan';
 import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
 import { TokenSyntax, TokenSyntaxKind } from './TokenSyntax';
-import { SyntaxKind, SyntaxNode } from './SyntaxNode';
-
-type SyntaxTree = { root: ExpressionSyntax };
+import { CompilationUnit, SyntaxNode } from './SyntaxNode';
 
 export class Parser {
   tokens: TokenSyntax[];
@@ -39,11 +37,11 @@ export class Parser {
     this.diagnostics.addBag(lexer.diagnostics);
   }
 
-  parse(): SyntaxTree {
+  parse(): CompilationUnit {
     const expression = this.parseExpression();
-
     const eof = this.matchToken('EndOfFileToken');
-    return { root: expression };
+    const children = [expression, eof];
+    return { kind: 'CompilationUnit', expression, eof, children };
   }
 
   private current(): TokenSyntax {

@@ -4,15 +4,16 @@ import Terminal from './repl/Terminal';
 import { Parser } from './parsing/Parser';
 import { textSpan } from './text/TextSpan';
 import { Evaluator } from './evaluation/Evaluator';
+import { SourceText } from './text/SourceText';
+import { BoundExpression } from './binding/BoundExpression';
 
 const variables = {};
 
-function printDiagnostic(parser: Parser, diagnostic: Diagnostic) {
-  const sourceText = parser.source;
-  const lineIndex = parser.source.getLineIndex(diagnostic.span.start);
+function printDiagnostic(sourceText: SourceText, diagnostic: Diagnostic) {
+  const lineIndex = sourceText.getLineIndex(diagnostic.span.start);
   const lineNumber = lineIndex + 1;
   const errorLine = sourceText.lines[lineNumber - 1];
-  const character = diagnostic.span.start - parser.source.lines[lineIndex].start + 1;
+  const character = diagnostic.span.start - sourceText.lines[lineIndex].start + 1;
   Terminal.writeLine(`[${lineNumber}:${character}] ${diagnostic.message}`);
 
   const prefixSpan = textSpan(0, diagnostic.span.start);
@@ -52,38 +53,58 @@ async function main() {
       continue;
     }
 
-    const parser = new Parser(lines.join('\n'));
+    const inputText = lines.join('\n');
     // Reset collected lines
     lines = [];
 
-    const tree = parser.parse();
-    const binder = new Binder(variables);
-    const boundRoot = binder.bindExpression(tree.root);
-    const diagnostics = new DiagnosticBag();
-    diagnostics.addBag(parser.diagnostics);
-    diagnostics.addBag(binder.diagnostics);
+    const { diagnostics, expression } = parseCode(inputText);
 
-    parser.prettyPrint(tree.root);
-
-    // Print errors
     if (diagnostics.hasDiagnostics()) {
-      for (let diagnostic of diagnostics.diagnostics) {
-        printDiagnostic(parser, diagnostic);
-      }
-      Terminal.writeLine();
       continue;
     }
 
     // Evaluate
-    try {
-      const evaluator = new Evaluator(boundRoot, variables);
-      Terminal.writeLine();
-      Terminal.writeLine(evaluator.evaluate());
-    } catch (error: any) {
-      console.error(error.message);
-    }
+    evaluateBoundExpression(expression);
   }
   process.exit(0);
 }
 
+const { diagnostics, expression } = parseCode('1 + 2 == 3');
+if (!diagnostics.hasDiagnostics()) {
+  evaluateBoundExpression(expression);
+}
 main();
+
+function evaluateBoundExpression(boundRoot: BoundExpression) {
+  try {
+    const evaluator = new Evaluator(boundRoot, variables);
+    Terminal.writeLine();
+    Terminal.writeLine(evaluator.evaluate());
+  } catch (error: any) {
+    console.error(error.message);
+  }
+}
+
+function parseCode(inputText: string) {
+  const parser = new Parser(inputText);
+  const sourceText = parser.source;
+  const compilationUnit = parser.parse();
+  const binder = new Binder(variables);
+  const expression = binder.bindExpression(compilationUnit.expression);
+
+  const diagnostics = new DiagnosticBag();
+  diagnostics.addBag(parser.diagnostics);
+  diagnostics.addBag(binder.diagnostics);
+
+  parser.prettyPrint(compilationUnit.expression);
+
+  // Print errors
+  if (diagnostics.hasDiagnostics()) {
+    for (let diagnostic of diagnostics.diagnostics) {
+      printDiagnostic(sourceText, diagnostic);
+    }
+    Terminal.writeLine();
+  }
+
+  return { diagnostics, expression };
+}
