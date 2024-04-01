@@ -38,7 +38,7 @@ export function getUnaryOperatorPrecedence(kind: SyntaxKind) {
   }
 }
 
-export function getKeyword(text: string, position: number): SyntaxToken {
+export function getKeywordOrIdentifier(text: string, position: number): SyntaxToken {
   const span = textSpan(position, text.length);
   switch (text) {
     case 'true':

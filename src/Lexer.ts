@@ -1,5 +1,5 @@
 import { DiagnosticBag } from './Diagnostic';
-import { getKeyword } from './SyntaxHelper';
+import { getKeywordOrIdentifier } from './SyntaxHelper';
 import {
   EndOfFileToken,
   NumberToken,
@@ -18,6 +18,7 @@ import {
   PipePipeToken,
   EqualsEqualsToken,
   EqualsToken,
+  BadToken,
 } from './SyntaxToken';
 
 export class Lexer {
@@ -29,30 +30,30 @@ export class Lexer {
     this.text = text;
   }
 
-  isDigit(char: string) {
+  private isDigit(char: string) {
     return !isNaN(parseInt(char, 10));
   }
 
-  isWhitepsace(char: string) {
+  private isWhitepsace(char: string) {
     return /\s/.test(char);
   }
 
-  isLetter(char: string) {
+  private isLetter(char: string) {
     if (char === undefined) {
       return false;
     }
     return /[a-zA-Z]/.test(char);
   }
 
-  current() {
+  private current() {
     return this.peek(0);
   }
 
-  lookAhead() {
+  private lookAhead() {
     return this.peek(1);
   }
 
-  peek(offset: number) {
+  private peek(offset: number) {
     const index = this.position + offset;
 
     if (index >= this.text.length) {
@@ -70,42 +71,16 @@ export class Lexer {
 
     let current = this.current();
 
-    if (this.isDigit(current)) {
-      const start = this.position;
-      while (this.isDigit(current)) {
-        current = this.text[++this.position];
-      }
-
-      var text = this.text.substring(start, this.position);
-      const value = parseInt(text);
-      if (isNaN(value)) {
-        const span = textSpan(start, text.length);
-        this.diagnostics.reportInvalidNumber(span, text);
-      }
-
-      const span = textSpan(start, text.length);
-      return NumberToken(span, text, value);
+    if (this.isDigit(this.current())) {
+      return this.readNumber();
     }
 
-    if (this.isWhitepsace(current)) {
-      const start = this.position;
-      while (this.isWhitepsace(current)) {
-        current = this.text[++this.position];
-      }
-      const text = this.text.substring(start, this.position);
-      const span = textSpan(start, text.length);
-      return WhitespaceToken(span, text);
+    if (this.isWhitepsace(this.current())) {
+      return this.readWhitespace();
     }
 
-    if (this.isLetter(current)) {
-      var start = this.position;
-
-      while (this.isLetter(current)) {
-        current = this.text[++this.position];
-      }
-      const text = this.text.substring(start, this.position);
-      const token = getKeyword(text, this.position - text.length);
-      return token;
+    if (this.isLetter(this.current())) {
+      return this.readKeywordOrIdentifier();
     }
 
     switch (current) {
@@ -150,6 +125,43 @@ export class Lexer {
     }
 
     this.diagnostics.reportBadCharacter(this.position, current);
-    return { kind: 'BadToken', span: textSpan(this.position, 1), text: current, children: [] };
+    return BadToken(textSpan(this.position, 1), current);
+  }
+
+  private readKeywordOrIdentifier() {
+    var start = this.position;
+
+    while (this.isLetter(this.current())) {
+      this.position++;
+    }
+    const text = this.text.substring(start, this.position);
+    const token = getKeywordOrIdentifier(text, this.position - text.length);
+    return token;
+  }
+
+  private readWhitespace() {
+    const start = this.position;
+    while (this.isWhitepsace(this.current())) {
+      this.position++;
+    }
+    const text = this.text.substring(start, this.position);
+    const span = textSpan(start, text.length);
+    return WhitespaceToken(span, text);
+  }
+
+  private readNumber(): SyntaxToken {
+    const start = this.position;
+    while (this.isDigit(this.current())) {
+      this.position++;
+    }
+
+    var text = this.text.substring(start, this.position);
+    const span = textSpan(start, text.length);
+    const value = parseInt(text);
+    if (isNaN(value)) {
+      this.diagnostics.reportInvalidNumber(span, text);
+    }
+
+    return NumberToken(span, text, value);
   }
 }
