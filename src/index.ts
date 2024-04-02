@@ -5,7 +5,7 @@ import { Parser } from './parsing/Parser';
 import { textSpan } from './text/TextSpan';
 import { Evaluator } from './evaluation/Evaluator';
 import { SourceText } from './text/SourceText';
-import { BoundExpression } from './binding/BoundExpression';
+import { BoundExpression, BoundStatement } from './binding/BoundExpression';
 import { BoundScope } from './binding/BoundScope';
 
 const variables = {};
@@ -59,27 +59,27 @@ async function main() {
     // Reset collected lines
     lines = [];
 
-    const { diagnostics, expression } = parseCode(inputText);
+    const { diagnostics, statement } = parseCode(inputText);
 
     if (diagnostics.hasDiagnostics()) {
       continue;
     }
 
     // Evaluate
-    evaluateBoundExpression(expression);
+    evaluateBoundStatement(statement);
   }
   process.exit(0);
 }
 
-const { diagnostics, expression, boundScope } = parseCode('1 + 2 == 3');
+const { diagnostics, statement, boundScope } = parseCode('1 + 2 == 3');
 if (!diagnostics.hasDiagnostics()) {
-  evaluateBoundExpression(expression);
+  evaluateBoundStatement(statement);
   // Only update global scope if no issues occured in parsing.
   globalScope = boundScope;
 }
 main();
 
-function evaluateBoundExpression(boundRoot: BoundExpression) {
+function evaluateBoundStatement(boundRoot: BoundStatement) {
   try {
     const evaluator = new Evaluator(boundRoot, variables);
     Terminal.writeLine();
@@ -94,14 +94,14 @@ function parseCode(inputText: string) {
   const sourceText = parser.source;
   const compilationUnit = parser.parse();
   const binder = new Binder(globalScope);
-  const expression = binder.bindExpression(compilationUnit.expression);
+  const statement = binder.bindStatement(compilationUnit.statement);
   const boundScope = binder.scope;
 
   const diagnostics = new DiagnosticBag();
   diagnostics.addBag(parser.diagnostics);
   diagnostics.addBag(binder.diagnostics);
 
-  parser.prettyPrint(compilationUnit.expression);
+  parser.prettyPrint(compilationUnit.statement);
 
   // Print errors
   if (diagnostics.hasDiagnostics()) {
@@ -113,5 +113,5 @@ function parseCode(inputText: string) {
     globalScope = binder.scope;
   }
 
-  return { diagnostics, expression, boundScope };
+  return { diagnostics, statement, boundScope };
 }

@@ -1,11 +1,14 @@
 import assert from 'node:assert';
 import { TextSpan } from '../text/TextSpan';
-import { ExpressionSyntax } from '../parsing/Expression';
+import { ExpressionSyntax } from '../parsing/ExpressionSyntax';
 import {
   BoundAssignmentExpression,
   BoundBinaryExpression,
+  BoundBlockStatement,
   BoundExpression,
+  BoundExpressionStatement,
   BoundLiteralExpression,
+  BoundStatement,
   BoundUnaryExpression,
   BoundVariableExpression,
   Type,
@@ -14,6 +17,7 @@ import {
 } from './BoundExpression';
 import { DiagnosticBag } from '../reporting/Diagnostic';
 import { BoundScope } from './BoundScope';
+import { StatementSyntax } from '../parsing/StatementSyntax';
 
 export class Binder {
   scope: BoundScope;
@@ -23,7 +27,26 @@ export class Binder {
     this.scope = new BoundScope(parent);
   }
 
-  bindExpression(expression: ExpressionSyntax) {
+  public bindStatement(statement: StatementSyntax): BoundStatement {
+    switch (statement.kind) {
+      case 'ExpressionStatement':
+        return this.bindExpressionStatement(statement.expression);
+      case 'BlockStatement':
+        return this.bindBlockStatement(statement.statements);
+    }
+  }
+
+  private bindExpressionStatement(expression: ExpressionSyntax) {
+    const boundExpression = this.bindExpression(expression);
+    return BoundExpressionStatement(boundExpression);
+  }
+
+  private bindBlockStatement(statements: StatementSyntax[]) {
+    const boundStatements = statements.map(this.bindStatement.bind(this));
+    return BoundBlockStatement(boundStatements);
+  }
+
+  private bindExpression(expression: ExpressionSyntax) {
     switch (expression.kind) {
       case 'LiteralExpression':
         return this.bindLiteralExpression(expression);

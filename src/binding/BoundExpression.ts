@@ -15,6 +15,34 @@ export type BoundBinaryOperatorKind =
 
 export type Type = 'number' | 'boolean';
 
+// Statements
+
+export type BoundStatement =
+  | {
+      kind: 'ExpressionStatement';
+      expression: BoundExpression;
+    }
+  | {
+      kind: 'BlockStatement';
+      statements: BoundStatement[];
+    };
+
+export function BoundExpressionStatement(expression: BoundExpression): BoundStatement {
+  return {
+    kind: 'ExpressionStatement',
+    expression,
+  };
+}
+
+export function BoundBlockStatement(statements: BoundStatement[]): BoundStatement {
+  return {
+    kind: 'BlockStatement',
+    statements,
+  };
+}
+
+// Expressions
+
 export type BoundExpression =
   | {
       kind: 'UnaryExpression';

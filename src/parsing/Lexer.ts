@@ -19,6 +19,8 @@ import {
   EqualsEqualsToken,
   EqualsToken,
   BadToken,
+  OpenBraceToken,
+  CloseBraceToken,
 } from './TokenSyntax';
 import { textSpan } from '../text/TextSpan';
 
@@ -97,6 +99,10 @@ export class Lexer {
         return OpenParenthesisToken(textSpan(this.position++, 1));
       case ')':
         return CloseParenthesisToken(textSpan(this.position++, 1));
+      case '{':
+        return OpenBraceToken(textSpan(this.position++, 1));
+      case '}':
+        return CloseBraceToken(textSpan(this.position++, 1));
       case '!':
         if (this.lookAhead() === '=') {
           this.position += 2;

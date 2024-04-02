@@ -11,6 +11,8 @@ export type TokenSyntax =
       | { kind: 'SlashToken'; span: TextSpan; text?: '/'; value?: undefined }
       | { kind: 'OpenParenthesisToken'; span: TextSpan; text?: '('; value?: undefined }
       | { kind: 'CloseParenthesisToken'; span: TextSpan; text?: ')'; value?: undefined }
+      | { kind: 'OpenBraceToken'; span: TextSpan; text?: '{'; value?: undefined }
+      | { kind: 'CloseBraceToken'; span: TextSpan; text?: '}'; value?: undefined }
       | { kind: 'BangToken'; span: TextSpan; text?: '!'; value?: undefined }
       | { kind: 'EqualsToken'; span: TextSpan; text?: '='; value?: undefined }
       | { kind: 'AmpersandAmpersandToken'; span: TextSpan; text?: '&&'; value?: undefined }
@@ -58,6 +60,14 @@ export function OpenParenthesisToken(span: TextSpan): TokenSyntax {
 
 export function CloseParenthesisToken(span: TextSpan): TokenSyntax {
   return { kind: 'CloseParenthesisToken', span, text: ')', value: undefined, children: [] };
+}
+
+export function OpenBraceToken(span: TextSpan): TokenSyntax {
+  return { kind: 'OpenBraceToken', span, text: '{', value: undefined, children: [] };
+}
+
+export function CloseBraceToken(span: TextSpan): TokenSyntax {
+  return { kind: 'CloseBraceToken', span, text: '}', value: undefined, children: [] };
 }
 
 export function BangToken(span: TextSpan): TokenSyntax {

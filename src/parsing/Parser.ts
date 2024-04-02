@@ -7,13 +7,14 @@ import {
   NameExpression,
   ParenthesizedExpression,
   UnaryExpression,
-} from './Expression';
+} from './ExpressionSyntax';
 import { Lexer } from './Lexer';
 import { SourceText } from '../text/SourceText';
 import { textSpan } from '../text/TextSpan';
 import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
 import { TokenSyntax, TokenSyntaxKind } from './TokenSyntax';
 import { CompilationUnit, SyntaxNode } from './SyntaxNode';
+import { BlockStatement, ExpressionStatement, StatementSyntax } from './StatementSyntax';
 
 export class Parser {
   tokens: TokenSyntax[];
@@ -38,10 +39,10 @@ export class Parser {
   }
 
   parse(): CompilationUnit {
-    const expression = this.parseExpression();
+    const statement = this.parseStatement();
     const eof = this.matchToken('EndOfFileToken');
-    const children = [expression, eof];
-    return { kind: 'CompilationUnit', expression, eof, children };
+    const children = [statement, eof];
+    return { kind: 'CompilationUnit', statement, eof, children };
   }
 
   private current(): TokenSyntax {
@@ -78,6 +79,32 @@ export class Parser {
       value: undefined,
       children: [],
     };
+  }
+
+  private parseStatement(): StatementSyntax {
+    if (this.current().kind === 'OpenBraceToken') {
+      return this.parseBlockStatement();
+    }
+    return this.parseExpressionStatement();
+  }
+
+  private parseBlockStatement(): StatementSyntax {
+    const statements = [];
+
+    const open = this.matchToken('OpenBraceToken');
+
+    while (this.current().kind !== 'EndOfFileToken' && this.current().kind !== 'CloseBraceToken') {
+      const statement = this.parseStatement();
+      statements.push(statement);
+    }
+
+    const close = this.matchToken('CloseBraceToken');
+    return BlockStatement(open, statements, close);
+  }
+
+  private parseExpressionStatement(): StatementSyntax {
+    const expression = this.parseExpression();
+    return ExpressionStatement(expression);
   }
 
   private parseExpression(): ExpressionSyntax {
