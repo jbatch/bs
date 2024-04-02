@@ -1,23 +1,26 @@
 import assert from 'node:assert';
-import { TextSpan } from '../text/TextSpan';
 import { ExpressionSyntax } from '../parsing/ExpressionSyntax';
+import { StatementSyntax } from '../parsing/StatementSyntax';
+import { DiagnosticBag } from '../reporting/Diagnostic';
+import { TextSpan } from '../text/TextSpan';
 import {
   BoundAssignmentExpression,
   BoundBinaryExpression,
-  BoundBlockStatement,
   BoundExpression,
-  BoundExpressionStatement,
   BoundLiteralExpression,
-  BoundStatement,
   BoundUnaryExpression,
   BoundVariableExpression,
   Type,
   bindBinaryOperator,
   bindUnaryOperator,
 } from './BoundExpression';
-import { DiagnosticBag } from '../reporting/Diagnostic';
 import { BoundScope } from './BoundScope';
-import { StatementSyntax } from '../parsing/StatementSyntax';
+import {
+  BoundBlockStatement,
+  BoundExpressionStatement,
+  BoundStatement,
+  BoundVariableDelcarationStatement,
+} from './BoundStatement';
 
 export class Binder {
   scope: BoundScope;
@@ -33,17 +36,37 @@ export class Binder {
         return this.bindExpressionStatement(statement.expression);
       case 'BlockStatement':
         return this.bindBlockStatement(statement.statements);
+      case 'VariableDeclarationStatement':
+        return this.bindVariableDeclarationStatement(statement);
     }
   }
 
-  private bindExpressionStatement(expression: ExpressionSyntax) {
+  private bindExpressionStatement(expression: ExpressionSyntax): BoundStatement {
     const boundExpression = this.bindExpression(expression);
     return BoundExpressionStatement(boundExpression);
   }
 
-  private bindBlockStatement(statements: StatementSyntax[]) {
+  private bindBlockStatement(statements: StatementSyntax[]): BoundStatement {
+    // Wrap execution scope in a new temporary scope for the duration of the block
+    this.scope = new BoundScope(this.scope);
     const boundStatements = statements.map(this.bindStatement.bind(this));
+    this.scope = this.scope.parent!;
     return BoundBlockStatement(boundStatements);
+  }
+
+  private bindVariableDeclarationStatement(declaration: StatementSyntax): BoundStatement {
+    assert(declaration.kind === 'VariableDeclarationStatement');
+    const expression = this.bindExpression(declaration.expression);
+    const name = declaration.identifier.text!;
+    const readonly = declaration.keyword.kind === 'ConstKeyword';
+    const type = expression.type;
+    const variable = { name, type, readonly };
+
+    if (!this.scope.tryDeclare(variable)) {
+      this.diagnostics.reportVariableAlreadyDeclared(declaration.equals.span, name);
+    }
+
+    return BoundVariableDelcarationStatement(variable, expression);
   }
 
   private bindExpression(expression: ExpressionSyntax) {
@@ -126,9 +149,24 @@ export class Binder {
     const name = expression.identifier.text!;
     const boundExpression = this.bindExpression(expression.expression);
     const type = boundExpression.type;
-    const variable = { name, type };
-    if (!this.scope.tryDeclare(variable)) {
-      this.diagnostics.reportVariableAlreadyDeclared(expression.identifier.span, name);
+    const variable = this.scope.tryLookup(name);
+    if (!variable) {
+      this.diagnostics.reportUndefinedVariable(expression.identifier.span, name);
+      return boundExpression;
+    }
+
+    if (variable.readonly) {
+      this.diagnostics.reportCannotAssignToReadonlyVariable(expression.equals.span, name);
+      return boundExpression;
+    }
+
+    if (type !== variable.type) {
+      this.diagnostics.reportCannotAssignIncompatibleTypes(
+        expression.equals.span,
+        variable.type,
+        type
+      );
+      return boundExpression;
     }
     return BoundAssignmentExpression(type, name, boundExpression);
   }

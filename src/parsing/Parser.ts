@@ -14,7 +14,13 @@ import { textSpan } from '../text/TextSpan';
 import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
 import { TokenSyntax, TokenSyntaxKind } from './TokenSyntax';
 import { CompilationUnit, SyntaxNode } from './SyntaxNode';
-import { BlockStatement, ExpressionStatement, StatementSyntax } from './StatementSyntax';
+import {
+  BlockStatement,
+  ExpressionStatement,
+  StatementSyntax,
+  VariableDeclarationStatement,
+} from './StatementSyntax';
+import assert from 'node:assert';
 
 export class Parser {
   tokens: TokenSyntax[];
@@ -82,10 +88,15 @@ export class Parser {
   }
 
   private parseStatement(): StatementSyntax {
-    if (this.current().kind === 'OpenBraceToken') {
-      return this.parseBlockStatement();
+    switch (this.current().kind) {
+      case 'OpenBraceToken':
+        return this.parseBlockStatement();
+      case 'VarKeyword':
+      case 'ConstKeyword':
+        return this.parseVariableDeclaration();
+      default:
+        return this.parseExpressionStatement();
     }
-    return this.parseExpressionStatement();
   }
 
   private parseBlockStatement(): StatementSyntax {
@@ -100,6 +111,15 @@ export class Parser {
 
     const close = this.matchToken('CloseBraceToken');
     return BlockStatement(open, statements, close);
+  }
+
+  private parseVariableDeclaration(): StatementSyntax {
+    assert(this.current().kind === 'VarKeyword' || this.current().kind === 'ConstKeyword');
+    const keyword = this.matchToken(this.current().kind);
+    const identifier = this.matchToken('IdentifierToken');
+    const equals = this.matchToken('EqualsToken');
+    const expression = this.parseExpression();
+    return VariableDeclarationStatement(keyword, identifier, equals, expression);
   }
 
   private parseExpressionStatement(): StatementSyntax {

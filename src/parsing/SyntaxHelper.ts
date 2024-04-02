@@ -1,4 +1,11 @@
-import { FalseKeyword, IdentifierToken, TokenSyntax, TrueKeyword } from './TokenSyntax';
+import {
+  ConstKeyword,
+  FalseKeyword,
+  IdentifierToken,
+  TokenSyntax,
+  TrueKeyword,
+  VarKeyword,
+} from './TokenSyntax';
 import { textSpan } from '../text/TextSpan';
 import { SyntaxKind } from './SyntaxNode';
 
@@ -40,6 +47,10 @@ export function getKeywordOrIdentifier(text: string, position: number): TokenSyn
       return TrueKeyword(span);
     case 'false':
       return FalseKeyword(span);
+    case 'const':
+      return ConstKeyword(span);
+    case 'var':
+      return VarKeyword(span);
     default:
       return IdentifierToken(span, text);
   }

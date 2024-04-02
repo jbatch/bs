@@ -23,6 +23,8 @@ export type TokenSyntax =
       // Keywords
       | { kind: 'TrueKeyword'; span: TextSpan; text?: 'true'; value?: true }
       | { kind: 'FalseKeyword'; span: TextSpan; text?: 'false'; value?: false }
+      | { kind: 'ConstKeyword'; span: TextSpan; text?: 'const'; value?: undefined }
+      | { kind: 'VarKeyword'; span: TextSpan; text?: 'var'; value?: undefined }
       | { kind: 'BadToken'; span: TextSpan; text?: string; value?: undefined }
       | { kind: 'EndOfFileToken'; span: TextSpan; text?: '\0'; value?: undefined }
     ) & { children: TokenSyntax[] };
@@ -105,6 +107,14 @@ export function TrueKeyword(span: TextSpan): TokenSyntax {
 
 export function FalseKeyword(span: TextSpan): TokenSyntax {
   return { kind: 'FalseKeyword', span, text: 'false', value: false, children: [] };
+}
+
+export function ConstKeyword(span: TextSpan): TokenSyntax {
+  return { kind: 'ConstKeyword', span, text: 'const', children: [] };
+}
+
+export function VarKeyword(span: TextSpan): TokenSyntax {
+  return { kind: 'VarKeyword', span, text: 'var', children: [] };
 }
 
 // Should not be used

@@ -5,8 +5,8 @@ import { Parser } from './parsing/Parser';
 import { textSpan } from './text/TextSpan';
 import { Evaluator } from './evaluation/Evaluator';
 import { SourceText } from './text/SourceText';
-import { BoundExpression, BoundStatement } from './binding/BoundExpression';
 import { BoundScope } from './binding/BoundScope';
+import { BoundStatement } from './binding/BoundStatement';
 
 const variables = {};
 let globalScope = new BoundScope();

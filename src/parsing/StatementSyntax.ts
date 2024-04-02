@@ -14,6 +14,14 @@ export type StatementSyntax =
       statements: StatementSyntax[];
       close: TokenSyntax;
       children: SyntaxNode[];
+    }
+  | {
+      kind: 'VariableDeclarationStatement';
+      keyword: TokenSyntax;
+      identifier: TokenSyntax;
+      equals: TokenSyntax;
+      expression: ExpressionSyntax;
+      children: SyntaxNode[];
     };
 
 export function ExpressionStatement(expression: ExpressionSyntax): StatementSyntax {
@@ -23,6 +31,7 @@ export function ExpressionStatement(expression: ExpressionSyntax): StatementSynt
     children: [expression],
   };
 }
+
 export function BlockStatement(
   open: TokenSyntax,
   statements: StatementSyntax[],
@@ -34,5 +43,21 @@ export function BlockStatement(
     statements,
     close,
     children: [open, ...statements, close],
+  };
+}
+
+export function VariableDeclarationStatement(
+  keyword: TokenSyntax,
+  identifier: TokenSyntax,
+  equals: TokenSyntax,
+  expression: ExpressionSyntax
+): StatementSyntax {
+  return {
+    kind: 'VariableDeclarationStatement',
+    keyword,
+    identifier,
+    equals,
+    expression,
+    children: [keyword, identifier, equals, expression],
   };
 }

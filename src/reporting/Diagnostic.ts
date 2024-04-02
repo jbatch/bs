@@ -23,7 +23,7 @@ export class DiagnosticBag {
   }
 
   reportInvalidNumber(span: TextSpan, text: string) {
-    const message = `The number ${text} isn't valid number.`;
+    const message = `The number '${text}' isn't valid number.`;
     this.report(message, span);
   }
 
@@ -39,12 +39,12 @@ export class DiagnosticBag {
   }
 
   reportUndefinedUnaryOperator(span: TextSpan, operatorText: string, operandType: Type) {
-    const message = `Unary operator '${operatorText}' is not defined for type ${operandType}.`;
+    const message = `Unary operator '${operatorText}' is not defined for type [${operandType}].`;
     this.report(message, span);
   }
 
   reportUnexpectedLiteralType(span: TextSpan, literalType: string) {
-    const message = `Unexpected literal type ${literalType}`;
+    const message = `Unexpected literal type [${literalType}]`;
     this.report(message, span);
   }
 
@@ -59,7 +59,7 @@ export class DiagnosticBag {
     leftType: Type,
     rightType: Type
   ) {
-    const message = `Binary operator '${operatorText}' is not defined for types ${leftType} and ${rightType}.`;
+    const message = `Binary operator '${operatorText}' is not defined for types [${leftType}] and [${rightType}].`;
     this.report(message, span);
   }
 
@@ -70,6 +70,21 @@ export class DiagnosticBag {
 
   reportVariableAlreadyDeclared(span: TextSpan, name: string) {
     const message = `Variable ${name} is already declared in scope`;
+    this.report(message, span);
+  }
+
+  reportUndefinedVariable(span: TextSpan, name: string) {
+    const message = `Variable '${name}' is not defined`;
+    this.report(message, span);
+  }
+
+  reportCannotAssignToReadonlyVariable(span: TextSpan, name: string) {
+    const message = `Cannot assign to read-only variable '${name}'`;
+    this.report(message, span);
+  }
+
+  reportCannotAssignIncompatibleTypes(span: TextSpan, expected: Type, found: Type) {
+    const message = `TypeError: Cannot assign [${found}] to [${expected}] variable '${name}'`;
     this.report(message, span);
   }
 }

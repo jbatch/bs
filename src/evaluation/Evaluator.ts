@@ -1,13 +1,14 @@
 import assert from 'node:assert';
-import { BoundExpression, BoundStatement } from '../binding/BoundExpression';
+import { BoundExpression } from '../binding/BoundExpression';
 import { EvaluationResult } from './EvaluationResult';
+import { BoundStatement } from '../binding/BoundStatement';
 
 export class Evaluator {
   root: BoundStatement;
-  variables: Record<string, any>;
+  variables: Record<string, EvaluationResult>;
   lastResult?: EvaluationResult;
 
-  constructor(root: BoundStatement, variables: Record<string, any>) {
+  constructor(root: BoundStatement, variables: Record<string, EvaluationResult>) {
     this.root = root;
     this.variables = variables;
   }
@@ -25,6 +26,8 @@ export class Evaluator {
       case 'BlockStatement':
         this.evaluateBlockStatement(statement);
         break;
+      case 'VariableDelcarationStatement':
+        this.evaluateVariableDeclarationStatement(statement);
     }
   }
 
@@ -34,6 +37,14 @@ export class Evaluator {
     for (let statement of block.statements) {
       this.evaluateStatement(statement);
     }
+  }
+
+  private evaluateVariableDeclarationStatement(declaration: BoundStatement) {
+    assert(declaration.kind === 'VariableDelcarationStatement');
+
+    var value = this.evaluateExpression(declaration.expression);
+    this.variables[declaration.variable.name] = value;
+    this.lastResult = value;
   }
 
   private evaluateExpression(node: BoundExpression): EvaluationResult {
