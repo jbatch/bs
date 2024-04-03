@@ -75,10 +75,10 @@ export class Binder {
   private bindIfStatement(statement: StatementSyntax): BoundStatement {
     assert(statement.kind === 'IfStatement');
     const condition = this.bindExpressionWithExpectedType(statement.condition, 'boolean');
-    const ifStatement = this.bindStatement(statement.ifStatement);
+    const ifStatement = this.bindStatement(statement.ifBlock);
     let elseStatement;
-    if (statement.elseStatement) {
-      elseStatement = this.bindStatement(statement.elseStatement);
+    if (statement.elseBlock) {
+      elseStatement = this.bindStatement(statement.elseBlock);
     }
 
     return BoundIfStatement(condition, ifStatement, elseStatement);

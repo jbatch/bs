@@ -127,15 +127,25 @@ export class Parser {
 
   private parseIfStatement(): StatementSyntax {
     const ifKeyword = this.matchToken('IfKeyword');
+    const openParenthesis = this.matchToken('OpenParenthesisToken');
     const condition = this.parseExpression();
-    const ifStatement = this.parseStatement();
+    const closeParenthesis = this.matchToken('CloseParenthesisToken');
+    const ifStatement = this.parseBlockStatement();
     let elseKeyword;
     let elseStatement;
     if (this.current().kind === 'ElseKeyword') {
       elseKeyword = this.matchToken('ElseKeyword');
-      elseStatement = this.parseStatement();
+      elseStatement = this.parseBlockStatement();
     }
-    return IfStatement(ifKeyword, condition, ifStatement, elseKeyword, elseStatement);
+    return IfStatement(
+      ifKeyword,
+      openParenthesis,
+      condition,
+      closeParenthesis,
+      ifStatement,
+      elseKeyword,
+      elseStatement
+    );
   }
 
   private parseExpressionStatement(): StatementSyntax {

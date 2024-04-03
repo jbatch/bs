@@ -26,10 +26,12 @@ export type StatementSyntax =
   | {
       kind: 'IfStatement';
       ifKeyword: TokenSyntax;
+      openParenthesis: TokenSyntax;
       condition: ExpressionSyntax;
-      ifStatement: StatementSyntax;
+      closeParenthesis: TokenSyntax;
+      ifBlock: StatementSyntax;
       elseKeyword?: TokenSyntax;
-      elseStatement?: StatementSyntax;
+      elseBlock?: StatementSyntax;
       children: SyntaxNode[];
     };
 
@@ -73,23 +75,27 @@ export function VariableDeclarationStatement(
 
 export function IfStatement(
   ifKeyword: TokenSyntax,
+  openParenthesis: TokenSyntax,
   condition: ExpressionSyntax,
-  ifStatement: StatementSyntax,
+  closeParenthesis: TokenSyntax,
+  ifBlock: StatementSyntax,
   elseKeyword?: TokenSyntax,
-  elseStatement?: StatementSyntax
+  elseBlock?: StatementSyntax
 ): StatementSyntax {
-  const children = [ifKeyword, condition, ifStatement];
-  if (elseKeyword && elseStatement) {
+  const children = [ifKeyword, openParenthesis, condition, closeParenthesis, ifBlock];
+  if (elseKeyword && elseBlock) {
     children.push(elseKeyword);
-    children.push(elseStatement);
+    children.push(elseBlock);
   }
   return {
     kind: 'IfStatement',
     ifKeyword,
+    openParenthesis,
     condition,
-    ifStatement,
+    closeParenthesis,
+    ifBlock,
     elseKeyword,
-    elseStatement,
+    elseBlock,
     children,
   };
 }
