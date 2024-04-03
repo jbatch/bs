@@ -14,6 +14,12 @@ export type BoundStatement =
       kind: 'VariableDelcarationStatement';
       variable: VariableSymbol;
       expression: BoundExpression;
+    }
+  | {
+      kind: 'IfStatement';
+      condition: BoundExpression;
+      ifStatement: BoundStatement;
+      elseStatement?: BoundStatement;
     };
 
 export function BoundExpressionStatement(expression: BoundExpression): BoundStatement {
@@ -38,5 +44,18 @@ export function BoundVariableDelcarationStatement(
     kind: 'VariableDelcarationStatement',
     variable,
     expression,
+  };
+}
+
+export function BoundIfStatement(
+  condition: BoundExpression,
+  ifStatement: BoundStatement,
+  elseStatement?: BoundStatement
+): BoundStatement {
+  return {
+    kind: 'IfStatement',
+    condition,
+    ifStatement,
+    elseStatement,
   };
 }

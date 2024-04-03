@@ -22,6 +22,15 @@ export type StatementSyntax =
       equals: TokenSyntax;
       expression: ExpressionSyntax;
       children: SyntaxNode[];
+    }
+  | {
+      kind: 'IfStatement';
+      ifKeyword: TokenSyntax;
+      condition: ExpressionSyntax;
+      ifStatement: StatementSyntax;
+      elseKeyword?: TokenSyntax;
+      elseStatement?: StatementSyntax;
+      children: SyntaxNode[];
     };
 
 export function ExpressionStatement(expression: ExpressionSyntax): StatementSyntax {
@@ -59,5 +68,28 @@ export function VariableDeclarationStatement(
     equals,
     expression,
     children: [keyword, identifier, equals, expression],
+  };
+}
+
+export function IfStatement(
+  ifKeyword: TokenSyntax,
+  condition: ExpressionSyntax,
+  ifStatement: StatementSyntax,
+  elseKeyword?: TokenSyntax,
+  elseStatement?: StatementSyntax
+): StatementSyntax {
+  const children = [ifKeyword, condition, ifStatement];
+  if (elseKeyword && elseStatement) {
+    children.push(elseKeyword);
+    children.push(elseStatement);
+  }
+  return {
+    kind: 'IfStatement',
+    ifKeyword,
+    condition,
+    ifStatement,
+    elseKeyword,
+    elseStatement,
+    children,
   };
 }

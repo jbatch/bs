@@ -18,6 +18,7 @@ import { BoundScope } from './BoundScope';
 import {
   BoundBlockStatement,
   BoundExpressionStatement,
+  BoundIfStatement,
   BoundStatement,
   BoundVariableDelcarationStatement,
 } from './BoundStatement';
@@ -38,6 +39,8 @@ export class Binder {
         return this.bindBlockStatement(statement.statements);
       case 'VariableDeclarationStatement':
         return this.bindVariableDeclarationStatement(statement);
+      case 'IfStatement':
+        return this.bindIfStatement(statement);
     }
   }
 
@@ -69,7 +72,19 @@ export class Binder {
     return BoundVariableDelcarationStatement(variable, expression);
   }
 
-  private bindExpression(expression: ExpressionSyntax) {
+  private bindIfStatement(statement: StatementSyntax): BoundStatement {
+    assert(statement.kind === 'IfStatement');
+    const condition = this.bindExpressionWithExpectedType(statement.condition, 'boolean');
+    const ifStatement = this.bindStatement(statement.ifStatement);
+    let elseStatement;
+    if (statement.elseStatement) {
+      elseStatement = this.bindStatement(statement.elseStatement);
+    }
+
+    return BoundIfStatement(condition, ifStatement, elseStatement);
+  }
+
+  private bindExpression(expression: ExpressionSyntax, expectedType?: Type): BoundExpression {
     switch (expression.kind) {
       case 'LiteralExpression':
         return this.bindLiteralExpression(expression);
@@ -84,6 +99,17 @@ export class Binder {
       case 'AssignmentExpression':
         return this.bindAssignmentExpression(expression);
     }
+  }
+
+  private bindExpressionWithExpectedType(
+    expression: ExpressionSyntax,
+    expectedType: Type
+  ): BoundExpression {
+    const boundExpression = this.bindExpression(expression);
+    if (boundExpression.type !== expectedType) {
+      this.diagnostics.reportTypeMismatch(expression.span, expectedType, boundExpression.type);
+    }
+    return boundExpression;
   }
 
   private bindLiteralExpression(expression: ExpressionSyntax): BoundExpression {

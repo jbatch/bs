@@ -53,6 +53,11 @@ export class DiagnosticBag {
     this.report(message, span);
   }
 
+  reportTypeMismatch(span: TextSpan, expected: Type, found: Type) {
+    const message = `TypeError: expected [${expected}] but found [${found}]`;
+    this.report(message, span);
+  }
+
   reportUndefinedBinaryOperator(
     span: TextSpan,
     operatorText: string,

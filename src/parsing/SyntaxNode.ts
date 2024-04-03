@@ -9,6 +9,7 @@ export type CompilationUnit = {
   children: SyntaxNode[];
 };
 
+// TODO find somewhere nicer to put else clause
 export type SyntaxNode = ExpressionSyntax | TokenSyntax | CompilationUnit | StatementSyntax;
 
 export type SyntaxKind = SyntaxNode['kind'];

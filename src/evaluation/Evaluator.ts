@@ -28,6 +28,9 @@ export class Evaluator {
         break;
       case 'VariableDelcarationStatement':
         this.evaluateVariableDeclarationStatement(statement);
+      case 'IfStatement':
+        this.evaluateIfStatement(statement);
+        break;
     }
   }
 
@@ -45,6 +48,20 @@ export class Evaluator {
     var value = this.evaluateExpression(declaration.expression);
     this.variables[declaration.variable.name] = value;
     this.lastResult = value;
+  }
+
+  private evaluateIfStatement(statement: BoundStatement) {
+    assert(statement.kind === 'IfStatement');
+    const conditionValue = this.evaluateExpression(statement.condition);
+    assert(typeof conditionValue === 'boolean');
+    if (Boolean(conditionValue)) {
+      this.evaluateStatement(statement.ifStatement);
+      return;
+    }
+
+    if (statement.elseStatement) {
+      this.evaluateStatement(statement.elseStatement);
+    }
   }
 
   private evaluateExpression(node: BoundExpression): EvaluationResult {

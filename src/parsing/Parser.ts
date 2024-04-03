@@ -17,6 +17,7 @@ import { CompilationUnit, SyntaxNode } from './SyntaxNode';
 import {
   BlockStatement,
   ExpressionStatement,
+  IfStatement,
   StatementSyntax,
   VariableDeclarationStatement,
 } from './StatementSyntax';
@@ -94,6 +95,8 @@ export class Parser {
       case 'VarKeyword':
       case 'ConstKeyword':
         return this.parseVariableDeclaration();
+      case 'IfKeyword':
+        return this.parseIfStatement();
       default:
         return this.parseExpressionStatement();
     }
@@ -120,6 +123,19 @@ export class Parser {
     const equals = this.matchToken('EqualsToken');
     const expression = this.parseExpression();
     return VariableDeclarationStatement(keyword, identifier, equals, expression);
+  }
+
+  private parseIfStatement(): StatementSyntax {
+    const ifKeyword = this.matchToken('IfKeyword');
+    const condition = this.parseExpression();
+    const ifStatement = this.parseStatement();
+    let elseKeyword;
+    let elseStatement;
+    if (this.current().kind === 'ElseKeyword') {
+      elseKeyword = this.matchToken('ElseKeyword');
+      elseStatement = this.parseStatement();
+    }
+    return IfStatement(ifKeyword, condition, ifStatement, elseKeyword, elseStatement);
   }
 
   private parseExpressionStatement(): StatementSyntax {

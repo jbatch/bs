@@ -29,6 +29,8 @@ export type TokenSyntax =
       | { kind: 'FalseKeyword'; span: TextSpan; text?: 'false'; value?: false }
       | { kind: 'ConstKeyword'; span: TextSpan; text?: 'const'; value?: undefined }
       | { kind: 'VarKeyword'; span: TextSpan; text?: 'var'; value?: undefined }
+      | { kind: 'IfKeyword'; span: TextSpan; text?: 'if'; value?: undefined }
+      | { kind: 'ElseKeyword'; span: TextSpan; text?: 'else'; value?: undefined }
       | { kind: 'BadToken'; span: TextSpan; text?: string; value?: undefined }
       | { kind: 'EndOfFileToken'; span: TextSpan; text?: '\0'; value?: undefined }
     ) & { children: TokenSyntax[] };
@@ -135,6 +137,14 @@ export function ConstKeyword(span: TextSpan): TokenSyntax {
 
 export function VarKeyword(span: TextSpan): TokenSyntax {
   return { kind: 'VarKeyword', span, text: 'var', children: [] };
+}
+
+export function IfKeyword(span: TextSpan): TokenSyntax {
+  return { kind: 'IfKeyword', span, text: 'if', value: undefined, children: [] };
+}
+
+export function ElseKeyword(span: TextSpan): TokenSyntax {
+  return { kind: 'ElseKeyword', span, text: 'else', value: undefined, children: [] };
 }
 
 // Should not be used

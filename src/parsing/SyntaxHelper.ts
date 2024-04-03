@@ -1,7 +1,9 @@
 import {
   ConstKeyword,
+  ElseKeyword,
   FalseKeyword,
   IdentifierToken,
+  IfKeyword,
   TokenSyntax,
   TrueKeyword,
   VarKeyword,
@@ -55,6 +57,10 @@ export function getKeywordOrIdentifier(text: string, position: number): TokenSyn
       return ConstKeyword(span);
     case 'var':
       return VarKeyword(span);
+    case 'if':
+      return IfKeyword(span);
+    case 'else':
+      return ElseKeyword(span);
     default:
       return IdentifierToken(span, text);
   }
