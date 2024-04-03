@@ -40,9 +40,25 @@ export type StatementSyntax =
           kind: 'WhileStatement';
           whileKeyword: TokenSyntax;
           openParenthesis: TokenSyntax;
-          condition: ExpressionSyntax;
+          loopCondition: ExpressionSyntax;
           closeParenthesis: TokenSyntax;
           whileBlock: StatementSyntax;
+          children: SyntaxNode[];
+        }
+      /**
+       * for (var i = 0; i < 10; i++) {
+       *
+       * }
+       */
+      | {
+          kind: 'ForStatement';
+          forKeyword: TokenSyntax;
+          openParenthesis: TokenSyntax;
+          beginStatement: StatementSyntax;
+          loopCondition: ExpressionSyntax;
+          endStatement: StatementSyntax;
+          closeParenthesis: TokenSyntax;
+          forBlock: StatementSyntax;
           children: SyntaxNode[];
         }
     ) & { span: TextSpan; children: SyntaxNode[] };
@@ -125,20 +141,53 @@ export function IfStatement(
 export function WhileStatement(
   whileKeyword: TokenSyntax,
   openParenthesis: TokenSyntax,
-  condition: ExpressionSyntax,
+  loopCondition: ExpressionSyntax,
   closeParenthesis: TokenSyntax,
   whileBlock: StatementSyntax
 ): StatementSyntax {
   const span = whileKeyword.span;
-  const children = [whileKeyword, openParenthesis, condition, closeParenthesis, whileBlock];
+  const children = [whileKeyword, openParenthesis, loopCondition, closeParenthesis, whileBlock];
   return {
     kind: 'WhileStatement',
     span,
     whileKeyword,
     openParenthesis,
-    condition,
+    loopCondition,
     closeParenthesis,
     whileBlock,
+    children,
+  };
+}
+
+export function ForStatement(
+  forKeyword: TokenSyntax,
+  openParenthesis: TokenSyntax,
+  beginStatement: StatementSyntax,
+  loopCondition: ExpressionSyntax,
+  endStatement: StatementSyntax,
+  closeParenthesis: TokenSyntax,
+  forBlock: StatementSyntax
+): StatementSyntax {
+  const span = forKeyword.span;
+  const children = [
+    forKeyword,
+    openParenthesis,
+    beginStatement,
+    loopCondition,
+    endStatement,
+    closeParenthesis,
+    forBlock,
+  ];
+  return {
+    kind: 'ForStatement',
+    span,
+    forKeyword,
+    openParenthesis,
+    beginStatement,
+    loopCondition,
+    endStatement,
+    closeParenthesis,
+    forBlock,
     children,
   };
 }

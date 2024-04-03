@@ -17,6 +17,7 @@ import { CompilationUnit, SyntaxNode } from './SyntaxNode';
 import {
   BlockStatement,
   ExpressionStatement,
+  ForStatement,
   IfStatement,
   StatementSyntax,
   VariableDeclarationStatement,
@@ -100,6 +101,9 @@ export class Parser {
         return this.parseIfStatement();
       case 'WhileKeyword':
         return this.parseWhileStatement();
+      case 'ForKeyword':
+        return this.parseForStatement();
+
       default:
         return this.parseExpressionStatement();
     }
@@ -154,11 +158,38 @@ export class Parser {
   private parseWhileStatement(): StatementSyntax {
     const whileKeyword = this.matchToken('WhileKeyword');
     const openParenthesis = this.matchToken('OpenParenthesisToken');
-    const condition = this.parseExpression();
+    const loopCondition = this.parseExpression();
     const closeParenthesis = this.matchToken('CloseParenthesisToken');
     const whileBlock = this.parseBlockStatement();
 
-    return WhileStatement(whileKeyword, openParenthesis, condition, closeParenthesis, whileBlock);
+    return WhileStatement(
+      whileKeyword,
+      openParenthesis,
+      loopCondition,
+      closeParenthesis,
+      whileBlock
+    );
+  }
+
+  private parseForStatement(): StatementSyntax {
+    const forKeyword = this.matchToken('ForKeyword');
+    const openParenthesis = this.matchToken('OpenParenthesisToken');
+    const beginStatement = this.parseStatement();
+    this.matchToken('SemicolonToken');
+    const loopCondition = this.parseExpression();
+    this.matchToken('SemicolonToken');
+    const endStatement = this.parseStatement();
+    const closeParenthesis = this.matchToken('CloseParenthesisToken');
+    const forBlock = this.parseBlockStatement();
+    return ForStatement(
+      forKeyword,
+      openParenthesis,
+      beginStatement,
+      loopCondition,
+      endStatement,
+      closeParenthesis,
+      forBlock
+    );
   }
 
   private parseExpressionStatement(): StatementSyntax {

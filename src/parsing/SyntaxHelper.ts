@@ -2,6 +2,7 @@ import {
   ConstKeyword,
   ElseKeyword,
   FalseKeyword,
+  ForKeyword,
   IdentifierToken,
   IfKeyword,
   TokenSyntax,
@@ -64,6 +65,8 @@ export function getKeywordOrIdentifier(text: string, position: number): TokenSyn
       return ElseKeyword(span);
     case 'while':
       return WhileKeyword(span);
+    case 'for':
+      return ForKeyword(span);
     default:
       return IdentifierToken(span, text);
   }

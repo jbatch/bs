@@ -23,8 +23,15 @@ export type BoundStatement =
     }
   | {
       kind: 'WhileStatement';
-      condition: BoundExpression;
+      loopCondition: BoundExpression;
       whileBlock: BoundStatement;
+    }
+  | {
+      kind: 'ForStatement';
+      beginStatement: BoundStatement;
+      loopCondition: BoundExpression;
+      endStatement: BoundStatement;
+      forBlock: BoundStatement;
     };
 
 export function BoundExpressionStatement(expression: BoundExpression): BoundStatement {
@@ -66,12 +73,27 @@ export function BoundIfStatement(
 }
 
 export function BoundWhileStatement(
-  condition: BoundExpression,
+  loopCondition: BoundExpression,
   whileBlock: BoundStatement
 ): BoundStatement {
   return {
     kind: 'WhileStatement',
-    condition,
+    loopCondition,
     whileBlock,
+  };
+}
+
+export function BoundForStatement(
+  beginStatement: BoundStatement,
+  loopCondition: BoundExpression,
+  endStatement: BoundStatement,
+  forBlock: BoundStatement
+): BoundStatement {
+  return {
+    kind: 'ForStatement',
+    beginStatement,
+    loopCondition,
+    endStatement,
+    forBlock,
   };
 }

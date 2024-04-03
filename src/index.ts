@@ -101,7 +101,7 @@ function parseCode(inputText: string) {
   diagnostics.addBag(parser.diagnostics);
   diagnostics.addBag(binder.diagnostics);
 
-  parser.prettyPrint(compilationUnit.statement);
+  // parser.prettyPrint(compilationUnit.statement);
 
   // Print errors
   if (diagnostics.hasDiagnostics()) {

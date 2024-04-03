@@ -25,6 +25,7 @@ import {
   LessToken,
   GreaterOrEqualsToken,
   GreaterToken,
+  SemicolonToken,
 } from './TokenSyntax';
 import { textSpan } from '../text/TextSpan';
 
@@ -125,6 +126,8 @@ export class Lexer {
           return PipePipeToken(textSpan(this.position - 2, 2));
         }
       }
+      case ';':
+        return SemicolonToken(textSpan(this.position++, 1));
       case '=': {
         if (this.lookAhead() === '=') {
           this.position += 2;

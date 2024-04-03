@@ -15,6 +15,7 @@ export type TokenSyntax =
       | { kind: 'CloseBraceToken'; span: TextSpan; text?: '}'; value?: undefined }
       | { kind: 'BangToken'; span: TextSpan; text?: '!'; value?: undefined }
       | { kind: 'EqualsToken'; span: TextSpan; text?: '='; value?: undefined }
+      | { kind: 'SemicolonToken'; span: TextSpan; text?: ';'; value?: undefined }
       | { kind: 'LessToken'; span: TextSpan; text?: '<'; value?: undefined }
       | { kind: 'GreaterToken'; span: TextSpan; text?: '>'; value?: undefined }
       | { kind: 'LessOrEqualsToken'; span: TextSpan; text?: '<='; value?: undefined }
@@ -32,6 +33,7 @@ export type TokenSyntax =
       | { kind: 'IfKeyword'; span: TextSpan; text?: 'if'; value?: undefined }
       | { kind: 'ElseKeyword'; span: TextSpan; text?: 'else'; value?: undefined }
       | { kind: 'WhileKeyword'; span: TextSpan; text?: 'while'; value?: undefined }
+      | { kind: 'ForKeyword'; span: TextSpan; text?: 'for'; value?: undefined }
       | { kind: 'BadToken'; span: TextSpan; text?: string; value?: undefined }
       | { kind: 'EndOfFileToken'; span: TextSpan; text?: '\0'; value?: undefined }
     ) & { children: TokenSyntax[] };
@@ -85,6 +87,10 @@ export function BangToken(span: TextSpan): TokenSyntax {
 
 export function EqualsToken(span: TextSpan): TokenSyntax {
   return { kind: 'EqualsToken', span, text: '=', value: undefined, children: [] };
+}
+
+export function SemicolonToken(span: TextSpan): TokenSyntax {
+  return { kind: 'SemicolonToken', span, text: ';', value: undefined, children: [] };
 }
 
 export function LessToken(span: TextSpan): TokenSyntax {
@@ -150,6 +156,10 @@ export function ElseKeyword(span: TextSpan): TokenSyntax {
 
 export function WhileKeyword(span: TextSpan): TokenSyntax {
   return { kind: 'WhileKeyword', span, text: 'while', value: undefined, children: [] };
+}
+
+export function ForKeyword(span: TextSpan): TokenSyntax {
+  return { kind: 'ForKeyword', span, text: 'for', value: undefined, children: [] };
 }
 
 // Should not be used

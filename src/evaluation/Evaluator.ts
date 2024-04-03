@@ -34,6 +34,8 @@ export class Evaluator {
         break;
       case 'WhileStatement':
         this.evaluateWhileStatement(statement);
+      case 'ForStatement':
+        this.evaluateForStatement(statement);
         break;
     }
   }
@@ -70,8 +72,18 @@ export class Evaluator {
 
   private evaluateWhileStatement(statement: BoundStatement) {
     assert(statement.kind === 'WhileStatement');
-    while (Boolean(this.evaluateExpression(statement.condition))) {
+    while (Boolean(this.evaluateExpression(statement.loopCondition))) {
       this.evaluateStatement(statement.whileBlock);
+    }
+  }
+
+  private evaluateForStatement(statement: BoundStatement) {
+    assert(statement.kind === 'ForStatement');
+    this.evaluateStatement(statement.beginStatement);
+    const a = this.evaluateExpression(statement.loopCondition);
+    while (Boolean(this.evaluateExpression(statement.loopCondition))) {
+      this.evaluateStatement(statement.forBlock);
+      this.evaluateStatement(statement.endStatement);
     }
   }
 

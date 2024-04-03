@@ -18,6 +18,7 @@ import { BoundScope } from './BoundScope';
 import {
   BoundBlockStatement,
   BoundExpressionStatement,
+  BoundForStatement,
   BoundIfStatement,
   BoundStatement,
   BoundVariableDelcarationStatement,
@@ -47,6 +48,8 @@ export class Binder {
         return this.bindIfStatement(statement);
       case 'WhileStatement':
         return this.bindWhileStatement(statement);
+      case 'ForStatement':
+        return this.bindForStatement(statement);
     }
   }
 
@@ -92,9 +95,23 @@ export class Binder {
 
   private bindWhileStatement(statement: StatementSyntax): BoundStatement {
     assert(statement.kind === 'WhileStatement');
-    const condition = this.bindExpressionWithExpectedType(statement.condition, 'boolean');
+    const loopCondition = this.bindExpressionWithExpectedType(statement.loopCondition, 'boolean');
     const whileBlock = this.bindStatement(statement.whileBlock, 'BlockStatement');
-    return BoundWhileStatement(condition, whileBlock);
+    return BoundWhileStatement(loopCondition, whileBlock);
+  }
+
+  private bindForStatement(statement: StatementSyntax): BoundStatement {
+    assert(statement.kind === 'ForStatement');
+    this.scope = new BoundScope(this.scope);
+    const beginStatement = this.bindStatement(
+      statement.beginStatement,
+      'VariableDeclarationStatement'
+    );
+    const loopCondition = this.bindExpressionWithExpectedType(statement.loopCondition, 'boolean');
+    const endStatement = this.bindStatement(statement.endStatement);
+    const forBlock = this.bindStatement(statement.forBlock, 'BlockStatement');
+    this.scope = this.scope.parent!;
+    return BoundForStatement(beginStatement, loopCondition, endStatement, forBlock);
   }
 
   private bindExpression(expression: ExpressionSyntax, expectedType?: Type): BoundExpression {
