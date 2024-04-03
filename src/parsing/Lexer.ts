@@ -21,6 +21,10 @@ import {
   BadToken,
   OpenBraceToken,
   CloseBraceToken,
+  LessOrEqualsToken,
+  LessToken,
+  GreaterOrEqualsToken,
+  GreaterToken,
 } from './TokenSyntax';
 import { textSpan } from '../text/TextSpan';
 
@@ -128,6 +132,20 @@ export class Lexer {
         } else {
           return EqualsToken(textSpan(this.position++, 1));
         }
+      }
+      case '<': {
+        if (this.lookAhead() === '=') {
+          this.position += 2;
+          return LessOrEqualsToken(textSpan(this.position - 2, 2));
+        }
+        return LessToken(textSpan(this.position++, 1));
+      }
+      case '>': {
+        if (this.lookAhead() === '=') {
+          this.position += 2;
+          return GreaterOrEqualsToken(textSpan(this.position - 2, 2));
+        }
+        return GreaterToken(textSpan(this.position++, 1));
       }
     }
 

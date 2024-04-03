@@ -11,7 +11,11 @@ export type BoundBinaryOperatorKind =
   | 'LogicalAnd'
   | 'LogicalOr'
   | 'Equals'
-  | 'NotEquals';
+  | 'NotEquals'
+  | 'LessThan'
+  | 'LessThanOrEqual'
+  | 'GreaterThan'
+  | 'GreaterThanOrEqual';
 
 export type Type = 'number' | 'boolean';
 
@@ -147,6 +151,10 @@ const BINARY_OPERATORS: BoundBinaryOperator[] = [
   boundBinaryOperator('NotEquals', 'BangEqualsToken', 'number', 'boolean'),
   boundBinaryOperator('Equals', 'EqualsEqualsToken', 'boolean', 'boolean'),
   boundBinaryOperator('NotEquals', 'BangEqualsToken', 'boolean', 'boolean'),
+  boundBinaryOperator('LessThan', 'LessToken', 'number', 'boolean'),
+  boundBinaryOperator('LessThanOrEqual', 'LessOrEqualsToken', 'number', 'boolean'),
+  boundBinaryOperator('GreaterThan', 'GreaterToken', 'number', 'boolean'),
+  boundBinaryOperator('GreaterThanOrEqual', 'GreaterOrEqualsToken', 'number', 'boolean'),
 ];
 
 export function bindBinaryOperator(

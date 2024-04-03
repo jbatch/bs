@@ -101,6 +101,14 @@ export class Evaluator {
         return left == right;
       case 'NotEquals':
         return left != right;
+      case 'LessThan':
+        return left < right;
+      case 'LessThanOrEqual':
+        return left <= right;
+      case 'GreaterThan':
+        return left > right;
+      case 'GreaterThanOrEqual':
+        return left >= right;
       default:
         throw new Error(`Unexpected binary operator ${node}`);
     }

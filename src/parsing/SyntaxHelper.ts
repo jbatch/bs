@@ -19,6 +19,10 @@ export function getBinaryOperatorPrecedence(kind: SyntaxKind) {
       return 4;
     case 'EqualsEqualsToken':
     case 'BangEqualsToken':
+    case 'LessToken':
+    case 'LessOrEqualsToken':
+    case 'GreaterToken':
+    case 'GreaterOrEqualsToken':
       return 3;
     case 'AmpersandAmpersandToken':
       return 2;

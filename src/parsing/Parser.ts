@@ -84,7 +84,7 @@ export class Parser {
       text: undefined,
       value: undefined,
       children: [],
-    };
+    } as TokenSyntax;
   }
 
   private parseStatement(): StatementSyntax {

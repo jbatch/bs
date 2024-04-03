@@ -15,6 +15,10 @@ export type TokenSyntax =
       | { kind: 'CloseBraceToken'; span: TextSpan; text?: '}'; value?: undefined }
       | { kind: 'BangToken'; span: TextSpan; text?: '!'; value?: undefined }
       | { kind: 'EqualsToken'; span: TextSpan; text?: '='; value?: undefined }
+      | { kind: 'LessToken'; span: TextSpan; text?: '<'; value?: undefined }
+      | { kind: 'GreaterToken'; span: TextSpan; text?: '>'; value?: undefined }
+      | { kind: 'LessOrEqualsToken'; span: TextSpan; text?: '<='; value?: undefined }
+      | { kind: 'GreaterOrEqualsToken'; span: TextSpan; text?: '>='; value?: undefined }
       | { kind: 'AmpersandAmpersandToken'; span: TextSpan; text?: '&&'; value?: undefined }
       | { kind: 'PipePipeToken'; span: TextSpan; text?: '||'; value?: undefined }
       | { kind: 'EqualsEqualsToken'; span: TextSpan; text?: '=='; value?: undefined }
@@ -78,6 +82,22 @@ export function BangToken(span: TextSpan): TokenSyntax {
 
 export function EqualsToken(span: TextSpan): TokenSyntax {
   return { kind: 'EqualsToken', span, text: '=', value: undefined, children: [] };
+}
+
+export function LessToken(span: TextSpan): TokenSyntax {
+  return { kind: 'LessToken', span, text: '<', value: undefined, children: [] };
+}
+
+export function LessOrEqualsToken(span: TextSpan): TokenSyntax {
+  return { kind: 'LessOrEqualsToken', span, text: '<=', value: undefined, children: [] };
+}
+
+export function GreaterToken(span: TextSpan): TokenSyntax {
+  return { kind: 'GreaterToken', span, text: '>', value: undefined, children: [] };
+}
+
+export function GreaterOrEqualsToken(span: TextSpan): TokenSyntax {
+  return { kind: 'GreaterOrEqualsToken', span, text: '>=', value: undefined, children: [] };
 }
 
 export function AmpersandAmpersandToken(span: TextSpan): TokenSyntax {
