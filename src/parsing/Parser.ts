@@ -20,6 +20,7 @@ import {
   IfStatement,
   StatementSyntax,
   VariableDeclarationStatement,
+  WhileStatement,
 } from './StatementSyntax';
 import assert from 'node:assert';
 
@@ -97,6 +98,8 @@ export class Parser {
         return this.parseVariableDeclaration();
       case 'IfKeyword':
         return this.parseIfStatement();
+      case 'WhileKeyword':
+        return this.parseWhileStatement();
       default:
         return this.parseExpressionStatement();
     }
@@ -146,6 +149,16 @@ export class Parser {
       elseKeyword,
       elseStatement
     );
+  }
+
+  private parseWhileStatement(): StatementSyntax {
+    const whileKeyword = this.matchToken('WhileKeyword');
+    const openParenthesis = this.matchToken('OpenParenthesisToken');
+    const condition = this.parseExpression();
+    const closeParenthesis = this.matchToken('CloseParenthesisToken');
+    const whileBlock = this.parseBlockStatement();
+
+    return WhileStatement(whileKeyword, openParenthesis, condition, closeParenthesis, whileBlock);
   }
 
   private parseExpressionStatement(): StatementSyntax {

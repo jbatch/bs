@@ -18,8 +18,13 @@ export type BoundStatement =
   | {
       kind: 'IfStatement';
       condition: BoundExpression;
-      ifStatement: BoundStatement;
-      elseStatement?: BoundStatement;
+      ifBlock: BoundStatement;
+      elseBlock?: BoundStatement;
+    }
+  | {
+      kind: 'WhileStatement';
+      condition: BoundExpression;
+      whileBlock: BoundStatement;
     };
 
 export function BoundExpressionStatement(expression: BoundExpression): BoundStatement {
@@ -49,13 +54,24 @@ export function BoundVariableDelcarationStatement(
 
 export function BoundIfStatement(
   condition: BoundExpression,
-  ifStatement: BoundStatement,
-  elseStatement?: BoundStatement
+  ifBlock: BoundStatement,
+  elseBlock?: BoundStatement
 ): BoundStatement {
   return {
     kind: 'IfStatement',
     condition,
-    ifStatement,
-    elseStatement,
+    ifBlock,
+    elseBlock,
+  };
+}
+
+export function BoundWhileStatement(
+  condition: BoundExpression,
+  whileBlock: BoundStatement
+): BoundStatement {
+  return {
+    kind: 'WhileStatement',
+    condition,
+    whileBlock,
   };
 }

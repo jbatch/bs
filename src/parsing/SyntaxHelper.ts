@@ -7,6 +7,7 @@ import {
   TokenSyntax,
   TrueKeyword,
   VarKeyword,
+  WhileKeyword,
 } from './TokenSyntax';
 import { textSpan } from '../text/TextSpan';
 import { SyntaxKind } from './SyntaxNode';
@@ -61,6 +62,8 @@ export function getKeywordOrIdentifier(text: string, position: number): TokenSyn
       return IfKeyword(span);
     case 'else':
       return ElseKeyword(span);
+    case 'while':
+      return WhileKeyword(span);
     default:
       return IdentifierToken(span, text);
   }

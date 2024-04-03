@@ -28,8 +28,12 @@ export class Evaluator {
         break;
       case 'VariableDelcarationStatement':
         this.evaluateVariableDeclarationStatement(statement);
+        break;
       case 'IfStatement':
         this.evaluateIfStatement(statement);
+        break;
+      case 'WhileStatement':
+        this.evaluateWhileStatement(statement);
         break;
     }
   }
@@ -55,12 +59,19 @@ export class Evaluator {
     const conditionValue = this.evaluateExpression(statement.condition);
     assert(typeof conditionValue === 'boolean');
     if (Boolean(conditionValue)) {
-      this.evaluateStatement(statement.ifStatement);
+      this.evaluateStatement(statement.ifBlock);
       return;
     }
 
-    if (statement.elseStatement) {
-      this.evaluateStatement(statement.elseStatement);
+    if (statement.elseBlock) {
+      this.evaluateStatement(statement.elseBlock);
+    }
+  }
+
+  private evaluateWhileStatement(statement: BoundStatement) {
+    assert(statement.kind === 'WhileStatement');
+    while (Boolean(this.evaluateExpression(statement.condition))) {
+      this.evaluateStatement(statement.whileBlock);
     }
   }
 

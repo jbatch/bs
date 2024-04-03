@@ -58,6 +58,10 @@ export class DiagnosticBag {
     this.report(message, span);
   }
 
+  reportSyntaxError(span: TextSpan, expected: SyntaxKind, found: SyntaxKind) {
+    const message = `SyntaxError: expected [${expected}] but found [${found}]`;
+  }
+
   reportUndefinedBinaryOperator(
     span: TextSpan,
     operatorText: string,

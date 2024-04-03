@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { ExpressionSyntax } from '../parsing/ExpressionSyntax';
-import { StatementSyntax } from '../parsing/StatementSyntax';
+import { StatementKind, StatementSyntax } from '../parsing/StatementSyntax';
 import { DiagnosticBag } from '../reporting/Diagnostic';
 import { TextSpan } from '../text/TextSpan';
 import {
@@ -21,6 +21,7 @@ import {
   BoundIfStatement,
   BoundStatement,
   BoundVariableDelcarationStatement,
+  BoundWhileStatement,
 } from './BoundStatement';
 
 export class Binder {
@@ -31,7 +32,10 @@ export class Binder {
     this.scope = new BoundScope(parent);
   }
 
-  public bindStatement(statement: StatementSyntax): BoundStatement {
+  public bindStatement(statement: StatementSyntax, expectedKind?: StatementKind): BoundStatement {
+    if (expectedKind && statement.kind !== expectedKind) {
+      this.diagnostics.reportSyntaxError(statement.span, expectedKind, statement.kind);
+    }
     switch (statement.kind) {
       case 'ExpressionStatement':
         return this.bindExpressionStatement(statement.expression);
@@ -41,6 +45,8 @@ export class Binder {
         return this.bindVariableDeclarationStatement(statement);
       case 'IfStatement':
         return this.bindIfStatement(statement);
+      case 'WhileStatement':
+        return this.bindWhileStatement(statement);
     }
   }
 
@@ -52,7 +58,7 @@ export class Binder {
   private bindBlockStatement(statements: StatementSyntax[]): BoundStatement {
     // Wrap execution scope in a new temporary scope for the duration of the block
     this.scope = new BoundScope(this.scope);
-    const boundStatements = statements.map(this.bindStatement.bind(this));
+    const boundStatements = statements.map((s) => this.bindStatement(s));
     this.scope = this.scope.parent!;
     return BoundBlockStatement(boundStatements);
   }
@@ -75,13 +81,20 @@ export class Binder {
   private bindIfStatement(statement: StatementSyntax): BoundStatement {
     assert(statement.kind === 'IfStatement');
     const condition = this.bindExpressionWithExpectedType(statement.condition, 'boolean');
-    const ifStatement = this.bindStatement(statement.ifBlock);
-    let elseStatement;
+    const ifBlock = this.bindStatement(statement.ifBlock, 'BlockStatement');
+    let elseBlock;
     if (statement.elseBlock) {
-      elseStatement = this.bindStatement(statement.elseBlock);
+      elseBlock = this.bindStatement(statement.elseBlock, 'BlockStatement');
     }
 
-    return BoundIfStatement(condition, ifStatement, elseStatement);
+    return BoundIfStatement(condition, ifBlock, elseBlock);
+  }
+
+  private bindWhileStatement(statement: StatementSyntax): BoundStatement {
+    assert(statement.kind === 'WhileStatement');
+    const condition = this.bindExpressionWithExpectedType(statement.condition, 'boolean');
+    const whileBlock = this.bindStatement(statement.whileBlock, 'BlockStatement');
+    return BoundWhileStatement(condition, whileBlock);
   }
 
   private bindExpression(expression: ExpressionSyntax, expectedType?: Type): BoundExpression {

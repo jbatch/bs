@@ -31,6 +31,7 @@ export type TokenSyntax =
       | { kind: 'VarKeyword'; span: TextSpan; text?: 'var'; value?: undefined }
       | { kind: 'IfKeyword'; span: TextSpan; text?: 'if'; value?: undefined }
       | { kind: 'ElseKeyword'; span: TextSpan; text?: 'else'; value?: undefined }
+      | { kind: 'WhileKeyword'; span: TextSpan; text?: 'while'; value?: undefined }
       | { kind: 'BadToken'; span: TextSpan; text?: string; value?: undefined }
       | { kind: 'EndOfFileToken'; span: TextSpan; text?: '\0'; value?: undefined }
     ) & { children: TokenSyntax[] };
@@ -145,6 +146,10 @@ export function IfKeyword(span: TextSpan): TokenSyntax {
 
 export function ElseKeyword(span: TextSpan): TokenSyntax {
   return { kind: 'ElseKeyword', span, text: 'else', value: undefined, children: [] };
+}
+
+export function WhileKeyword(span: TextSpan): TokenSyntax {
+  return { kind: 'WhileKeyword', span, text: 'while', value: undefined, children: [] };
 }
 
 // Should not be used
