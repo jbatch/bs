@@ -179,7 +179,7 @@ export class Binder {
       );
       return operand;
     }
-    return BoundUnaryExpression(type, operator, operand);
+    return BoundUnaryExpression(type, operand, operator);
   }
 
   private bindParenthesizedExpression(expression: ExpressionSyntax): BoundExpression {

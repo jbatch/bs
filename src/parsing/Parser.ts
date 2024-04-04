@@ -260,22 +260,4 @@ export class Parser {
       }
     }
   }
-
-  prettyPrint(node: SyntaxNode, indent: string = '', isLast: boolean = true) {
-    const marker = isLast ? '└──' : '├──';
-    process.stdout.write(indent);
-    process.stdout.write(marker);
-    process.stdout.write(node.kind);
-    if (node.kind === 'LiteralExpression' && node.literal.value) {
-      process.stdout.write(' (' + node.literal.value.toString() + ')');
-    }
-    if (node.kind === 'IdentifierToken' && node.text) {
-      process.stdout.write(' (' + node.text + ')');
-    }
-    console.log();
-    indent += isLast ? '   ' : '│  ';
-    for (let i = 0; i < node.children.length; i++) {
-      this.prettyPrint(node.children[i], indent, i === node.children.length - 1);
-    }
-  }
 }

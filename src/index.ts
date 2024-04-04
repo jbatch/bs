@@ -7,29 +7,12 @@ import { Evaluator } from './evaluation/Evaluator';
 import { SourceText } from './text/SourceText';
 import { BoundScope } from './binding/BoundScope';
 import { BoundStatement } from './binding/BoundStatement';
+import { prettyPrint } from './parsing/SyntaxNode';
 
 const variables = {};
 let globalScope = new BoundScope();
-
-function printDiagnostic(sourceText: SourceText, diagnostic: Diagnostic) {
-  const lineIndex = sourceText.getLineIndex(diagnostic.span.start);
-  const lineNumber = lineIndex + 1;
-  const errorLine = sourceText.lines[lineNumber - 1];
-  const character = diagnostic.span.start - sourceText.lines[lineIndex].start + 1;
-  Terminal.writeLine(`[${lineNumber}:${character}] ${diagnostic.message}`);
-
-  const prefixSpan = textSpan(0, diagnostic.span.start);
-  const suffixSpan = textSpan(diagnostic.span.end, errorLine.end);
-  const prefix = sourceText.getText(prefixSpan);
-  const error = sourceText.getText(diagnostic.span);
-  const suffix = sourceText.getText(suffixSpan);
-
-  Terminal.write('    ');
-  Terminal.write(prefix);
-  Terminal.write('\x1b[31m' + error + '\x1b[0m');
-  Terminal.write(suffix);
-  Terminal.writeLine();
-}
+let showTree = false;
+let showProgram = false;
 
 async function main() {
   let quit = false;
@@ -40,6 +23,13 @@ async function main() {
     if (line === '#q' || line === '#quit') {
       quit = true;
       break;
+    }
+
+    if (line === '#t' || line === '#showTree') {
+      showTree = !showTree;
+      const msg = `Print tree ${showTree ? 'enabled' : 'disabled'}`;
+      Terminal.writeLine(msg);
+      continue;
     }
 
     if (lines.length === 0) {
@@ -101,14 +91,13 @@ function parseCode(inputText: string) {
   diagnostics.addBag(parser.diagnostics);
   diagnostics.addBag(binder.diagnostics);
 
-  // parser.prettyPrint(compilationUnit.statement);
+  if (showTree) {
+    prettyPrint(compilationUnit.statement);
+  }
 
   // Print errors
   if (diagnostics.hasDiagnostics()) {
-    for (let diagnostic of diagnostics.diagnostics) {
-      printDiagnostic(sourceText, diagnostic);
-    }
-    Terminal.writeLine();
+    diagnostics.printDiagnostic(sourceText);
   } else {
     globalScope = binder.scope;
   }

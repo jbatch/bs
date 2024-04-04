@@ -1,99 +1,80 @@
 import { VariableSymbol } from '../text/VariableSymbol';
 import { BoundExpression } from './BoundExpression';
 
-export type BoundStatement =
-  | {
-      kind: 'ExpressionStatement';
-      expression: BoundExpression;
-    }
-  | {
-      kind: 'BlockStatement';
-      statements: BoundStatement[];
-    }
-  | {
-      kind: 'VariableDelcarationStatement';
-      variable: VariableSymbol;
-      expression: BoundExpression;
-    }
-  | {
-      kind: 'IfStatement';
-      condition: BoundExpression;
-      ifBlock: BoundStatement;
-      elseBlock?: BoundStatement;
-    }
-  | {
-      kind: 'WhileStatement';
-      loopCondition: BoundExpression;
-      whileBlock: BoundStatement;
-    }
-  | {
-      kind: 'ForStatement';
-      beginStatement: BoundStatement;
-      loopCondition: BoundExpression;
-      endStatement: BoundStatement;
-      forBlock: BoundStatement;
+// Generated code
+
+export type ExpressionStatement = {
+    kind: "ExpressionStatement";
+    expression: BoundExpression;
+};
+export type BlockStatement = {
+    kind: "BlockStatement";
+    statements: BoundStatement[];
+};
+export type VariableDelcarationStatement = {
+    kind: "VariableDelcarationStatement";
+    variable: VariableSymbol;
+    expression: BoundExpression;
+};
+export type IfStatement = {
+    kind: "IfStatement";
+    condition: BoundExpression;
+    ifBlock: BoundStatement;
+    elseBlock: BoundStatement | undefined;
+};
+export type WhileStatement = {
+    kind: "WhileStatement";
+    loopCondition: BoundExpression;
+    whileBlock: BoundStatement;
+};
+export type ForStatement = {
+    kind: "ForStatement";
+    beginStatement: BoundStatement;
+    loopCondition: BoundExpression;
+    endStatement: BoundStatement;
+    forBlock: BoundStatement;
+};
+export type BoundStatement = ExpressionStatement | BlockStatement | VariableDelcarationStatement | IfStatement | WhileStatement | ForStatement;
+export function BoundExpressionStatement(expression: BoundExpression): ExpressionStatement {
+    return {
+        kind: "ExpressionStatement",
+        expression
     };
-
-export function BoundExpressionStatement(expression: BoundExpression): BoundStatement {
-  return {
-    kind: 'ExpressionStatement',
-    expression,
-  };
 }
-
-export function BoundBlockStatement(statements: BoundStatement[]): BoundStatement {
-  return {
-    kind: 'BlockStatement',
-    statements,
-  };
+export function BoundBlockStatement(statements: BoundStatement[]): BlockStatement {
+    return {
+        kind: "BlockStatement",
+        statements
+    };
 }
-
-export function BoundVariableDelcarationStatement(
-  variable: VariableSymbol,
-  expression: BoundExpression
-): BoundStatement {
-  return {
-    kind: 'VariableDelcarationStatement',
-    variable,
-    expression,
-  };
+export function BoundVariableDelcarationStatement(variable: VariableSymbol, expression: BoundExpression): VariableDelcarationStatement {
+    return {
+        kind: "VariableDelcarationStatement",
+        variable,
+        expression
+    };
 }
-
-export function BoundIfStatement(
-  condition: BoundExpression,
-  ifBlock: BoundStatement,
-  elseBlock?: BoundStatement
-): BoundStatement {
-  return {
-    kind: 'IfStatement',
-    condition,
-    ifBlock,
-    elseBlock,
-  };
+export function BoundIfStatement(condition: BoundExpression, ifBlock: BoundStatement, elseBlock: BoundStatement | undefined): IfStatement {
+    return {
+        kind: "IfStatement",
+        condition,
+        ifBlock,
+        elseBlock
+    };
 }
-
-export function BoundWhileStatement(
-  loopCondition: BoundExpression,
-  whileBlock: BoundStatement
-): BoundStatement {
-  return {
-    kind: 'WhileStatement',
-    loopCondition,
-    whileBlock,
-  };
+export function BoundWhileStatement(loopCondition: BoundExpression, whileBlock: BoundStatement): WhileStatement {
+    return {
+        kind: "WhileStatement",
+        loopCondition,
+        whileBlock
+    };
 }
-
-export function BoundForStatement(
-  beginStatement: BoundStatement,
-  loopCondition: BoundExpression,
-  endStatement: BoundStatement,
-  forBlock: BoundStatement
-): BoundStatement {
-  return {
-    kind: 'ForStatement',
-    beginStatement,
-    loopCondition,
-    endStatement,
-    forBlock,
-  };
+export function BoundForStatement(beginStatement: BoundStatement, loopCondition: BoundExpression, endStatement: BoundStatement, forBlock: BoundStatement): ForStatement {
+    return {
+        kind: "ForStatement",
+        beginStatement,
+        loopCondition,
+        endStatement,
+        forBlock
+    };
 }

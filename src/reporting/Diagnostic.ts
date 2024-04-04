@@ -1,5 +1,7 @@
 import { Type } from '../binding/BoundExpression';
 import { SyntaxKind } from '../parsing/SyntaxNode';
+import Terminal from '../repl/Terminal';
+import { SourceText } from '../text/SourceText';
 import { TextSpan, textSpan } from '../text/TextSpan';
 
 export type Diagnostic = { message: string; span: TextSpan };
@@ -11,6 +13,29 @@ export class DiagnosticBag {
 
   hasDiagnostics() {
     return this.diagnostics.length > 0;
+  }
+
+  printDiagnostic(sourceText: SourceText) {
+    this.diagnostics.forEach((diagnostic) => {
+      const lineIndex = sourceText.getLineIndex(diagnostic.span.start);
+      const lineNumber = lineIndex + 1;
+      const errorLine = sourceText.lines[lineNumber - 1];
+      const character = diagnostic.span.start - sourceText.lines[lineIndex].start + 1;
+      Terminal.writeLine(`[${lineNumber}:${character}] ${diagnostic.message}`);
+
+      const prefixSpan = textSpan(0, diagnostic.span.start);
+      const suffixSpan = textSpan(diagnostic.span.end, errorLine.end);
+      const prefix = sourceText.getText(prefixSpan);
+      const error = sourceText.getText(diagnostic.span);
+      const suffix = sourceText.getText(suffixSpan);
+
+      Terminal.write('    ');
+      Terminal.write(prefix);
+      Terminal.write('\x1b[31m' + error + '\x1b[0m');
+      Terminal.write(suffix);
+      Terminal.writeLine();
+    });
+    Terminal.writeLine();
   }
 
   addBag(other: DiagnosticBag) {
