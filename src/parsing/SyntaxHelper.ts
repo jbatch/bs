@@ -29,8 +29,11 @@ export function getBinaryOperatorPrecedence(kind: SyntaxKind) {
     case 'GreaterOrEqualsToken':
       return 3;
     case 'AmpersandAmpersandToken':
+    case 'AmpersandToken':
       return 2;
     case 'PipePipeToken':
+    case 'PipeToken':
+    case 'CaretToken':
       return 1;
     default:
       return 0;
@@ -42,6 +45,7 @@ export function getUnaryOperatorPrecedence(kind: SyntaxKind) {
     case 'PlusToken':
     case 'MinusToken':
     case 'BangToken':
+    case 'TildeToken':
       return 6;
     default:
       return 0;

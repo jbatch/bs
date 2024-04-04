@@ -15,6 +15,10 @@ export type TokenSyntax =
       | { kind: 'CloseBraceToken'; span: TextSpan; text?: '}'; value?: undefined }
       | { kind: 'BangToken'; span: TextSpan; text?: '!'; value?: undefined }
       | { kind: 'EqualsToken'; span: TextSpan; text?: '='; value?: undefined }
+      | { kind: 'TildeToken'; span: TextSpan; text?: '~'; value?: undefined }
+      | { kind: 'CaretToken'; span: TextSpan; text?: '^'; value?: undefined }
+      | { kind: 'AmpersandToken'; span: TextSpan; text?: '&'; value?: undefined }
+      | { kind: 'PipeToken'; span: TextSpan; text?: '|'; value?: undefined }
       | { kind: 'SemicolonToken'; span: TextSpan; text?: ';'; value?: undefined }
       | { kind: 'LessToken'; span: TextSpan; text?: '<'; value?: undefined }
       | { kind: 'GreaterToken'; span: TextSpan; text?: '>'; value?: undefined }
@@ -87,6 +91,22 @@ export function BangToken(span: TextSpan): TokenSyntax {
 
 export function EqualsToken(span: TextSpan): TokenSyntax {
   return { kind: 'EqualsToken', span, text: '=', value: undefined, children: [] };
+}
+
+export function TildeToken(span: TextSpan): TokenSyntax {
+  return { kind: 'TildeToken', span, text: '~', value: undefined, children: [] };
+}
+
+export function CaretToken(span: TextSpan): TokenSyntax {
+  return { kind: 'CaretToken', span, text: '^', value: undefined, children: [] };
+}
+
+export function AmpersandToken(span: TextSpan): TokenSyntax {
+  return { kind: 'AmpersandToken', span, text: '&', value: undefined, children: [] };
+}
+
+export function PipeToken(span: TextSpan): TokenSyntax {
+  return { kind: 'PipeToken', span, text: '|', value: undefined, children: [] };
 }
 
 export function SemicolonToken(span: TextSpan): TokenSyntax {

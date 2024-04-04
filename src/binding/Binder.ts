@@ -11,8 +11,6 @@ import {
   BoundUnaryExpression,
   BoundVariableExpression,
   Type,
-  bindBinaryOperator,
-  bindUnaryOperator,
 } from './BoundExpression';
 import { BoundScope } from './BoundScope';
 import {
@@ -24,6 +22,7 @@ import {
   BoundVariableDelcarationStatement,
   BoundWhileStatement,
 } from './BoundStatement';
+import { bindBinaryOperator, bindUnaryOperator } from './BoundOperator';
 
 export class Binder {
   scope: BoundScope;

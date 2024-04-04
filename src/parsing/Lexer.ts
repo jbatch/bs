@@ -26,6 +26,10 @@ import {
   GreaterOrEqualsToken,
   GreaterToken,
   SemicolonToken,
+  CaretToken,
+  TildeToken,
+  AmpersandToken,
+  PipeToken,
 } from './TokenSyntax';
 import { textSpan } from '../text/TextSpan';
 
@@ -108,6 +112,10 @@ export class Lexer {
         return OpenBraceToken(textSpan(this.position++, 1));
       case '}':
         return CloseBraceToken(textSpan(this.position++, 1));
+      case '^':
+        return CaretToken(textSpan(this.position++, 1));
+      case '~':
+        return TildeToken(textSpan(this.position++, 1));
       case '!':
         if (this.lookAhead() === '=') {
           this.position += 2;
@@ -118,12 +126,16 @@ export class Lexer {
         if (this.lookAhead() === '&') {
           this.position += 2;
           return AmpersandAmpersandToken(textSpan(this.position - 2, 2));
+        } else {
+          return AmpersandToken(textSpan(this.position++, 1));
         }
       }
       case '|': {
         if (this.lookAhead() === '|') {
           this.position += 2;
           return PipePipeToken(textSpan(this.position - 2, 2));
+        } else {
+          return PipeToken(textSpan(this.position++, 1));
         }
       }
       case ';':

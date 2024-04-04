@@ -114,8 +114,8 @@ export class Evaluator {
         return -operand;
       case 'LogicalNegation':
         return !operand;
-      default:
-        throw new Error(`Invalid unary operator ${node}`);
+      case 'OnesCompliment':
+        return ~operand;
     }
   }
 
@@ -149,8 +149,12 @@ export class Evaluator {
         return left > right;
       case 'GreaterThanOrEqual':
         return left >= right;
-      default:
-        throw new Error(`Unexpected binary operator ${node}`);
+      case 'BitwiseAnd':
+        return Number(left) & Number(right);
+      case 'BitwiseOr':
+        return Number(left) | Number(right);
+      case 'BitwiseXor':
+        return Number(left) ^ Number(right);
     }
   }
 
