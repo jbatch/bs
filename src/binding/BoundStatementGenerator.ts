@@ -15,10 +15,6 @@ function array(node: TypeNode): TypeNode {
 }
 
 // TypeNodes
-const StringTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('string'),
-  undefined
-);
 const BoundStatementTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('BoundStatement'),
   undefined

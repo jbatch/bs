@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "generate": "./scripts/generate_boilerplate.sh"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
