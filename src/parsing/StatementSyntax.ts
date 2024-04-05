@@ -3,100 +3,112 @@ import { ExpressionSyntax } from './ExpressionSyntax';
 import { SyntaxNode } from './SyntaxNode';
 import { TokenSyntax } from './TokenSyntax';
 
-export type StatementSyntax = (
-  | {
-      kind: 'ExpressionStatement';
-      expression: ExpressionSyntax;
-      children: SyntaxNode[];
-    }
-  | {
-      kind: 'BlockStatement';
-      open: TokenSyntax;
-      statements: StatementSyntax[];
-      close: TokenSyntax;
-      children: SyntaxNode[];
-    }
-  | {
-      kind: 'VariableDeclarationStatement';
-      keyword: TokenSyntax;
-      identifier: TokenSyntax;
-      equals: TokenSyntax;
-      expression: ExpressionSyntax;
-      children: SyntaxNode[];
-    }
-  | {
-      kind: 'IfStatement';
-      ifKeyword: TokenSyntax;
-      openParenthesis: TokenSyntax;
-      condition: ExpressionSyntax;
-      closeParenthesis: TokenSyntax;
-      ifBlock: StatementSyntax;
-      elseKeyword?: TokenSyntax;
-      elseBlock?: StatementSyntax;
-      children: SyntaxNode[];
-    }
-  | {
-      kind: 'WhileStatement';
-      whileKeyword: TokenSyntax;
-      openParenthesis: TokenSyntax;
-      loopCondition: ExpressionSyntax;
-      closeParenthesis: TokenSyntax;
-      whileBlock: StatementSyntax;
-      children: SyntaxNode[];
-    }
-  /**
-   * for (var i = 0; i < 10; i++) {
-   *
-   * }
-   */
-  | {
-      kind: 'ForStatement';
-      forKeyword: TokenSyntax;
-      openParenthesis: TokenSyntax;
-      beginStatement: StatementSyntax;
-      loopCondition: ExpressionSyntax;
-      endStatement: StatementSyntax;
-      closeParenthesis: TokenSyntax;
-      forBlock: StatementSyntax;
-      children: SyntaxNode[];
-    }
-) & { span: TextSpan; children: SyntaxNode[] };
+function isDefined<T>(node: T | undefined): node is T {
+  return node !== undefined;
+}
 
 export type StatementKind = StatementSyntax['kind'];
 
-export function ExpressionStatement(expression: ExpressionSyntax): StatementSyntax {
+// Generated code
+
+export type ExpressionStatementSyntax = {
+  kind: 'ExpressionStatement';
+  span: TextSpan;
+  expression: ExpressionSyntax;
+  children: SyntaxNode[];
+};
+export type BlockStatementSyntax = {
+  kind: 'BlockStatement';
+  span: TextSpan;
+  open: TokenSyntax;
+  statements: StatementSyntax[];
+  close: TokenSyntax;
+  children: SyntaxNode[];
+};
+export type VariableDeclarationStatementSyntax = {
+  kind: 'VariableDeclarationStatement';
+  span: TextSpan;
+  keyword: TokenSyntax;
+  identifier: TokenSyntax;
+  equals: TokenSyntax;
+  expression: ExpressionSyntax;
+  children: SyntaxNode[];
+};
+export type IfStatementSyntax = {
+  kind: 'IfStatement';
+  span: TextSpan;
+  ifKeyword: TokenSyntax;
+  openParenthesis: TokenSyntax;
+  condition: ExpressionSyntax;
+  closeParenthesis: TokenSyntax;
+  ifBlock: StatementSyntax;
+  elseKeyword: TokenSyntax | undefined;
+  elseBlock: StatementSyntax | undefined;
+  children: SyntaxNode[];
+};
+export type WhileStatementSyntax = {
+  kind: 'WhileStatement';
+  span: TextSpan;
+  whileKeyword: TokenSyntax;
+  openParenthesis: TokenSyntax;
+  loopCondition: ExpressionSyntax;
+  closeParenthesis: TokenSyntax;
+  whileBlock: StatementSyntax;
+  children: SyntaxNode[];
+};
+export type ForStatementSyntax = {
+  kind: 'ForStatement';
+  span: TextSpan;
+  forKeyword: TokenSyntax;
+  openParenthesis: TokenSyntax;
+  beginStatement: StatementSyntax;
+  loopCondition: ExpressionSyntax;
+  endStatement: StatementSyntax;
+  closeParenthesis: TokenSyntax;
+  forBlock: StatementSyntax;
+  children: SyntaxNode[];
+};
+export type StatementSyntax =
+  | ExpressionStatementSyntax
+  | BlockStatementSyntax
+  | VariableDeclarationStatementSyntax
+  | IfStatementSyntax
+  | WhileStatementSyntax
+  | ForStatementSyntax;
+export function ExpressionStatement(expression: ExpressionSyntax): ExpressionStatementSyntax {
   const span = expression.span;
+  const children = [expression];
   return {
     kind: 'ExpressionStatement',
     span,
     expression,
-    children: [expression],
+    children,
   };
 }
-
 export function BlockStatement(
   open: TokenSyntax,
   statements: StatementSyntax[],
   close: TokenSyntax
-): StatementSyntax {
+): BlockStatementSyntax {
   const span = open.span;
+  const children = [open, ...statements, close];
   return {
     kind: 'BlockStatement',
     span,
     open,
     statements,
     close,
-    children: [open, ...statements, close],
+    children,
   };
 }
-
 export function VariableDeclarationStatement(
   keyword: TokenSyntax,
   identifier: TokenSyntax,
   equals: TokenSyntax,
   expression: ExpressionSyntax
-): StatementSyntax {
+): VariableDeclarationStatementSyntax {
   const span = keyword.span;
+  const children = [keyword, identifier, equals, expression];
   return {
     kind: 'VariableDeclarationStatement',
     span,
@@ -104,25 +116,28 @@ export function VariableDeclarationStatement(
     identifier,
     equals,
     expression,
-    children: [keyword, identifier, equals, expression],
+    children,
   };
 }
-
 export function IfStatement(
   ifKeyword: TokenSyntax,
   openParenthesis: TokenSyntax,
   condition: ExpressionSyntax,
   closeParenthesis: TokenSyntax,
   ifBlock: StatementSyntax,
-  elseKeyword?: TokenSyntax,
-  elseBlock?: StatementSyntax
-): StatementSyntax {
+  elseKeyword: TokenSyntax | undefined,
+  elseBlock: StatementSyntax | undefined
+): IfStatementSyntax {
   const span = ifKeyword.span;
-  const children = [ifKeyword, openParenthesis, condition, closeParenthesis, ifBlock];
-  if (elseKeyword && elseBlock) {
-    children.push(elseKeyword);
-    children.push(elseBlock);
-  }
+  const children = [
+    ifKeyword,
+    openParenthesis,
+    condition,
+    closeParenthesis,
+    ifBlock,
+    elseKeyword,
+    elseBlock,
+  ].filter(isDefined);
   return {
     kind: 'IfStatement',
     span,
@@ -136,14 +151,13 @@ export function IfStatement(
     children,
   };
 }
-
 export function WhileStatement(
   whileKeyword: TokenSyntax,
   openParenthesis: TokenSyntax,
   loopCondition: ExpressionSyntax,
   closeParenthesis: TokenSyntax,
   whileBlock: StatementSyntax
-): StatementSyntax {
+): WhileStatementSyntax {
   const span = whileKeyword.span;
   const children = [whileKeyword, openParenthesis, loopCondition, closeParenthesis, whileBlock];
   return {
@@ -157,7 +171,6 @@ export function WhileStatement(
     children,
   };
 }
-
 export function ForStatement(
   forKeyword: TokenSyntax,
   openParenthesis: TokenSyntax,
@@ -166,7 +179,7 @@ export function ForStatement(
   endStatement: StatementSyntax,
   closeParenthesis: TokenSyntax,
   forBlock: StatementSyntax
-): StatementSyntax {
+): ForStatementSyntax {
   const span = forKeyword.span;
   const children = [
     forKeyword,
