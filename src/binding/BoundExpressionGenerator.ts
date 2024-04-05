@@ -1,166 +1,52 @@
-import ts, { TypeNode, factory } from 'typescript';
+import ts from 'typescript';
 import fs from 'fs';
+import {
+  BoundBinaryOperatorTypeNode,
+  BoundExpressionTypeNode,
+  BoundUnaryOperatorTypeNode,
+  EvaluationResultTypeNode,
+  Generator,
+  StringTypeNode,
+  TypeNodeMap,
+  TypeTypeNode,
+} from '../codegeneration/GeneratorHelpers';
 
-const exportKeyword = factory.createToken(ts.SyntaxKind.ExportKeyword);
-
-// TypeNodes
-const StringTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('string'),
-  undefined
-);
-const EvaluationResultTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('EvaluationResult'),
-  undefined
-);
-const BoundExpressionTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('BoundExpression'),
-  undefined
-);
-const BoundUnaryOperatorTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('BoundUnaryOperator'),
-  undefined
-);
-const BoundBinaryOperatorTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('BoundBinaryOperator'),
-  undefined
-);
-
-function generateExpressionType(name: string, properties: Record<string, TypeNode>) {
-  const otherProperties = Object.entries(properties).map(([propertyName, propertyType]) =>
-    factory.createPropertySignature(
-      undefined,
-      factory.createIdentifier(propertyName),
-      undefined,
-      propertyType
-    )
-  );
-
-  const literalNode = factory.createTypeLiteralNode([
-    factory.createPropertySignature(
-      undefined,
-      factory.createIdentifier('kind'),
-      undefined,
-      factory.createLiteralTypeNode(factory.createStringLiteral(name))
-    ),
-    factory.createPropertySignature(
-      undefined,
-      factory.createIdentifier('type'),
-      undefined,
-      factory.createTypeReferenceNode(factory.createIdentifier('Type'), undefined)
-    ),
-    ...otherProperties,
-  ]);
-
-  return factory.createTypeAliasDeclaration(
-    [exportKeyword],
-    factory.createIdentifier(name),
-    undefined,
-    literalNode
-  );
-}
-
-function generateConstructor(name: string, properties: Record<string, TypeNode>) {
-  function constructorName() {
-    return `Bound${name}`;
-  }
-
-  const parameters = Object.entries(properties).map(([propertyName, propertyType]) => {
-    return factory.createParameterDeclaration(
-      undefined,
-      undefined,
-      factory.createIdentifier(propertyName),
-      undefined,
-      propertyType,
-      undefined
-    );
-  });
-
-  const propertyAssignment = Object.keys(properties).map((propertyName) => {
-    return factory.createShorthandPropertyAssignment(
-      factory.createIdentifier(propertyName),
-      undefined
-    );
-  });
-
-  const blockStatement = factory.createBlock(
-    [
-      factory.createReturnStatement(
-        factory.createObjectLiteralExpression(
-          [
-            factory.createPropertyAssignment(
-              factory.createIdentifier('kind'),
-              factory.createStringLiteral(name)
-            ),
-            factory.createShorthandPropertyAssignment(factory.createIdentifier('type'), undefined),
-            ...propertyAssignment,
-          ],
-          true
-        )
-      ),
-    ],
-    true
-  );
-
-  return factory.createFunctionDeclaration(
-    [factory.createToken(ts.SyntaxKind.ExportKeyword)],
-    undefined,
-    factory.createIdentifier(constructorName()),
-    undefined,
-    [
-      factory.createParameterDeclaration(
-        undefined,
-        undefined,
-        factory.createIdentifier('type'),
-        undefined,
-        factory.createTypeReferenceNode(factory.createIdentifier('Type'), undefined),
-        undefined
-      ),
-      ...parameters,
-    ],
-    // Return type
-    factory.createTypeReferenceNode(factory.createIdentifier(name), undefined),
-    blockStatement
-  );
-}
-
-const boundExpressionTypes: Record<string, Record<string, TypeNode>> = {
+const boundExpressionTypes: Record<string, TypeNodeMap> = {
   UnaryExpression: {
+    type: TypeTypeNode,
     operand: BoundExpressionTypeNode,
     operator: BoundUnaryOperatorTypeNode,
   },
   BinaryExpression: {
+    type: TypeTypeNode,
     left: BoundExpressionTypeNode,
     operator: BoundBinaryOperatorTypeNode,
     right: BoundExpressionTypeNode,
   },
   LiteralExpression: {
+    type: TypeTypeNode,
     value: EvaluationResultTypeNode,
   },
   VariableExpression: {
+    type: TypeTypeNode,
     name: StringTypeNode,
   },
   AssignmentExpression: {
+    type: TypeTypeNode,
     name: StringTypeNode,
     expression: BoundExpressionTypeNode,
   },
 };
 
-const typeDeclarations = Object.entries(boundExpressionTypes).map(([name, properties]) =>
-  generateExpressionType(name, properties)
-);
+const generator = new Generator('BoundExpression', boundExpressionTypes, {
+  constructorPrefix: 'Bound',
+  hasChildren: false,
+  hasSpan: false,
+});
 
-const unionType = factory.createTypeAliasDeclaration(
-  [exportKeyword],
-  factory.createIdentifier('BoundExpression'),
-  undefined,
-  factory.createUnionTypeNode([
-    ...Object.keys(boundExpressionTypes).map((name) => factory.createTypeReferenceNode(name)),
-  ])
-);
-
-const constructors = Object.entries(boundExpressionTypes).map(([name, properties]) =>
-  generateConstructor(name, properties)
-);
+const typeDeclarations = generator.createTypeDeclarations();
+const unionType = generator.createUnionType(typeDeclarations);
+const constructors = generator.createConstructors();
 
 function generateSourceCode(nodes: any) {
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
