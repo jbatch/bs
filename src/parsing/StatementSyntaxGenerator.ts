@@ -1,5 +1,3 @@
-import ts from 'typescript';
-import fs from 'fs';
 import {
   ExpressionSyntaxTypeNode,
   Generator,
@@ -8,7 +6,7 @@ import {
   TypeNodeMap,
   array,
   optional,
-} from '../codegeneration/GeneratorHelpers';
+} from '../codegeneration/Generator';
 
 const statmentTypes: Record<string, TypeNodeMap> = {
   ExpressionStatement: {
@@ -52,34 +50,15 @@ const statmentTypes: Record<string, TypeNodeMap> = {
   },
 };
 
-const generator = new Generator('StatementSyntax', statmentTypes, {
-  typeSuffix: 'Syntax',
-  hasChildren: true,
-  hasSpan: true,
-});
+const generator = new Generator(
+  'StatementSyntax',
+  'src/parsing/StatementSyntax.ts',
+  statmentTypes,
+  {
+    typeSuffix: 'Syntax',
+    hasChildren: true,
+    hasSpan: true,
+  }
+);
 
-const typeDeclarations = generator.createTypeDeclarations();
-const unionType = generator.createUnionType(typeDeclarations);
-const constructors = generator.createConstructors();
-
-function generateSourceCode(nodes: any) {
-  const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
-  const resultFile = ts.createSourceFile(
-    'temp.ts',
-    '',
-    ts.ScriptTarget.Latest,
-    false,
-    ts.ScriptKind.TSX
-  );
-
-  return printer.printList(ts.ListFormat.MultiLine, nodes, resultFile);
-}
-
-const generatedSource = generateSourceCode([...typeDeclarations, unionType, ...constructors]);
-
-const filePath = 'src/parsing/StatementSyntax.ts';
-
-const header = fs.readFileSync(filePath).toString().split('// Generated code')[0];
-fs.writeFileSync(filePath, [`${header}`, '// Generated code\n\n', generatedSource].join(''));
-
-console.log(`Wrote generated source code to ${filePath}`);
+generator.run();
