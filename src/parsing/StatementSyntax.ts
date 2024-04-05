@@ -3,65 +3,64 @@ import { ExpressionSyntax } from './ExpressionSyntax';
 import { SyntaxNode } from './SyntaxNode';
 import { TokenSyntax } from './TokenSyntax';
 
-export type StatementSyntax =
-  | (
-      | {
-          kind: 'ExpressionStatement';
-          expression: ExpressionSyntax;
-          children: SyntaxNode[];
-        }
-      | {
-          kind: 'BlockStatement';
-          open: TokenSyntax;
-          statements: StatementSyntax[];
-          close: TokenSyntax;
-          children: SyntaxNode[];
-        }
-      | {
-          kind: 'VariableDeclarationStatement';
-          keyword: TokenSyntax;
-          identifier: TokenSyntax;
-          equals: TokenSyntax;
-          expression: ExpressionSyntax;
-          children: SyntaxNode[];
-        }
-      | {
-          kind: 'IfStatement';
-          ifKeyword: TokenSyntax;
-          openParenthesis: TokenSyntax;
-          condition: ExpressionSyntax;
-          closeParenthesis: TokenSyntax;
-          ifBlock: StatementSyntax;
-          elseKeyword?: TokenSyntax;
-          elseBlock?: StatementSyntax;
-          children: SyntaxNode[];
-        }
-      | {
-          kind: 'WhileStatement';
-          whileKeyword: TokenSyntax;
-          openParenthesis: TokenSyntax;
-          loopCondition: ExpressionSyntax;
-          closeParenthesis: TokenSyntax;
-          whileBlock: StatementSyntax;
-          children: SyntaxNode[];
-        }
-      /**
-       * for (var i = 0; i < 10; i++) {
-       *
-       * }
-       */
-      | {
-          kind: 'ForStatement';
-          forKeyword: TokenSyntax;
-          openParenthesis: TokenSyntax;
-          beginStatement: StatementSyntax;
-          loopCondition: ExpressionSyntax;
-          endStatement: StatementSyntax;
-          closeParenthesis: TokenSyntax;
-          forBlock: StatementSyntax;
-          children: SyntaxNode[];
-        }
-    ) & { span: TextSpan; children: SyntaxNode[] };
+export type StatementSyntax = (
+  | {
+      kind: 'ExpressionStatement';
+      expression: ExpressionSyntax;
+      children: SyntaxNode[];
+    }
+  | {
+      kind: 'BlockStatement';
+      open: TokenSyntax;
+      statements: StatementSyntax[];
+      close: TokenSyntax;
+      children: SyntaxNode[];
+    }
+  | {
+      kind: 'VariableDeclarationStatement';
+      keyword: TokenSyntax;
+      identifier: TokenSyntax;
+      equals: TokenSyntax;
+      expression: ExpressionSyntax;
+      children: SyntaxNode[];
+    }
+  | {
+      kind: 'IfStatement';
+      ifKeyword: TokenSyntax;
+      openParenthesis: TokenSyntax;
+      condition: ExpressionSyntax;
+      closeParenthesis: TokenSyntax;
+      ifBlock: StatementSyntax;
+      elseKeyword?: TokenSyntax;
+      elseBlock?: StatementSyntax;
+      children: SyntaxNode[];
+    }
+  | {
+      kind: 'WhileStatement';
+      whileKeyword: TokenSyntax;
+      openParenthesis: TokenSyntax;
+      loopCondition: ExpressionSyntax;
+      closeParenthesis: TokenSyntax;
+      whileBlock: StatementSyntax;
+      children: SyntaxNode[];
+    }
+  /**
+   * for (var i = 0; i < 10; i++) {
+   *
+   * }
+   */
+  | {
+      kind: 'ForStatement';
+      forKeyword: TokenSyntax;
+      openParenthesis: TokenSyntax;
+      beginStatement: StatementSyntax;
+      loopCondition: ExpressionSyntax;
+      endStatement: StatementSyntax;
+      closeParenthesis: TokenSyntax;
+      forBlock: StatementSyntax;
+      children: SyntaxNode[];
+    }
+) & { span: TextSpan; children: SyntaxNode[] };
 
 export type StatementKind = StatementSyntax['kind'];
 

@@ -1,46 +1,45 @@
 import { TextSpan } from '../text/TextSpan';
 
-export type TokenSyntax =
-  | // Tokens
+export type TokenSyntax = // Tokens
   (
-      | { kind: 'NumberToken'; span: TextSpan; text?: string; value?: number | string }
-      | { kind: 'WhitespaceToken'; span: TextSpan; text?: string; value?: undefined }
-      | { kind: 'PlusToken'; span: TextSpan; text?: '+'; value?: undefined }
-      | { kind: 'MinusToken'; span: TextSpan; text?: '-'; value?: undefined }
-      | { kind: 'StarToken'; span: TextSpan; text?: '*'; value?: undefined }
-      | { kind: 'SlashToken'; span: TextSpan; text?: '/'; value?: undefined }
-      | { kind: 'OpenParenthesisToken'; span: TextSpan; text?: '('; value?: undefined }
-      | { kind: 'CloseParenthesisToken'; span: TextSpan; text?: ')'; value?: undefined }
-      | { kind: 'OpenBraceToken'; span: TextSpan; text?: '{'; value?: undefined }
-      | { kind: 'CloseBraceToken'; span: TextSpan; text?: '}'; value?: undefined }
-      | { kind: 'BangToken'; span: TextSpan; text?: '!'; value?: undefined }
-      | { kind: 'EqualsToken'; span: TextSpan; text?: '='; value?: undefined }
-      | { kind: 'TildeToken'; span: TextSpan; text?: '~'; value?: undefined }
-      | { kind: 'CaretToken'; span: TextSpan; text?: '^'; value?: undefined }
-      | { kind: 'AmpersandToken'; span: TextSpan; text?: '&'; value?: undefined }
-      | { kind: 'PipeToken'; span: TextSpan; text?: '|'; value?: undefined }
-      | { kind: 'SemicolonToken'; span: TextSpan; text?: ';'; value?: undefined }
-      | { kind: 'LessToken'; span: TextSpan; text?: '<'; value?: undefined }
-      | { kind: 'GreaterToken'; span: TextSpan; text?: '>'; value?: undefined }
-      | { kind: 'LessOrEqualsToken'; span: TextSpan; text?: '<='; value?: undefined }
-      | { kind: 'GreaterOrEqualsToken'; span: TextSpan; text?: '>='; value?: undefined }
-      | { kind: 'AmpersandAmpersandToken'; span: TextSpan; text?: '&&'; value?: undefined }
-      | { kind: 'PipePipeToken'; span: TextSpan; text?: '||'; value?: undefined }
-      | { kind: 'EqualsEqualsToken'; span: TextSpan; text?: '=='; value?: undefined }
-      | { kind: 'BangEqualsToken'; span: TextSpan; text?: '!='; value?: undefined }
-      | { kind: 'IdentifierToken'; span: TextSpan; text?: string; value?: undefined }
-      // Keywords
-      | { kind: 'TrueKeyword'; span: TextSpan; text?: 'true'; value?: true }
-      | { kind: 'FalseKeyword'; span: TextSpan; text?: 'false'; value?: false }
-      | { kind: 'ConstKeyword'; span: TextSpan; text?: 'const'; value?: undefined }
-      | { kind: 'VarKeyword'; span: TextSpan; text?: 'var'; value?: undefined }
-      | { kind: 'IfKeyword'; span: TextSpan; text?: 'if'; value?: undefined }
-      | { kind: 'ElseKeyword'; span: TextSpan; text?: 'else'; value?: undefined }
-      | { kind: 'WhileKeyword'; span: TextSpan; text?: 'while'; value?: undefined }
-      | { kind: 'ForKeyword'; span: TextSpan; text?: 'for'; value?: undefined }
-      | { kind: 'BadToken'; span: TextSpan; text?: string; value?: undefined }
-      | { kind: 'EndOfFileToken'; span: TextSpan; text?: '\0'; value?: undefined }
-    ) & { children: TokenSyntax[] };
+    | { kind: 'NumberToken'; span: TextSpan; text?: string; value?: number | string }
+    | { kind: 'WhitespaceToken'; span: TextSpan; text?: string; value?: undefined }
+    | { kind: 'PlusToken'; span: TextSpan; text?: '+'; value?: undefined }
+    | { kind: 'MinusToken'; span: TextSpan; text?: '-'; value?: undefined }
+    | { kind: 'StarToken'; span: TextSpan; text?: '*'; value?: undefined }
+    | { kind: 'SlashToken'; span: TextSpan; text?: '/'; value?: undefined }
+    | { kind: 'OpenParenthesisToken'; span: TextSpan; text?: '('; value?: undefined }
+    | { kind: 'CloseParenthesisToken'; span: TextSpan; text?: ')'; value?: undefined }
+    | { kind: 'OpenBraceToken'; span: TextSpan; text?: '{'; value?: undefined }
+    | { kind: 'CloseBraceToken'; span: TextSpan; text?: '}'; value?: undefined }
+    | { kind: 'BangToken'; span: TextSpan; text?: '!'; value?: undefined }
+    | { kind: 'EqualsToken'; span: TextSpan; text?: '='; value?: undefined }
+    | { kind: 'TildeToken'; span: TextSpan; text?: '~'; value?: undefined }
+    | { kind: 'CaretToken'; span: TextSpan; text?: '^'; value?: undefined }
+    | { kind: 'AmpersandToken'; span: TextSpan; text?: '&'; value?: undefined }
+    | { kind: 'PipeToken'; span: TextSpan; text?: '|'; value?: undefined }
+    | { kind: 'SemicolonToken'; span: TextSpan; text?: ';'; value?: undefined }
+    | { kind: 'LessToken'; span: TextSpan; text?: '<'; value?: undefined }
+    | { kind: 'GreaterToken'; span: TextSpan; text?: '>'; value?: undefined }
+    | { kind: 'LessOrEqualsToken'; span: TextSpan; text?: '<='; value?: undefined }
+    | { kind: 'GreaterOrEqualsToken'; span: TextSpan; text?: '>='; value?: undefined }
+    | { kind: 'AmpersandAmpersandToken'; span: TextSpan; text?: '&&'; value?: undefined }
+    | { kind: 'PipePipeToken'; span: TextSpan; text?: '||'; value?: undefined }
+    | { kind: 'EqualsEqualsToken'; span: TextSpan; text?: '=='; value?: undefined }
+    | { kind: 'BangEqualsToken'; span: TextSpan; text?: '!='; value?: undefined }
+    | { kind: 'IdentifierToken'; span: TextSpan; text?: string; value?: undefined }
+    // Keywords
+    | { kind: 'TrueKeyword'; span: TextSpan; text?: 'true'; value?: true }
+    | { kind: 'FalseKeyword'; span: TextSpan; text?: 'false'; value?: false }
+    | { kind: 'ConstKeyword'; span: TextSpan; text?: 'const'; value?: undefined }
+    | { kind: 'VarKeyword'; span: TextSpan; text?: 'var'; value?: undefined }
+    | { kind: 'IfKeyword'; span: TextSpan; text?: 'if'; value?: undefined }
+    | { kind: 'ElseKeyword'; span: TextSpan; text?: 'else'; value?: undefined }
+    | { kind: 'WhileKeyword'; span: TextSpan; text?: 'while'; value?: undefined }
+    | { kind: 'ForKeyword'; span: TextSpan; text?: 'for'; value?: undefined }
+    | { kind: 'BadToken'; span: TextSpan; text?: string; value?: undefined }
+    | { kind: 'EndOfFileToken'; span: TextSpan; text?: '\0'; value?: undefined }
+  ) & { children: TokenSyntax[] };
 
 export type TokenSyntaxKind = TokenSyntax['kind'];
 
