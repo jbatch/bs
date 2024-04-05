@@ -3,74 +3,105 @@ import fs from 'fs';
 
 export const exportKeyword = factory.createToken(ts.SyntaxKind.ExportKeyword);
 
-function isDefined<T>(node: T | undefined): node is T {
+export function isDefined<T>(node: T | undefined): node is T {
   return node !== undefined;
 }
 
 // Type Nodes
-export const TokenSyntaxTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('TokenSyntax'),
-  undefined
-);
-export const ExpressionSyntaxTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('ExpressionSyntax'),
-  undefined
-);
 export const TextSpanTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('TextSpan'),
   undefined
 );
+
+export const EvaluationResultTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('EvaluationResult'),
+  undefined
+);
+
+export const TypeTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('Type'),
+  undefined
+);
+
+export const VariableSymbolTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('VariableSymbol'),
+  undefined
+);
+
+// Syntax nodes
 export const SyntaxNodeTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('SyntaxNode'),
   undefined
 );
+
+export const TokenSyntaxTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('TokenSyntax'),
+  undefined
+);
+
+export const ExpressionSyntaxTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('ExpressionSyntax'),
+  undefined
+);
+
 export const StatementSyntaxTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('StatementSyntax'),
   undefined
 );
 
-export const BoundStatementTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('BoundStatement'),
-  undefined
-);
-export const BoundExpressionTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('BoundExpression'),
-  undefined
-);
-export const VariableSymbolTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('VariableSymbol'),
-  undefined
-);
-export const BoundUnaryOperatorTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('BoundUnaryOperator'),
-  undefined
-);
-export const BoundBinaryOperatorTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('BoundBinaryOperator'),
-  undefined
-);
-export const EvaluationResultTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('EvaluationResult'),
-  undefined
-);
-export const StringTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('string'),
-  undefined
-);
-export const TypeTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('Type'),
-  undefined
-);
 export const IdentifierTokenSyntaxTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('IdentifierTokenSyntax'),
   undefined
 );
+
 export const NumberTokenSyntaxTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('NumberTokenSyntax'),
   undefined
 );
+export const NumberLiteralSyntaxTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('NumberLiteralSyntax'),
+  undefined
+);
+
+export const BooleanLiteralSyntaxTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('BooleanLiteralSyntax'),
+  undefined
+);
+
+// Bound syntax nodes
+export const BoundStatementTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('BoundStatement'),
+  undefined
+);
+
+export const BoundExpressionTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('BoundExpression'),
+  undefined
+);
+
+export const BoundUnaryOperatorTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('BoundUnaryOperator'),
+  undefined
+);
+
+export const BoundBinaryOperatorTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('BoundBinaryOperator'),
+  undefined
+);
+
+// JS types
 export const NumberTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('number'),
+  undefined
+);
+
+export const BooleanTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('boolean'),
+  undefined
+);
+
+export const StringTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('string'),
   undefined
 );
 
@@ -89,10 +120,11 @@ export function array(node: TypeNode): TypeNode {
 }
 
 export function optional(node: TypeNode): TypeNode {
-  return factory.createUnionTypeNode([
-    node,
-    factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
-  ]);
+  return or(node, factory.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword));
+}
+
+export function or(...nodes: TypeNode[]) {
+  return factory.createUnionTypeNode([...nodes]);
 }
 
 export function createConstructorParameters(properties: TypeNodeMap) {

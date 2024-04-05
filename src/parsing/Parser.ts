@@ -12,8 +12,15 @@ import { Lexer } from './Lexer';
 import { SourceText } from '../text/SourceText';
 import { textSpan } from '../text/TextSpan';
 import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
-import { TokenSyntax, TokenSyntaxKind } from './TokenSyntax';
-import { CompilationUnit, SyntaxNode } from './SyntaxNode';
+import {
+  BooleanLiteral,
+  IdentifierTokenSyntax,
+  NumberLiteral,
+  NumberTokenSyntax,
+  TokenSyntax,
+  TokenSyntaxKind,
+} from './TokenSyntax';
+import { CompilationUnit } from './SyntaxNode';
 import {
   BlockStatement,
   ExpressionStatement,
@@ -126,7 +133,7 @@ export class Parser {
   private parseVariableDeclaration(): StatementSyntax {
     assert(this.current().kind === 'VarKeyword' || this.current().kind === 'ConstKeyword');
     const keyword = this.matchToken(this.current().kind);
-    const identifier = this.matchToken('IdentifierToken');
+    const identifier = this.matchToken('IdentifierToken') as IdentifierTokenSyntax;
     const equals = this.matchToken('EqualsToken');
     const expression = this.parseExpression();
     return VariableDeclarationStatement(keyword, identifier, equals, expression);
@@ -203,7 +210,7 @@ export class Parser {
 
   private parseAssignmentExpression(): ExpressionSyntax {
     if (this.peek(0).kind === 'IdentifierToken' && this.peek(1).kind === 'EqualsToken') {
-      const identifier = this.nextToken();
+      const identifier = this.matchToken('IdentifierToken') as IdentifierTokenSyntax;
       const equals = this.nextToken();
       const expression = this.parseAssignmentExpression();
       return AssignmentExpression(identifier, equals, expression);
@@ -245,18 +252,20 @@ export class Parser {
         return ParenthesizedExpression(open, expression, close);
       }
       case 'TrueKeyword':
+        const token = this.nextToken();
+        return LiteralExpression(BooleanLiteral(token.span, true));
       case 'FalseKeyword': {
-        const literal = this.nextToken();
-        return LiteralExpression(literal);
+        const token = this.nextToken();
+        return LiteralExpression(BooleanLiteral(token.span, false));
       }
       case 'IdentifierToken': {
-        const identifier = this.nextToken();
+        const identifier = this.matchToken('IdentifierToken') as IdentifierTokenSyntax;
         return NameExpression(identifier);
       }
 
       default: {
-        const literal = this.matchToken('NumberToken');
-        return LiteralExpression(literal);
+        const number = this.matchToken('NumberToken') as NumberTokenSyntax;
+        return LiteralExpression(NumberLiteral(number.span, number.value));
       }
     }
   }

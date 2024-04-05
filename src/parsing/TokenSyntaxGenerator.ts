@@ -1,4 +1,5 @@
 import {
+  BooleanTypeNode,
   Generator,
   NumberTypeNode,
   StringTypeNode,
@@ -34,6 +35,9 @@ const statmentTypes: Record<string, TypeNodeMap> = {
   EqualsEqualsToken: { span: TextSpanTypeNode },
   BangEqualsToken: { span: TextSpanTypeNode },
   IdentifierToken: { span: TextSpanTypeNode, text: StringTypeNode },
+  // Literals
+  NumberLiteral: { span: TextSpanTypeNode, value: NumberTypeNode },
+  BooleanLiteral: { span: TextSpanTypeNode, value: BooleanTypeNode },
   // Keywords
   TrueKeyword: { span: TextSpanTypeNode },
   FalseKeyword: { span: TextSpanTypeNode },

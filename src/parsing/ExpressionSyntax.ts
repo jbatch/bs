@@ -1,13 +1,22 @@
 import { TextSpan } from '../text/TextSpan';
 import { SyntaxNode } from './SyntaxNode';
-import { IdentifierTokenSyntax, NumberTokenSyntax, TokenSyntax } from './TokenSyntax';
+import {
+  BooleanLiteralSyntax,
+  IdentifierTokenSyntax,
+  NumberLiteralSyntax,
+  TokenSyntax,
+} from './TokenSyntax';
+
+function isDefined<T>(node: T | undefined): node is T {
+  return node !== undefined;
+}
 
 // Generated code
 
 export type LiteralExpressionSyntax = {
   kind: 'LiteralExpression';
   span: TextSpan;
-  literal: NumberTokenSyntax;
+  literal: NumberLiteralSyntax | BooleanLiteralSyntax;
   children: SyntaxNode[];
 };
 export type BinaryExpressionSyntax = {
@@ -54,9 +63,11 @@ export type ExpressionSyntax =
   | ParenthesizedExpressionSyntax
   | NameExpressionSyntax
   | AssignmentExpressionSyntax;
-export function LiteralExpression(literal: NumberTokenSyntax): LiteralExpressionSyntax {
+export function LiteralExpression(
+  literal: NumberLiteralSyntax | BooleanLiteralSyntax
+): LiteralExpressionSyntax {
   const span = literal.span;
-  const children: SyntaxNode[] = [literal];
+  const children: SyntaxNode[] = [literal].filter(isDefined);
   return {
     kind: 'LiteralExpression',
     span,

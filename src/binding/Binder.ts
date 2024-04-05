@@ -22,8 +22,9 @@ import {
   BoundVariableDelcarationStatement,
   BoundWhileStatement,
 } from './BoundStatement';
-import { bindBinaryOperator, bindUnaryOperator } from './BoundOperator';
+import { bindUnaryOperator } from './BoundUnaryOperator';
 import { getTokenText } from '../parsing/SyntaxHelper';
+import { bindBinaryOperator } from './BoundBinaryOperator';
 
 export class Binder {
   scope: BoundScope;
@@ -144,8 +145,8 @@ export class Binder {
 
   private bindLiteralExpression(expression: ExpressionSyntax): BoundExpression {
     assert(expression.kind === 'LiteralExpression');
-    const value = expression.literal.value ?? 0;
-    var type = this.getLiteralType(expression.literal.span, value);
+    const value = expression.literal.value;
+    var type = this.getLiteralType(expression.span, value);
     return BoundLiteralExpression(type, value);
   }
 

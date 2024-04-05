@@ -19,8 +19,8 @@ export function prettyPrint(node: SyntaxNode, indent: string = '', isLast: boole
   process.stdout.write(indent);
   process.stdout.write(marker);
   process.stdout.write(node.kind);
-  if (node.kind === 'LiteralExpression' && node.literal.value) {
-    process.stdout.write(' (' + node.literal.value.toString() + ')');
+  if (node.kind === 'LiteralExpression' && node.literal) {
+    process.stdout.write(' (' + node.literal.toString() + ')');
   }
   if (node.kind === 'IdentifierToken' && node.text) {
     process.stdout.write(' (' + node.text + ')');

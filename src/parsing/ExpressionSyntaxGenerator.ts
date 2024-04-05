@@ -1,15 +1,17 @@
 import {
+  BooleanLiteralSyntaxTypeNode,
   ExpressionSyntaxTypeNode,
   Generator,
   IdentifierTokenSyntaxTypeNode,
-  NumberTokenSyntaxTypeNode,
+  NumberLiteralSyntaxTypeNode,
   TokenSyntaxTypeNode,
   TypeNodeMap,
+  or,
 } from '../codegeneration/Generator';
 
 const expressionTypes: Record<string, TypeNodeMap> = {
   LiteralExpression: {
-    literal: NumberTokenSyntaxTypeNode,
+    literal: or(NumberLiteralSyntaxTypeNode, BooleanLiteralSyntaxTypeNode),
   },
   BinaryExpression: {
     left: ExpressionSyntaxTypeNode,

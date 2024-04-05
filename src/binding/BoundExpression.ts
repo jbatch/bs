@@ -1,5 +1,6 @@
 import { EvaluationResult } from '../evaluation/EvaluationResult';
-import { BoundBinaryOperator, BoundUnaryOperator } from './BoundOperator';
+import { BoundBinaryOperator } from './BoundBinaryOperator';
+import { BoundUnaryOperator } from './BoundUnaryOperator';
 
 export type Type = 'number' | 'boolean';
 

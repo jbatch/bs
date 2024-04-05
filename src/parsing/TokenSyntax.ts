@@ -3,7 +3,6 @@ import { SyntaxNode } from './SyntaxNode';
 
 export type TokenSyntaxKind = TokenSyntax['kind'];
 
-// Generated Code
 // Generated code
 
 export type NumberTokenSyntax = {
@@ -138,6 +137,18 @@ export type IdentifierTokenSyntax = {
   text: string;
   children: SyntaxNode[];
 };
+export type NumberLiteralSyntax = {
+  kind: 'NumberLiteral';
+  span: TextSpan;
+  value: number;
+  children: SyntaxNode[];
+};
+export type BooleanLiteralSyntax = {
+  kind: 'BooleanLiteral';
+  span: TextSpan;
+  value: boolean;
+  children: SyntaxNode[];
+};
 export type TrueKeywordSyntax = {
   kind: 'TrueKeyword';
   span: TextSpan;
@@ -215,6 +226,8 @@ export type TokenSyntax =
   | EqualsEqualsTokenSyntax
   | BangEqualsTokenSyntax
   | IdentifierTokenSyntax
+  | NumberLiteralSyntax
+  | BooleanLiteralSyntax
   | TrueKeywordSyntax
   | FalseKeywordSyntax
   | ConstKeywordSyntax
@@ -432,6 +445,24 @@ export function IdentifierToken(span: TextSpan, text: string): IdentifierTokenSy
     kind: 'IdentifierToken',
     span,
     text,
+    children,
+  };
+}
+export function NumberLiteral(span: TextSpan, value: number): NumberLiteralSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'NumberLiteral',
+    span,
+    value,
+    children,
+  };
+}
+export function BooleanLiteral(span: TextSpan, value: boolean): BooleanLiteralSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'BooleanLiteral',
+    span,
+    value,
     children,
   };
 }

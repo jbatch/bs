@@ -165,7 +165,7 @@ export class Lexer {
     }
 
     this.diagnostics.reportBadCharacter(this.position, current);
-    return BadToken(textSpan(this.position, 1), current);
+    return BadToken(textSpan(this.position, 1));
   }
 
   private readKeywordOrIdentifier() {
@@ -184,9 +184,8 @@ export class Lexer {
     while (this.isWhitepsace(this.current())) {
       this.position++;
     }
-    const text = this.source.text.substring(start, this.position);
-    const span = textSpan(start, text.length);
-    return WhitespaceToken(span, text);
+    const span = textSpan(start, this.position - start);
+    return WhitespaceToken(span);
   }
 
   private readNumber(): TokenSyntax {
@@ -202,6 +201,6 @@ export class Lexer {
       this.diagnostics.reportInvalidNumber(span, text);
     }
 
-    return NumberToken(span, text, value);
+    return NumberToken(span, value);
   }
 }
