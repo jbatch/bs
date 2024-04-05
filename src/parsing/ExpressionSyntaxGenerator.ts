@@ -1,13 +1,15 @@
 import {
   ExpressionSyntaxTypeNode,
   Generator,
+  IdentifierTokenSyntaxTypeNode,
+  NumberTokenSyntaxTypeNode,
   TokenSyntaxTypeNode,
   TypeNodeMap,
 } from '../codegeneration/Generator';
 
 const expressionTypes: Record<string, TypeNodeMap> = {
   LiteralExpression: {
-    literal: TokenSyntaxTypeNode,
+    literal: NumberTokenSyntaxTypeNode,
   },
   BinaryExpression: {
     left: ExpressionSyntaxTypeNode,
@@ -24,10 +26,10 @@ const expressionTypes: Record<string, TypeNodeMap> = {
     close: TokenSyntaxTypeNode,
   },
   NameExpression: {
-    identifier: TokenSyntaxTypeNode,
+    identifier: IdentifierTokenSyntaxTypeNode,
   },
   AssignmentExpression: {
-    identifier: TokenSyntaxTypeNode,
+    identifier: IdentifierTokenSyntaxTypeNode,
     equals: TokenSyntaxTypeNode,
     expression: ExpressionSyntaxTypeNode,
   },

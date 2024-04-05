@@ -1,13 +1,13 @@
 import { TextSpan } from '../text/TextSpan';
 import { SyntaxNode } from './SyntaxNode';
-import { TokenSyntax } from './TokenSyntax';
+import { IdentifierTokenSyntax, NumberTokenSyntax, TokenSyntax } from './TokenSyntax';
 
 // Generated code
 
 export type LiteralExpressionSyntax = {
   kind: 'LiteralExpression';
   span: TextSpan;
-  literal: TokenSyntax;
+  literal: NumberTokenSyntax;
   children: SyntaxNode[];
 };
 export type BinaryExpressionSyntax = {
@@ -36,13 +36,13 @@ export type ParenthesizedExpressionSyntax = {
 export type NameExpressionSyntax = {
   kind: 'NameExpression';
   span: TextSpan;
-  identifier: TokenSyntax;
+  identifier: IdentifierTokenSyntax;
   children: SyntaxNode[];
 };
 export type AssignmentExpressionSyntax = {
   kind: 'AssignmentExpression';
   span: TextSpan;
-  identifier: TokenSyntax;
+  identifier: IdentifierTokenSyntax;
   equals: TokenSyntax;
   expression: ExpressionSyntax;
   children: SyntaxNode[];
@@ -54,9 +54,9 @@ export type ExpressionSyntax =
   | ParenthesizedExpressionSyntax
   | NameExpressionSyntax
   | AssignmentExpressionSyntax;
-export function LiteralExpression(literal: TokenSyntax): LiteralExpressionSyntax {
+export function LiteralExpression(literal: NumberTokenSyntax): LiteralExpressionSyntax {
   const span = literal.span;
-  const children = [literal];
+  const children: SyntaxNode[] = [literal];
   return {
     kind: 'LiteralExpression',
     span,
@@ -70,7 +70,7 @@ export function BinaryExpression(
   right: ExpressionSyntax
 ): BinaryExpressionSyntax {
   const span = left.span;
-  const children = [left, operator, right];
+  const children: SyntaxNode[] = [left, operator, right];
   return {
     kind: 'BinaryExpression',
     span,
@@ -85,7 +85,7 @@ export function UnaryExpression(
   operand: ExpressionSyntax
 ): UnaryExpressionSyntax {
   const span = operator.span;
-  const children = [operator, operand];
+  const children: SyntaxNode[] = [operator, operand];
   return {
     kind: 'UnaryExpression',
     span,
@@ -100,7 +100,7 @@ export function ParenthesizedExpression(
   close: TokenSyntax
 ): ParenthesizedExpressionSyntax {
   const span = open.span;
-  const children = [open, expression, close];
+  const children: SyntaxNode[] = [open, expression, close];
   return {
     kind: 'ParenthesizedExpression',
     span,
@@ -110,9 +110,9 @@ export function ParenthesizedExpression(
     children,
   };
 }
-export function NameExpression(identifier: TokenSyntax): NameExpressionSyntax {
+export function NameExpression(identifier: IdentifierTokenSyntax): NameExpressionSyntax {
   const span = identifier.span;
-  const children = [identifier];
+  const children: SyntaxNode[] = [identifier];
   return {
     kind: 'NameExpression',
     span,
@@ -121,12 +121,12 @@ export function NameExpression(identifier: TokenSyntax): NameExpressionSyntax {
   };
 }
 export function AssignmentExpression(
-  identifier: TokenSyntax,
+  identifier: IdentifierTokenSyntax,
   equals: TokenSyntax,
   expression: ExpressionSyntax
 ): AssignmentExpressionSyntax {
   const span = identifier.span;
-  const children = [identifier, equals, expression];
+  const children: SyntaxNode[] = [identifier, equals, expression];
   return {
     kind: 'AssignmentExpression',
     span,

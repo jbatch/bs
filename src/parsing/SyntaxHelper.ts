@@ -6,6 +6,7 @@ import {
   IdentifierToken,
   IfKeyword,
   TokenSyntax,
+  TokenSyntaxKind,
   TrueKeyword,
   VarKeyword,
   WhileKeyword,
@@ -73,5 +74,84 @@ export function getKeywordOrIdentifier(text: string, position: number): TokenSyn
       return ForKeyword(span);
     default:
       return IdentifierToken(span, text);
+  }
+}
+
+export function getTokenText(token: TokenSyntax): string {
+  switch (token.kind) {
+    case 'NumberToken':
+      return '';
+    case 'WhitespaceToken':
+      return ' ';
+    case 'PlusToken':
+      return '+';
+    case 'MinusToken':
+      return '-';
+    case 'StarToken':
+      return '*';
+    case 'SlashToken':
+      return '/';
+    case 'OpenParenthesisToken':
+      return '(';
+    case 'CloseParenthesisToken':
+      return ')';
+    case 'OpenBraceToken':
+      return '{';
+    case 'CloseBraceToken':
+      return '}';
+    case 'BangToken':
+      return '!';
+    case 'EqualsToken':
+      return '=';
+    case 'TildeToken':
+      return '~';
+    case 'CaretToken':
+      return '^';
+    case 'AmpersandToken':
+      return '&';
+    case 'PipeToken':
+      return '|';
+    case 'SemicolonToken':
+      return ';';
+    case 'LessToken':
+      return '<';
+    case 'GreaterToken':
+      return '>';
+    case 'LessOrEqualsToken':
+      return '<=';
+    case 'GreaterOrEqualsToken':
+      return '>=';
+    case 'AmpersandAmpersandToken':
+      return '&&';
+    case 'PipePipeToken':
+      return '||';
+    case 'EqualsEqualsToken':
+      return '==';
+    case 'BangEqualsToken':
+      return '!=';
+    case 'IdentifierToken':
+      return '';
+    case 'TrueKeyword':
+      return 'true';
+    case 'FalseKeyword':
+      return 'false';
+    case 'ConstKeyword':
+      return 'const';
+    case 'VarKeyword':
+      return 'var';
+    case 'IfKeyword':
+      return 'if';
+    case 'ElseKeyword':
+      return 'else';
+    case 'WhileKeyword':
+      return 'while';
+    case 'ForKeyword':
+      return 'for';
+    case 'BadToken':
+      return '\0';
+    case 'EndOfFileToken':
+      return '\0';
+    default:
+      return '';
   }
 }

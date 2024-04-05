@@ -23,6 +23,7 @@ import {
   BoundWhileStatement,
 } from './BoundStatement';
 import { bindBinaryOperator, bindUnaryOperator } from './BoundOperator';
+import { getTokenText } from '../parsing/SyntaxHelper';
 
 export class Binder {
   scope: BoundScope;
@@ -156,7 +157,7 @@ export class Binder {
     if (operator === undefined) {
       this.diagnostics.reportUndefinedBinaryOperator(
         expression.operator.span,
-        expression.operator.text!,
+        getTokenText(expression.operator),
         left.type,
         right.type
       );
@@ -174,7 +175,7 @@ export class Binder {
     if (operator === undefined) {
       this.diagnostics.reportUndefinedUnaryOperator(
         expression.operator.span,
-        expression.operator.text!,
+        getTokenText(expression.operator),
         operand.type
       );
       return operand;

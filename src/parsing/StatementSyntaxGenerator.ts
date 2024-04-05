@@ -1,6 +1,7 @@
 import {
   ExpressionSyntaxTypeNode,
   Generator,
+  IdentifierTokenSyntaxTypeNode,
   StatementSyntaxTypeNode,
   TokenSyntaxTypeNode,
   TypeNodeMap,
@@ -19,7 +20,7 @@ const statmentTypes: Record<string, TypeNodeMap> = {
   },
   VariableDeclarationStatement: {
     keyword: TokenSyntaxTypeNode,
-    identifier: TokenSyntaxTypeNode,
+    identifier: IdentifierTokenSyntaxTypeNode,
     equals: TokenSyntaxTypeNode,
     expression: ExpressionSyntaxTypeNode,
   },

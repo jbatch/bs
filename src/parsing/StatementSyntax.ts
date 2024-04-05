@@ -1,7 +1,7 @@
 import { TextSpan } from '../text/TextSpan';
 import { ExpressionSyntax } from './ExpressionSyntax';
 import { SyntaxNode } from './SyntaxNode';
-import { TokenSyntax } from './TokenSyntax';
+import { IdentifierTokenSyntax, TokenSyntax } from './TokenSyntax';
 
 function isDefined<T>(node: T | undefined): node is T {
   return node !== undefined;
@@ -29,7 +29,7 @@ export type VariableDeclarationStatementSyntax = {
   kind: 'VariableDeclarationStatement';
   span: TextSpan;
   keyword: TokenSyntax;
-  identifier: TokenSyntax;
+  identifier: IdentifierTokenSyntax;
   equals: TokenSyntax;
   expression: ExpressionSyntax;
   children: SyntaxNode[];
@@ -77,7 +77,7 @@ export type StatementSyntax =
   | ForStatementSyntax;
 export function ExpressionStatement(expression: ExpressionSyntax): ExpressionStatementSyntax {
   const span = expression.span;
-  const children = [expression];
+  const children: SyntaxNode[] = [expression];
   return {
     kind: 'ExpressionStatement',
     span,
@@ -91,7 +91,7 @@ export function BlockStatement(
   close: TokenSyntax
 ): BlockStatementSyntax {
   const span = open.span;
-  const children = [open, ...statements, close];
+  const children: SyntaxNode[] = [open, ...statements, close];
   return {
     kind: 'BlockStatement',
     span,
@@ -103,12 +103,12 @@ export function BlockStatement(
 }
 export function VariableDeclarationStatement(
   keyword: TokenSyntax,
-  identifier: TokenSyntax,
+  identifier: IdentifierTokenSyntax,
   equals: TokenSyntax,
   expression: ExpressionSyntax
 ): VariableDeclarationStatementSyntax {
   const span = keyword.span;
-  const children = [keyword, identifier, equals, expression];
+  const children: SyntaxNode[] = [keyword, identifier, equals, expression];
   return {
     kind: 'VariableDeclarationStatement',
     span,
@@ -129,7 +129,7 @@ export function IfStatement(
   elseBlock: StatementSyntax | undefined
 ): IfStatementSyntax {
   const span = ifKeyword.span;
-  const children = [
+  const children: SyntaxNode[] = [
     ifKeyword,
     openParenthesis,
     condition,
@@ -159,7 +159,13 @@ export function WhileStatement(
   whileBlock: StatementSyntax
 ): WhileStatementSyntax {
   const span = whileKeyword.span;
-  const children = [whileKeyword, openParenthesis, loopCondition, closeParenthesis, whileBlock];
+  const children: SyntaxNode[] = [
+    whileKeyword,
+    openParenthesis,
+    loopCondition,
+    closeParenthesis,
+    whileBlock,
+  ];
   return {
     kind: 'WhileStatement',
     span,
@@ -181,7 +187,7 @@ export function ForStatement(
   forBlock: StatementSyntax
 ): ForStatementSyntax {
   const span = forKeyword.span;
-  const children = [
+  const children: SyntaxNode[] = [
     forKeyword,
     openParenthesis,
     beginStatement,
