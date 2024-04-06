@@ -3,6 +3,7 @@ import {
   Generator,
   NumberTypeNode,
   StringTypeNode,
+  SyntaxNodeTypeNode,
   TextSpanTypeNode,
   TypeNodeMap,
 } from '../codegeneration/Generator';
@@ -51,10 +52,16 @@ const statmentTypes: Record<string, TypeNodeMap> = {
   EndOfFileToken: { span: TextSpanTypeNode },
 };
 
-const generator = new Generator('TokenSyntax', 'src/parsing/TokenSyntax.ts', statmentTypes, {
-  typeSuffix: 'Syntax',
-  hasChildren: true,
-  emptyChildren: true,
-});
+const generator = new Generator(
+  'TokenSyntax',
+  'src/parsing/TokenSyntax.ts',
+  SyntaxNodeTypeNode,
+  statmentTypes,
+  {
+    typeSuffix: 'Syntax',
+    hasChildren: true,
+    emptyChildren: true,
+  }
+);
 
 generator.run();

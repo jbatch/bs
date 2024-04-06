@@ -3,6 +3,7 @@ import {
   Generator,
   IdentifierTokenSyntaxTypeNode,
   StatementSyntaxTypeNode,
+  SyntaxNodeTypeNode,
   TokenSyntaxTypeNode,
   TypeNodeMap,
   array,
@@ -54,6 +55,7 @@ const statmentTypes: Record<string, TypeNodeMap> = {
 const generator = new Generator(
   'StatementSyntax',
   'src/parsing/StatementSyntax.ts',
+  SyntaxNodeTypeNode,
   statmentTypes,
   {
     typeSuffix: 'Syntax',

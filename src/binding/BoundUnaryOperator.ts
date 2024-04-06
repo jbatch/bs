@@ -1,5 +1,6 @@
 import { SyntaxKind } from '../parsing/SyntaxNode';
 import { Type } from './BoundExpression';
+import { BoundNode } from './BoundNode';
 
 export type BoundUnaryOperatorKind = 'Identity' | 'Negation' | 'LogicalNegation' | 'OnesCompliment';
 
@@ -8,6 +9,7 @@ export type BoundUnaryOperator = {
   syntaxKind: SyntaxKind;
   operandType: Type;
   type: Type;
+  children: BoundNode[];
 };
 
 function boundUnaryOperator(
@@ -15,7 +17,8 @@ function boundUnaryOperator(
   syntaxKind: SyntaxKind,
   type: Type
 ): BoundUnaryOperator {
-  return { kind, syntaxKind, operandType: type, type };
+  const children: BoundNode[] = [];
+  return { kind, syntaxKind, operandType: type, type, children };
 }
 
 const UNARY_OPERATORS: BoundUnaryOperator[] = [

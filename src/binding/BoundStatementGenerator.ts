@@ -1,5 +1,6 @@
 import {
   BoundExpressionTypeNode,
+  BoundNodeTypeNode,
   BoundStatementTypeNode,
   Generator,
   TypeNodeMap,
@@ -39,10 +40,11 @@ const boundStatementTypes: Record<string, TypeNodeMap> = {
 const generator = new Generator(
   'BoundStatement',
   'src/binding/BoundStatement.ts',
+  BoundNodeTypeNode,
   boundStatementTypes,
   {
     constructorPrefix: 'Bound',
-    hasChildren: false,
+    hasChildren: true,
     hasSpan: false,
   }
 );

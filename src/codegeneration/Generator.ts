@@ -69,6 +69,11 @@ export const BooleanLiteralSyntaxTypeNode = factory.createTypeReferenceNode(
 );
 
 // Bound syntax nodes
+export const BoundNodeTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('BoundNode'),
+  undefined
+);
+
 export const BoundStatementTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('BoundStatement'),
   undefined
@@ -127,8 +132,12 @@ export function or(...nodes: TypeNode[]) {
   return factory.createUnionTypeNode([...nodes]);
 }
 
-export function createConstructorParameters(properties: TypeNodeMap) {
-  return Object.entries(properties).map(([propertyName, propertyType]) => {
+export function createConstructorParameters(properties: TypeNodeMap, hasType: boolean) {
+  const propertyList = Object.entries(properties);
+  if (hasType) {
+    propertyList.unshift(['type', TypeTypeNode]);
+  }
+  return propertyList.map(([propertyName, propertyType]) => {
     return factory.createParameterDeclaration(
       undefined,
       undefined,
@@ -160,7 +169,7 @@ export function createSpanDeclarationStatement(properties: TypeNodeMap) {
   );
 }
 
-export function createChildrenDeclarationStatment(properties: TypeNodeMap) {
+export function createChildrenDeclarationStatment(parentType: TypeNode, properties: TypeNodeMap) {
   const hasOptionalTypes = Object.values(properties).some(ts.isUnionTypeNode);
 
   let expressions: Expression = factory.createArrayLiteralExpression(
@@ -183,7 +192,7 @@ export function createChildrenDeclarationStatment(properties: TypeNodeMap) {
         factory.createVariableDeclaration(
           factory.createIdentifier('children'),
           undefined,
-          array(SyntaxNodeTypeNode),
+          array(parentType),
           expressions
         ),
       ],
@@ -192,8 +201,12 @@ export function createChildrenDeclarationStatment(properties: TypeNodeMap) {
   );
 }
 
-export function createPropertyAssignments(properties: TypeNodeMap) {
-  return Object.keys(properties).map((propertyName) => {
+export function createPropertyAssignments(properties: TypeNodeMap, hasType: boolean) {
+  const propertiesList = Object.keys(properties);
+  if (hasType) {
+    propertiesList.unshift('type');
+  }
+  return propertiesList.map((propertyName) => {
     return factory.createShorthandPropertyAssignment(
       factory.createIdentifier(propertyName),
       undefined
@@ -203,11 +216,13 @@ export function createPropertyAssignments(properties: TypeNodeMap) {
 
 function generateTypeDeclaration(
   name: string,
+  parentType: TypeNode,
   properties: TypeNodeMap,
   prefix: string,
   suffix: string,
   hasSpan: boolean,
-  hasChildren: boolean
+  hasChildren: boolean,
+  hasType: boolean
 ) {
   const otherProperties = Object.entries(properties).map(([propertyName, propertyType]) =>
     factory.createPropertySignature(
@@ -217,6 +232,14 @@ function generateTypeDeclaration(
       propertyType
     )
   );
+  const type = hasType
+    ? factory.createPropertySignature(
+        undefined,
+        factory.createIdentifier('type'),
+        undefined,
+        TypeTypeNode
+      )
+    : undefined;
   const span = hasSpan
     ? factory.createPropertySignature(
         undefined,
@@ -230,7 +253,7 @@ function generateTypeDeclaration(
         undefined,
         factory.createIdentifier('children'),
         undefined,
-        array(SyntaxNodeTypeNode)
+        array(parentType)
       )
     : undefined;
   const propertyNodes = [
@@ -240,6 +263,7 @@ function generateTypeDeclaration(
       undefined,
       factory.createLiteralTypeNode(factory.createStringLiteral(name))
     ),
+    type,
     span,
     ...otherProperties,
     children,
@@ -259,6 +283,7 @@ factory.createArrayLiteralExpression();
 
 function generateConstructor(
   name: string,
+  parentType: TypeNode,
   properties: TypeNodeMap,
   typePrefix: string,
   typeSuffix: string,
@@ -266,18 +291,19 @@ function generateConstructor(
   constructorSuffix: string,
   hasSpan: boolean,
   hasChildren: boolean,
+  hasType: boolean,
   emptyChildren: boolean
 ) {
   function constructorName() {
     return `${constructorPrefix}${name}${constructorSuffix}`;
   }
 
-  const parameters = createConstructorParameters(properties);
+  const parameters = createConstructorParameters(properties, hasType);
   const spanDeclareation = hasSpan ? createSpanDeclarationStatement(properties) : undefined;
   const childrenDeclaration = hasChildren
-    ? createChildrenDeclarationStatment(emptyChildren ? {} : properties)
+    ? createChildrenDeclarationStatment(parentType, emptyChildren ? {} : properties)
     : undefined;
-  const propertyAssignments = createPropertyAssignments(properties);
+  const propertyAssignments = createPropertyAssignments(properties, hasType);
 
   const span = hasSpan
     ? factory.createShorthandPropertyAssignment(factory.createIdentifier('span'), undefined)
@@ -327,23 +353,27 @@ type GeneratorOptions = {
   constructorSuffix?: string;
   hasChildren?: boolean;
   hasSpan?: boolean;
+  hasType?: boolean;
   emptyChildren?: boolean;
 };
 
 export class Generator {
   name: string;
   filepath: string;
+  parentType: TypeNode;
   types: Record<string, TypeNodeMap>;
   options: GeneratorOptions;
 
   constructor(
     name: string,
     filepath: string,
+    parentType: TypeNode,
     types: Record<string, TypeNodeMap>,
     options: GeneratorOptions
   ) {
     this.name = name;
     this.filepath = filepath;
+    this.parentType = parentType;
     this.types = types;
     this.options = options;
   }
@@ -380,11 +410,13 @@ export class Generator {
     return Object.entries(this.types).map(([name, property]) =>
       generateTypeDeclaration(
         name,
+        this.parentType,
         property,
         this.options.typePrefix ?? '',
         this.options.typeSuffix ?? '',
         !!this.options.hasSpan,
-        !!this.options.hasChildren
+        !!this.options.hasChildren,
+        !!this.options.hasType
       )
     );
   }
@@ -404,6 +436,7 @@ export class Generator {
     return Object.entries(this.types).map(([name, properties]) =>
       generateConstructor(
         name,
+        this.parentType,
         properties,
         this.options.typePrefix ?? '',
         this.options.typeSuffix ?? '',
@@ -411,6 +444,7 @@ export class Generator {
         this.options.constructorSuffix ?? '',
         !!this.options.hasSpan,
         !!this.options.hasChildren,
+        !!this.options.hasType,
         !!this.options.emptyChildren
       )
     );

@@ -25,6 +25,7 @@ import {
 import { bindUnaryOperator } from './BoundUnaryOperator';
 import { getTokenText } from '../parsing/SyntaxHelper';
 import { bindBinaryOperator } from './BoundBinaryOperator';
+import { BoundVariableSymbol, VariableSymbol } from '../text/VariableSymbol';
 
 export class Binder {
   scope: BoundScope;
@@ -73,7 +74,7 @@ export class Binder {
     const name = declaration.identifier.text!;
     const readonly = declaration.keyword.kind === 'ConstKeyword';
     const type = expression.type;
-    const variable = { name, type, readonly };
+    const variable = BoundVariableSymbol(name, type, readonly);
 
     if (!this.scope.tryDeclare(variable)) {
       this.diagnostics.reportVariableAlreadyDeclared(declaration.equals.span, name);

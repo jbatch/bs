@@ -1,6 +1,7 @@
 import {
   BoundBinaryOperatorTypeNode,
   BoundExpressionTypeNode,
+  BoundNodeTypeNode,
   BoundUnaryOperatorTypeNode,
   EvaluationResultTypeNode,
   Generator,
@@ -11,26 +12,21 @@ import {
 
 const boundExpressionTypes: Record<string, TypeNodeMap> = {
   UnaryExpression: {
-    type: TypeTypeNode,
     operand: BoundExpressionTypeNode,
     operator: BoundUnaryOperatorTypeNode,
   },
   BinaryExpression: {
-    type: TypeTypeNode,
     left: BoundExpressionTypeNode,
     operator: BoundBinaryOperatorTypeNode,
     right: BoundExpressionTypeNode,
   },
   LiteralExpression: {
-    type: TypeTypeNode,
     value: EvaluationResultTypeNode,
   },
   VariableExpression: {
-    type: TypeTypeNode,
     name: StringTypeNode,
   },
   AssignmentExpression: {
-    type: TypeTypeNode,
     name: StringTypeNode,
     expression: BoundExpressionTypeNode,
   },
@@ -39,11 +35,14 @@ const boundExpressionTypes: Record<string, TypeNodeMap> = {
 const generator = new Generator(
   'BoundExpression',
   'src/binding/BoundExpression.ts',
+  BoundNodeTypeNode,
   boundExpressionTypes,
   {
     constructorPrefix: 'Bound',
-    hasChildren: false,
+    hasChildren: true,
+    hasType: true,
     hasSpan: false,
+    emptyChildren: true,
   }
 );
 

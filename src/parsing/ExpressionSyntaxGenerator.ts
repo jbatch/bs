@@ -4,6 +4,7 @@ import {
   Generator,
   IdentifierTokenSyntaxTypeNode,
   NumberLiteralSyntaxTypeNode,
+  SyntaxNodeTypeNode,
   TokenSyntaxTypeNode,
   TypeNodeMap,
   or,
@@ -40,6 +41,7 @@ const expressionTypes: Record<string, TypeNodeMap> = {
 const generator = new Generator(
   'ExpressionSyntax',
   'src/parsing/ExpressionSyntax.ts',
+  SyntaxNodeTypeNode,
   expressionTypes,
   {
     typeSuffix: 'Syntax',

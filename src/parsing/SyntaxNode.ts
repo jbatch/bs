@@ -14,7 +14,7 @@ export type SyntaxNode = ExpressionSyntax | TokenSyntax | CompilationUnit | Stat
 
 export type SyntaxKind = SyntaxNode['kind'];
 
-export function prettyPrint(node: SyntaxNode, indent: string = '', isLast: boolean = true) {
+export function prettyPrintTree(node: SyntaxNode, indent: string = '', isLast: boolean = true) {
   const marker = isLast ? '└──' : '├──';
   process.stdout.write(indent);
   process.stdout.write(marker);
@@ -28,6 +28,6 @@ export function prettyPrint(node: SyntaxNode, indent: string = '', isLast: boole
   console.log();
   indent += isLast ? '   ' : '│  ';
   for (let i = 0; i < node.children.length; i++) {
-    prettyPrint(node.children[i], indent, i === node.children.length - 1);
+    prettyPrintTree(node.children[i], indent, i === node.children.length - 1);
   }
 }

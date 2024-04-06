@@ -1,5 +1,6 @@
 import { SyntaxKind } from '../parsing/SyntaxNode';
 import { Type } from './BoundExpression';
+import { BoundNode } from './BoundNode';
 
 export type BoundBinaryOperatorKind =
   | 'Addition'
@@ -24,6 +25,7 @@ export type BoundBinaryOperator = {
   leftType: Type;
   rightType: Type;
   type: Type;
+  children: BoundNode[];
 };
 
 function boundBinaryOperator(
@@ -32,6 +34,7 @@ function boundBinaryOperator(
   operandType: Type,
   type?: Type
 ): BoundBinaryOperator {
+  const children: BoundNode[] = [];
   if (type === undefined) {
     return {
       kind,
@@ -39,6 +42,7 @@ function boundBinaryOperator(
       leftType: operandType,
       rightType: operandType,
       type: operandType,
+      children,
     };
   }
   return {
@@ -47,6 +51,7 @@ function boundBinaryOperator(
     leftType: operandType,
     rightType: operandType,
     type,
+    children,
   };
 }
 

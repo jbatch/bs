@@ -1,13 +1,15 @@
 import { Binder } from './binding/Binder';
-import { Diagnostic, DiagnosticBag } from './reporting/Diagnostic';
+import { DiagnosticBag } from './reporting/Diagnostic';
 import Terminal from './repl/Terminal';
 import { Parser } from './parsing/Parser';
-import { textSpan } from './text/TextSpan';
+
 import { Evaluator } from './evaluation/Evaluator';
-import { SourceText } from './text/SourceText';
+
 import { BoundScope } from './binding/BoundScope';
 import { BoundStatement } from './binding/BoundStatement';
-import { prettyPrint } from './parsing/SyntaxNode';
+import { prettyPrintTree } from './parsing/SyntaxNode';
+import { BoundTreeLowerer } from './lowerer/BoundTreeLowerer';
+import { prettyPrintProgram } from './binding/BoundNode';
 
 const variables = {};
 let globalScope = new BoundScope();
@@ -32,6 +34,13 @@ async function main() {
       continue;
     }
 
+    if (line === '#p' || line === '#showProgram') {
+      showProgram = !showProgram;
+      const msg = `Print program ${showProgram ? 'enabled' : 'disabled'}`;
+      Terminal.writeLine(msg);
+      continue;
+    }
+
     if (lines.length === 0) {
       if (line.length === 0) {
         continue;
@@ -49,10 +58,17 @@ async function main() {
     // Reset collected lines
     lines = [];
 
-    const { diagnostics, statement } = parseCode(inputText);
+    let { diagnostics, statement } = parseCode(inputText);
 
     if (diagnostics.hasDiagnostics()) {
       continue;
+    }
+
+    // Rewrite tree
+    statement = new BoundTreeLowerer().rewriteBoundTree(statement);
+
+    if (showProgram) {
+      prettyPrintProgram(statement);
     }
 
     // Evaluate
@@ -92,7 +108,7 @@ function parseCode(inputText: string) {
   diagnostics.addBag(binder.diagnostics);
 
   if (showTree) {
-    prettyPrint(compilationUnit.statement);
+    prettyPrintTree(compilationUnit.statement);
   }
 
   // Print errors
