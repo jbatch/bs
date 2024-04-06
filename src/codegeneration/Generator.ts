@@ -28,6 +28,11 @@ export const VariableSymbolTypeNode = factory.createTypeReferenceNode(
   undefined
 );
 
+export const LabelSymbolTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('LabelSymbol'),
+  undefined
+);
+
 // Syntax nodes
 export const SyntaxNodeTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('SyntaxNode'),

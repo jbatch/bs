@@ -1,6 +1,7 @@
 import { VariableSymbol } from '../text/VariableSymbol';
 import { BoundExpression } from './BoundExpression';
 import { BoundNode } from './BoundNode';
+import { LabelSymbol } from './LabelSymbol';
 
 function isDefined<T>(node: T | undefined): node is T {
   return node !== undefined;
@@ -45,13 +46,33 @@ export type ForStatement = {
   forBlock: BoundStatement;
   children: BoundNode[];
 };
+export type LabelStatement = {
+  kind: 'LabelStatement';
+  label: LabelSymbol;
+  children: BoundNode[];
+};
+export type GoToStatement = {
+  kind: 'GoToStatement';
+  label: LabelSymbol;
+  children: BoundNode[];
+};
+export type ConditionalGoToStatement = {
+  kind: 'ConditionalGoToStatement';
+  label: LabelSymbol;
+  jumpIfTrue: boolean;
+  condition: BoundExpression;
+  children: BoundNode[];
+};
 export type BoundStatement =
   | ExpressionStatement
   | BlockStatement
   | VariableDelcarationStatement
   | IfStatement
   | WhileStatement
-  | ForStatement;
+  | ForStatement
+  | LabelStatement
+  | GoToStatement
+  | ConditionalGoToStatement;
 export function BoundExpressionStatement(expression: BoundExpression): ExpressionStatement {
   const children: BoundNode[] = [expression];
   return {
@@ -119,6 +140,36 @@ export function BoundForStatement(
     loopCondition,
     endStatement,
     forBlock,
+    children,
+  };
+}
+export function BoundLabelStatement(label: LabelSymbol): LabelStatement {
+  const children: BoundNode[] = [];
+  return {
+    kind: 'LabelStatement',
+    label,
+    children,
+  };
+}
+export function BoundGoToStatement(label: LabelSymbol): GoToStatement {
+  const children: BoundNode[] = [];
+  return {
+    kind: 'GoToStatement',
+    label,
+    children,
+  };
+}
+export function BoundConditionalGoToStatement(
+  label: LabelSymbol,
+  jumpIfTrue: boolean,
+  condition: BoundExpression
+): ConditionalGoToStatement {
+  const children: BoundNode[] = [condition];
+  return {
+    kind: 'ConditionalGoToStatement',
+    label,
+    jumpIfTrue,
+    condition,
     children,
   };
 }

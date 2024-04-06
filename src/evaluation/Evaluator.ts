@@ -1,20 +1,69 @@
 import assert from 'node:assert';
 import { BoundExpression } from '../binding/BoundExpression';
 import { EvaluationResult } from './EvaluationResult';
-import { BoundStatement } from '../binding/BoundStatement';
+import {
+  BoundStatement,
+  LabelStatement,
+  GoToStatement,
+  ConditionalGoToStatement,
+  BlockStatement,
+} from '../binding/BoundStatement';
 
 export class Evaluator {
-  root: BoundStatement;
+  root: BlockStatement;
   variables: Record<string, EvaluationResult>;
   lastResult?: EvaluationResult;
 
-  constructor(root: BoundStatement, variables: Record<string, EvaluationResult>) {
+  constructor(root: BlockStatement, variables: Record<string, EvaluationResult>) {
     this.root = root;
     this.variables = variables;
   }
 
   evaluate(): EvaluationResult | undefined {
-    this.evaluateStatement(this.root);
+    const labelMap: Record<string, number> = {};
+
+    this.root.statements.forEach((statement, index) => {
+      if (statement.kind === 'LabelStatement') {
+        labelMap[statement.label.name] = index;
+      }
+    });
+
+    let index = 0;
+    while (index < this.root.statements.length) {
+      const statement = this.root.statements[index];
+
+      switch (statement.kind) {
+        case 'ExpressionStatement':
+          this.lastResult = this.evaluateExpression(statement.expression);
+          break;
+        case 'BlockStatement':
+        case 'VariableDelcarationStatement':
+        case 'IfStatement':
+        case 'WhileStatement':
+          this.evaluateStatement(statement);
+          break;
+        case 'ForStatement':
+          // Rewritten
+          break;
+        case 'LabelStatement':
+          // No-op
+          break;
+        case 'GoToStatement':
+          index = labelMap[statement.label.name];
+          continue;
+        case 'ConditionalGoToStatement':
+          const condition = Boolean(this.evaluateExpression(statement.condition));
+          if (condition === statement.jumpIfTrue) {
+            index = labelMap[statement.label.name];
+            continue;
+          } else {
+            // No op
+            break;
+          }
+      }
+      index++;
+    }
+
     return this.lastResult;
   }
 
@@ -37,6 +86,15 @@ export class Evaluator {
         break;
       case 'ForStatement':
         this.evaluateForStatement(statement);
+        break;
+      case 'LabelStatement':
+        this.evaluateLabelStatement(statement);
+        break;
+      case 'GoToStatement':
+        this.evaluateGoToStatement(statement);
+        break;
+      case 'ConditionalGoToStatement':
+        this.evaluateConditionalGoToStatement(statement);
         break;
     }
   }
@@ -86,6 +144,18 @@ export class Evaluator {
       this.evaluateStatement(statement.forBlock);
       this.evaluateStatement(statement.endStatement);
     }
+  }
+
+  evaluateLabelStatement(statement: LabelStatement) {
+    throw new Error('Method not implemented.');
+  }
+
+  evaluateGoToStatement(statement: GoToStatement) {
+    throw new Error('Method not implemented.');
+  }
+
+  evaluateConditionalGoToStatement(statement: ConditionalGoToStatement) {
+    throw new Error('Method not implemented.');
   }
 
   private evaluateExpression(node: BoundExpression): EvaluationResult {

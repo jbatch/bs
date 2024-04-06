@@ -1,9 +1,11 @@
 import {
+  BooleanTypeNode,
   BoundExpressionTypeNode,
   BoundNodeTypeNode,
   BoundStatementTypeNode,
   Generator,
   GeneratorTypeDefinitions,
+  LabelSymbolTypeNode,
   VariableSymbolTypeNode,
   array,
   optional,
@@ -45,6 +47,25 @@ const boundStatementTypes: GeneratorTypeDefinitions = {
       loopCondition: BoundExpressionTypeNode,
       endStatement: BoundStatementTypeNode,
       forBlock: BoundStatementTypeNode,
+    },
+  },
+  LabelStatement: {
+    other: {
+      label: LabelSymbolTypeNode,
+    },
+  },
+  GoToStatement: {
+    other: {
+      label: LabelSymbolTypeNode,
+    },
+  },
+  ConditionalGoToStatement: {
+    children: {
+      condition: BoundExpressionTypeNode,
+    },
+    other: {
+      label: LabelSymbolTypeNode,
+      jumpIfTrue: BooleanTypeNode,
     },
   },
 };

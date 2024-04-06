@@ -6,7 +6,7 @@ import { Parser } from './parsing/Parser';
 import { Evaluator } from './evaluation/Evaluator';
 
 import { BoundScope } from './binding/BoundScope';
-import { BoundStatement } from './binding/BoundStatement';
+import { BlockStatement, BoundStatement } from './binding/BoundStatement';
 import { prettyPrintTree } from './parsing/SyntaxNode';
 import { prettyPrintProgram } from './binding/BoundNode';
 import { Lowerer } from './lowerer/Lowerer';
@@ -65,27 +65,21 @@ async function main() {
     }
 
     // Rewrite tree
-    statement = new Lowerer().rewriteBoundStatement(statement);
+    const loweredBlockStatment = new Lowerer().lower(statement);
 
     if (showProgram) {
-      prettyPrintProgram(statement);
+      prettyPrintProgram(loweredBlockStatment);
     }
 
     // Evaluate
-    evaluateBoundStatement(statement);
+    evaluateBoundStatement(loweredBlockStatment);
   }
   process.exit(0);
 }
 
-const { diagnostics, statement, boundScope } = parseCode('1 + 2 == 3');
-if (!diagnostics.hasDiagnostics()) {
-  evaluateBoundStatement(statement);
-  // Only update global scope if no issues occured in parsing.
-  globalScope = boundScope;
-}
 main();
 
-function evaluateBoundStatement(boundRoot: BoundStatement) {
+function evaluateBoundStatement(boundRoot: BlockStatement) {
   try {
     const evaluator = new Evaluator(boundRoot, variables);
     Terminal.writeLine();

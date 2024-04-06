@@ -21,6 +21,10 @@ import {
   WhileStatement,
   BoundForStatement,
   BoundExpressionStatement,
+  LabelStatement,
+  GoToStatement,
+  ConditionalGoToStatement,
+  BoundConditionalGoToStatement,
 } from './BoundStatement';
 
 export class BoundTreeRewriter {
@@ -38,6 +42,12 @@ export class BoundTreeRewriter {
         return this.rewriteWhileStatement(boundTreeRoot);
       case 'ForStatement':
         return this.rewriteForStatement(boundTreeRoot);
+      case 'LabelStatement':
+        return this.rewriteLabelStatement(boundTreeRoot);
+      case 'GoToStatement':
+        return this.rewriteGoToStatement(boundTreeRoot);
+      case 'ConditionalGoToStatement':
+        return this.rewriteConditionalGoToStatement(boundTreeRoot);
     }
   }
 
@@ -95,6 +105,20 @@ export class BoundTreeRewriter {
     endStatement = this.rewriteBoundStatement(endStatement);
     forBlock = this.rewriteBoundStatement(forBlock);
     return BoundForStatement(beginStatement, loopCondition, endStatement, forBlock);
+  }
+
+  private rewriteLabelStatement(statement: LabelStatement): BoundStatement {
+    return statement;
+  }
+
+  private rewriteGoToStatement(statement: GoToStatement): BoundStatement {
+    return statement;
+  }
+
+  private rewriteConditionalGoToStatement(statement: ConditionalGoToStatement): BoundStatement {
+    let { label, jumpIfTrue, condition } = statement;
+    condition = this.rewriteExpression(condition);
+    return BoundConditionalGoToStatement(label, jumpIfTrue, condition);
   }
 
   private rewriteUnaryExpression(expression: UnaryExpression): BoundExpression {
