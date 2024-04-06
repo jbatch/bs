@@ -19,6 +19,9 @@ export function prettyPrintProgram(node: BoundNode, indent: string = '', isLast:
   if (node.kind === 'LiteralExpression') {
     process.stdout.write(' (' + node.value.toString() + ')');
   }
+  if (node.kind === 'VariableSymbol') {
+    process.stdout.write(' (' + node.name + ')');
+  }
   if (node.kind === 'VariableExpression') {
     process.stdout.write(' (' + node.name + ')');
   }

@@ -25,6 +25,7 @@ import {
   GoToStatement,
   ConditionalGoToStatement,
   BoundConditionalGoToStatement,
+  BoundBlockStatement,
 } from './BoundStatement';
 
 export class BoundTreeRewriter {
@@ -73,7 +74,8 @@ export class BoundTreeRewriter {
   }
 
   private rewriteBlockStatement(statement: BlockStatement): BoundStatement {
-    return statement;
+    const statements = statement.statements;
+    return BoundBlockStatement(statements.map((s) => this.rewriteBoundStatement(s)));
   }
 
   private rewriteVariableDelcarationStatement(

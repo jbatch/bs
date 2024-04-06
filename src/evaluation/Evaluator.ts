@@ -38,13 +38,13 @@ export class Evaluator {
           break;
         case 'BlockStatement':
         case 'VariableDelcarationStatement':
-        case 'IfStatement':
-        case 'WhileStatement':
           this.evaluateStatement(statement);
           break;
+        case 'IfStatement':
+        case 'WhileStatement':
         case 'ForStatement':
           // Rewritten
-          break;
+          throw new Error('Encountered node that should be rewritten');
         case 'LabelStatement':
           // No-op
           break;
@@ -78,15 +78,6 @@ export class Evaluator {
       case 'VariableDelcarationStatement':
         this.evaluateVariableDeclarationStatement(statement);
         break;
-      case 'IfStatement':
-        this.evaluateIfStatement(statement);
-        break;
-      case 'WhileStatement':
-        this.evaluateWhileStatement(statement);
-        break;
-      case 'ForStatement':
-        this.evaluateForStatement(statement);
-        break;
       case 'LabelStatement':
         this.evaluateLabelStatement(statement);
         break;
@@ -113,37 +104,6 @@ export class Evaluator {
     var value = this.evaluateExpression(declaration.expression);
     this.variables[declaration.variable.name] = value;
     this.lastResult = value;
-  }
-
-  private evaluateIfStatement(statement: BoundStatement) {
-    assert(statement.kind === 'IfStatement');
-    const conditionValue = this.evaluateExpression(statement.condition);
-    assert(typeof conditionValue === 'boolean');
-    if (Boolean(conditionValue)) {
-      this.evaluateStatement(statement.ifBlock);
-      return;
-    }
-
-    if (statement.elseBlock) {
-      this.evaluateStatement(statement.elseBlock);
-    }
-  }
-
-  private evaluateWhileStatement(statement: BoundStatement) {
-    assert(statement.kind === 'WhileStatement');
-    while (Boolean(this.evaluateExpression(statement.loopCondition))) {
-      this.evaluateStatement(statement.whileBlock);
-    }
-  }
-
-  private evaluateForStatement(statement: BoundStatement) {
-    assert(statement.kind === 'ForStatement');
-    this.evaluateStatement(statement.beginStatement);
-    const a = this.evaluateExpression(statement.loopCondition);
-    while (Boolean(this.evaluateExpression(statement.loopCondition))) {
-      this.evaluateStatement(statement.forBlock);
-      this.evaluateStatement(statement.endStatement);
-    }
   }
 
   evaluateLabelStatement(statement: LabelStatement) {
