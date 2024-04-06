@@ -58,7 +58,6 @@ const generator = new Generator(
   {
     constructorPrefix: 'Bound',
     hasChildren: true,
-    // hasType: true,
     hasSpan: false,
   }
 );
