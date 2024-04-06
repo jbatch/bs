@@ -22,6 +22,15 @@ export function prettyPrintProgram(node: BoundNode, indent: string = '', isLast:
   if (node.kind === 'VariableExpression') {
     process.stdout.write(' (' + node.name + ')');
   }
+  if (node.kind === 'LabelStatement') {
+    process.stdout.write(' (' + node.label.name + ')');
+  }
+  if (node.kind === 'GoToStatement') {
+    process.stdout.write(`(label=${node.label.name})`);
+  }
+  if (node.kind === 'ConditionalGoToStatement') {
+    process.stdout.write(`(label=${node.label.name}, jumpIfTrue=${node.jumpIfTrue})`);
+  }
   console.log();
   indent += isLast ? '   ' : '│  ';
   if (node.kind !== 'VariableSymbol') {

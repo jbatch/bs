@@ -82,7 +82,7 @@ export class BoundTreeRewriter {
     return statement;
   }
 
-  private rewriteIfStatement(statement: IfStatement): BoundStatement {
+  rewriteIfStatement(statement: IfStatement): BoundStatement {
     let { condition, ifBlock, elseBlock } = statement;
     condition = this.rewriteExpression(condition);
     const rewrittenIfBlock = this.rewriteBoundStatement(ifBlock);
