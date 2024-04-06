@@ -2,6 +2,7 @@ import {
   BooleanLiteralSyntaxTypeNode,
   ExpressionSyntaxTypeNode,
   Generator,
+  GeneratorTypeDefinitions,
   IdentifierTokenSyntaxTypeNode,
   NumberLiteralSyntaxTypeNode,
   SyntaxNodeTypeNode,
@@ -10,31 +11,43 @@ import {
   or,
 } from '../codegeneration/Generator';
 
-const expressionTypes: Record<string, TypeNodeMap> = {
+const expressionTypes: GeneratorTypeDefinitions = {
   LiteralExpression: {
-    literal: or(NumberLiteralSyntaxTypeNode, BooleanLiteralSyntaxTypeNode),
+    children: {
+      literal: or(NumberLiteralSyntaxTypeNode, BooleanLiteralSyntaxTypeNode),
+    },
   },
   BinaryExpression: {
-    left: ExpressionSyntaxTypeNode,
-    operator: TokenSyntaxTypeNode,
-    right: ExpressionSyntaxTypeNode,
+    children: {
+      left: ExpressionSyntaxTypeNode,
+      operator: TokenSyntaxTypeNode,
+      right: ExpressionSyntaxTypeNode,
+    },
   },
   UnaryExpression: {
-    operator: TokenSyntaxTypeNode,
-    operand: ExpressionSyntaxTypeNode,
+    children: {
+      operator: TokenSyntaxTypeNode,
+      operand: ExpressionSyntaxTypeNode,
+    },
   },
   ParenthesizedExpression: {
-    open: TokenSyntaxTypeNode,
-    expression: ExpressionSyntaxTypeNode,
-    close: TokenSyntaxTypeNode,
+    children: {
+      open: TokenSyntaxTypeNode,
+      expression: ExpressionSyntaxTypeNode,
+      close: TokenSyntaxTypeNode,
+    },
   },
   NameExpression: {
-    identifier: IdentifierTokenSyntaxTypeNode,
+    children: {
+      identifier: IdentifierTokenSyntaxTypeNode,
+    },
   },
   AssignmentExpression: {
-    identifier: IdentifierTokenSyntaxTypeNode,
-    equals: TokenSyntaxTypeNode,
-    expression: ExpressionSyntaxTypeNode,
+    children: {
+      identifier: IdentifierTokenSyntaxTypeNode,
+      equals: TokenSyntaxTypeNode,
+      expression: ExpressionSyntaxTypeNode,
+    },
   },
 };
 

@@ -52,7 +52,7 @@ export function BoundUnaryExpression(
   operand: BoundExpression,
   operator: BoundUnaryOperator
 ): UnaryExpression {
-  const children: BoundNode[] = [];
+  const children: BoundNode[] = [operand, operator];
   return {
     kind: 'UnaryExpression',
     type,
@@ -67,7 +67,7 @@ export function BoundBinaryExpression(
   operator: BoundBinaryOperator,
   right: BoundExpression
 ): BinaryExpression {
-  const children: BoundNode[] = [];
+  const children: BoundNode[] = [left, operator, right];
   return {
     kind: 'BinaryExpression',
     type,
@@ -100,7 +100,7 @@ export function BoundAssignmentExpression(
   name: string,
   expression: BoundExpression
 ): AssignmentExpression {
-  const children: BoundNode[] = [];
+  const children: BoundNode[] = [expression];
   return {
     kind: 'AssignmentExpression',
     type,

@@ -1,6 +1,7 @@
 import {
   ExpressionSyntaxTypeNode,
   Generator,
+  GeneratorTypeDefinitions,
   IdentifierTokenSyntaxTypeNode,
   StatementSyntaxTypeNode,
   SyntaxNodeTypeNode,
@@ -10,45 +11,57 @@ import {
   optional,
 } from '../codegeneration/Generator';
 
-const statmentTypes: Record<string, TypeNodeMap> = {
+const statmentTypes: GeneratorTypeDefinitions = {
   ExpressionStatement: {
-    expression: ExpressionSyntaxTypeNode,
+    children: {
+      expression: ExpressionSyntaxTypeNode,
+    },
   },
   BlockStatement: {
-    open: TokenSyntaxTypeNode,
-    statements: array(StatementSyntaxTypeNode),
-    close: TokenSyntaxTypeNode,
+    children: {
+      open: TokenSyntaxTypeNode,
+      statements: array(StatementSyntaxTypeNode),
+      close: TokenSyntaxTypeNode,
+    },
   },
   VariableDeclarationStatement: {
-    keyword: TokenSyntaxTypeNode,
-    identifier: IdentifierTokenSyntaxTypeNode,
-    equals: TokenSyntaxTypeNode,
-    expression: ExpressionSyntaxTypeNode,
+    children: {
+      keyword: TokenSyntaxTypeNode,
+      identifier: IdentifierTokenSyntaxTypeNode,
+      equals: TokenSyntaxTypeNode,
+      expression: ExpressionSyntaxTypeNode,
+    },
   },
   IfStatement: {
-    ifKeyword: TokenSyntaxTypeNode,
-    openParenthesis: TokenSyntaxTypeNode,
-    condition: ExpressionSyntaxTypeNode,
-    closeParenthesis: TokenSyntaxTypeNode,
-    ifBlock: StatementSyntaxTypeNode,
-    elseKeyword: optional(TokenSyntaxTypeNode),
-    elseBlock: optional(StatementSyntaxTypeNode),
+    children: {
+      ifKeyword: TokenSyntaxTypeNode,
+      openParenthesis: TokenSyntaxTypeNode,
+      condition: ExpressionSyntaxTypeNode,
+      closeParenthesis: TokenSyntaxTypeNode,
+      ifBlock: StatementSyntaxTypeNode,
+      elseKeyword: optional(TokenSyntaxTypeNode),
+      elseBlock: optional(StatementSyntaxTypeNode),
+    },
   },
   WhileStatement: {
-    whileKeyword: TokenSyntaxTypeNode,
-    openParenthesis: TokenSyntaxTypeNode,
-    loopCondition: ExpressionSyntaxTypeNode,
-    closeParenthesis: TokenSyntaxTypeNode,
-    whileBlock: StatementSyntaxTypeNode,
+    children: {
+      whileKeyword: TokenSyntaxTypeNode,
+      openParenthesis: TokenSyntaxTypeNode,
+      loopCondition: ExpressionSyntaxTypeNode,
+      closeParenthesis: TokenSyntaxTypeNode,
+      whileBlock: StatementSyntaxTypeNode,
+    },
   },
   ForStatement: {
-    forKeyword: TokenSyntaxTypeNode,
-    openParenthesis: TokenSyntaxTypeNode,
-    beginStatement: StatementSyntaxTypeNode,
-    loopCondition: ExpressionSyntaxTypeNode,
-    endStatement: StatementSyntaxTypeNode,
-    closeParenthesis: TokenSyntaxTypeNode,
-    forBlock: StatementSyntaxTypeNode,
+    children: {
+      forKeyword: TokenSyntaxTypeNode,
+      openParenthesis: TokenSyntaxTypeNode,
+      beginStatement: StatementSyntaxTypeNode,
+      loopCondition: ExpressionSyntaxTypeNode,
+      endStatement: StatementSyntaxTypeNode,
+      closeParenthesis: TokenSyntaxTypeNode,
+      forBlock: StatementSyntaxTypeNode,
+    },
   },
 };
 

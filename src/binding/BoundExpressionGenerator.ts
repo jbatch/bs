@@ -5,30 +5,48 @@ import {
   BoundUnaryOperatorTypeNode,
   EvaluationResultTypeNode,
   Generator,
+  GeneratorTypeDefinitions,
   StringTypeNode,
-  TypeNodeMap,
   TypeTypeNode,
 } from '../codegeneration/Generator';
 
-const boundExpressionTypes: Record<string, TypeNodeMap> = {
+const boundExpressionTypes: GeneratorTypeDefinitions = {
   UnaryExpression: {
-    operand: BoundExpressionTypeNode,
-    operator: BoundUnaryOperatorTypeNode,
+    children: {
+      operand: BoundExpressionTypeNode,
+      operator: BoundUnaryOperatorTypeNode,
+    },
+    other: { type: TypeTypeNode },
   },
   BinaryExpression: {
-    left: BoundExpressionTypeNode,
-    operator: BoundBinaryOperatorTypeNode,
-    right: BoundExpressionTypeNode,
+    children: {
+      left: BoundExpressionTypeNode,
+      operator: BoundBinaryOperatorTypeNode,
+      right: BoundExpressionTypeNode,
+    },
+    other: { type: TypeTypeNode },
   },
   LiteralExpression: {
-    value: EvaluationResultTypeNode,
+    other: {
+      type: TypeTypeNode,
+      value: EvaluationResultTypeNode,
+    },
   },
   VariableExpression: {
-    name: StringTypeNode,
+    children: {},
+    other: {
+      type: TypeTypeNode,
+      name: StringTypeNode,
+    },
   },
   AssignmentExpression: {
-    name: StringTypeNode,
-    expression: BoundExpressionTypeNode,
+    children: {
+      expression: BoundExpressionTypeNode,
+    },
+    other: {
+      type: TypeTypeNode,
+      name: StringTypeNode,
+    },
   },
 };
 
@@ -40,9 +58,8 @@ const generator = new Generator(
   {
     constructorPrefix: 'Bound',
     hasChildren: true,
-    hasType: true,
+    // hasType: true,
     hasSpan: false,
-    emptyChildren: true,
   }
 );
 
