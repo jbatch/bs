@@ -79,6 +79,11 @@ export const BoundStatementTypeNode = factory.createTypeReferenceNode(
   undefined
 );
 
+export const BoundBlockStatementTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('BlockStatement'),
+  undefined
+);
+
 export const BoundExpressionTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('BoundExpression'),
   undefined

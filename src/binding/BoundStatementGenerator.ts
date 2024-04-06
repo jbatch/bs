@@ -4,7 +4,6 @@ import {
   BoundStatementTypeNode,
   Generator,
   GeneratorTypeDefinitions,
-  TypeNodeMap,
   VariableSymbolTypeNode,
   array,
   optional,

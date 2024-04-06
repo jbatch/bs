@@ -34,6 +34,7 @@ export class Evaluator {
         break;
       case 'WhileStatement':
         this.evaluateWhileStatement(statement);
+        break;
       case 'ForStatement':
         this.evaluateForStatement(statement);
         break;

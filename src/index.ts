@@ -8,8 +8,8 @@ import { Evaluator } from './evaluation/Evaluator';
 import { BoundScope } from './binding/BoundScope';
 import { BoundStatement } from './binding/BoundStatement';
 import { prettyPrintTree } from './parsing/SyntaxNode';
-import { BoundTreeLowerer } from './lowerer/BoundTreeLowerer';
 import { prettyPrintProgram } from './binding/BoundNode';
+import { Lowerer } from './lowerer/Lowerer';
 
 const variables = {};
 let globalScope = new BoundScope();
@@ -65,7 +65,7 @@ async function main() {
     }
 
     // Rewrite tree
-    statement = new BoundTreeLowerer().rewriteBoundTree(statement);
+    statement = new Lowerer().rewriteBoundStatement(statement);
 
     if (showProgram) {
       prettyPrintProgram(statement);
