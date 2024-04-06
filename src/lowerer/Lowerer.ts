@@ -9,6 +9,7 @@ import {
   BoundWhileStatement,
   ForStatement,
   IfStatement,
+  WhileStatement,
 } from '../binding/BoundStatement';
 import { BoundTreeRewriter } from '../binding/BoundTreeRewriter';
 
@@ -42,6 +43,20 @@ export class Lowerer extends BoundTreeRewriter {
   }
 
   rewriteForStatement(statement: ForStatement): BoundStatement {
+    /**
+     * REWRITE
+     * for(<begin>; <condition>; <end>) {
+     *  <forBlock>
+     * }
+     * TO
+     * {
+     *   <begin>
+     *   while( <condition> ) {
+     *     <forBlock>
+     *     <end>
+     *   }
+     * }
+     */
     const { beginStatement, loopCondition, forBlock, endStatement } = statement;
     assert(forBlock.kind === 'BlockStatement');
     const whileStatment = BoundWhileStatement(
@@ -100,5 +115,28 @@ export class Lowerer extends BoundTreeRewriter {
       elseBlock,
       endLabel,
     ]);
+  }
+
+  rewriteWhileStatement(statement: WhileStatement): BoundStatement {
+    /**
+     * REWRITE
+     * while(<condition>) {
+     *     <whileBlock>
+     * }
+     * TO
+     *
+     * begin:
+     * conditionalGoTo <condition> <:end> jumpIfTrue=false
+     * <whileBlock>
+     * goto <begin:>
+     * end:
+     */
+    const { loopCondition, whileBlock } = statement;
+    const beginLabel = BoundLabelStatement({ name: this.generateLabel() });
+    const endLabel = BoundLabelStatement({ name: this.generateLabel() });
+    const goToEndIfFalse = BoundConditionalGoToStatement(endLabel.label, false, loopCondition);
+    const goToBegin = BoundGoToStatement(beginLabel.label);
+
+    return BoundBlockStatement([beginLabel, goToEndIfFalse, whileBlock, goToBegin, endLabel]);
   }
 }

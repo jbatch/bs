@@ -91,7 +91,7 @@ export class BoundTreeRewriter {
     return BoundIfStatement(condition, rewrittenIfBlock, rewrittenElseBlock);
   }
 
-  private rewriteWhileStatement(statement: WhileStatement): BoundStatement {
+  rewriteWhileStatement(statement: WhileStatement): BoundStatement {
     let { loopCondition, whileBlock } = statement;
     loopCondition = this.rewriteExpression(loopCondition);
     whileBlock = this.rewriteBoundStatement(whileBlock);
