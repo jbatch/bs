@@ -2,7 +2,13 @@ import { SyntaxKind } from '../parsing/SyntaxNode';
 import { Bool, Int, TypeSymbol } from '../symbols/Symbol';
 import { BoundNode } from './BoundNode';
 
-export type BoundUnaryOperatorKind = 'Identity' | 'Negation' | 'LogicalNegation' | 'OnesCompliment';
+export type BoundUnaryOperatorKind =
+  | 'Identity'
+  | 'Negation'
+  | 'LogicalNegation'
+  | 'OnesCompliment'
+  | 'Increment'
+  | 'Decrement';
 
 export type BoundUnaryOperator = {
   kind: BoundUnaryOperatorKind;
@@ -26,6 +32,8 @@ const UNARY_OPERATORS: BoundUnaryOperator[] = [
   boundUnaryOperator('Negation', 'MinusToken', Int),
   boundUnaryOperator('LogicalNegation', 'BangToken', Bool),
   boundUnaryOperator('OnesCompliment', 'TildeToken', Int),
+  boundUnaryOperator('Increment', 'PlusPlus', Int),
+  boundUnaryOperator('Decrement', 'MinusMinus', Int),
 ];
 
 export function bindUnaryOperator(

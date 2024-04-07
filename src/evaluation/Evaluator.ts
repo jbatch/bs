@@ -8,6 +8,7 @@ import {
   ConditionalGoToStatement,
   BlockStatement,
 } from '../binding/BoundStatement';
+import { getTokenText } from '../parsing/SyntaxHelper';
 
 export class Evaluator {
   root: BlockStatement;
@@ -132,7 +133,7 @@ export class Evaluator {
         return this.evaluateAssignmentExpression(node);
     }
 
-    throw new Error(`Unexpected expression type ${node}`);
+    throw new Error(`Unexpected expression type ${node.kind}`);
   }
 
   private evaluateUnaryExpression(node: BoundExpression): EvaluationResult {
@@ -148,6 +149,7 @@ export class Evaluator {
       case 'OnesCompliment':
         return ~operand;
     }
+    throw new Error(`Unhandled unary operator: ${node.operator.kind}`);
   }
 
   private evaluateBinaryExpression(node: BoundExpression): EvaluationResult {

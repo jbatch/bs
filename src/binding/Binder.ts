@@ -1,16 +1,23 @@
 import assert from 'node:assert';
-import { ExpressionSyntax } from '../parsing/ExpressionSyntax';
+import {
+  AssignmentExpressionSyntax,
+  ExpressionSyntax,
+  OperatorAssignmentExpressionSyntax,
+  PostfixUnaryExpressionSyntax,
+} from '../parsing/ExpressionSyntax';
 import { StatementKind, StatementSyntax } from '../parsing/StatementSyntax';
 import { DiagnosticBag } from '../reporting/Diagnostic';
 import { TextSpan } from '../text/TextSpan';
 import {
   BoundAssignmentExpression,
   BoundBinaryExpression,
-  BoundErrorExpression,
   BoundExpression,
   BoundLiteralExpression,
+  BoundOperatorAssignmentExpression,
+  BoundPostfixUnaryExpression,
   BoundUnaryExpression,
   BoundVariableExpression,
+  ErrorExpression,
 } from './BoundExpression';
 import { BoundScope } from './BoundScope';
 import {
@@ -22,10 +29,13 @@ import {
   BoundVariableDelcarationStatement,
   BoundWhileStatement,
 } from './BoundStatement';
-import { bindUnaryOperator } from './BoundUnaryOperator';
+import { BoundUnaryOperator, bindUnaryOperator } from './BoundUnaryOperator';
 import { getTokenText } from '../parsing/SyntaxHelper';
-import { bindBinaryOperator } from './BoundBinaryOperator';
-import { Bool, Err, Int, String, TypeSymbol, Variable } from '../symbols/Symbol';
+import { BoundBinaryOperator, bindBinaryOperator } from './BoundBinaryOperator';
+import { Bool, Err, Int, String, TypeSymbol, Variable, VariableSymbol } from '../symbols/Symbol';
+import { Either, isLeft, left, right } from '../container/Either';
+import { IdentifierTokenSyntax, TokenSyntax } from '../parsing/TokenSyntax';
+import { BoundErrorExpression } from './BoundExpression';
 
 export class Binder {
   scope: BoundScope;
@@ -130,6 +140,10 @@ export class Binder {
         return this.bindNameExpression(expression);
       case 'AssignmentExpression':
         return this.bindAssignmentExpression(expression);
+      case 'OperatorAssignmentExpression':
+        return this.bindOperatorAssignmentExpression(expression);
+      case 'PostfixUnaryExpression':
+        return this.bindPostfixUnaryExpression(expression);
     }
   }
 
@@ -158,16 +172,11 @@ export class Binder {
     if (left.type.name === Err.name || right.type.name === Err.name) {
       return BoundErrorExpression(Err);
     }
-    const operator = bindBinaryOperator(expression.operator.kind, left.type, right.type);
-    if (operator === undefined) {
-      this.diagnostics.reportUndefinedBinaryOperator(
-        expression.operator.span,
-        getTokenText(expression.operator),
-        left.type,
-        right.type
-      );
-      return BoundErrorExpression(Err);
+    const maybeOperator = this.tryBindBinaryOperator(left.type, expression.operator, right.type);
+    if (isLeft(maybeOperator)) {
+      return maybeOperator.left;
     }
+    const operator = maybeOperator.right;
     const type = operator.type;
     return BoundBinaryExpression(type, left, operator, right);
   }
@@ -179,15 +188,11 @@ export class Binder {
       return BoundErrorExpression(Err);
     }
     const type = operand.type;
-    const operator = bindUnaryOperator(expression.operator.kind, operand.type);
-    if (operator === undefined) {
-      this.diagnostics.reportUndefinedUnaryOperator(
-        expression.operator.span,
-        getTokenText(expression.operator),
-        operand.type
-      );
-      return BoundErrorExpression(Err);
+    const maybeOperator = this.tryBindUnaryOperator(operand.type, expression.operator);
+    if (isLeft(maybeOperator)) {
+      return maybeOperator.left;
     }
+    const operator = maybeOperator.right;
     return BoundUnaryExpression(type, operand, operator);
   }
 
@@ -212,31 +217,113 @@ export class Binder {
     return BoundVariableExpression(type, name);
   }
 
-  private bindAssignmentExpression(expression: ExpressionSyntax): BoundExpression {
-    assert(expression.kind === 'AssignmentExpression');
-    const name = expression.identifier.text!;
+  private bindAssignmentExpression(expression: AssignmentExpressionSyntax): BoundExpression {
     const boundExpression = this.bindExpression(expression.expression);
     const type = boundExpression.type;
+    const maybeVariable = this.tryGetVariable(expression.identifier, type);
+    if (isLeft(maybeVariable)) {
+      return maybeVariable.left;
+    }
+
+    return BoundAssignmentExpression(type, maybeVariable.right.name, boundExpression);
+  }
+
+  private bindOperatorAssignmentExpression(
+    expression: OperatorAssignmentExpressionSyntax
+  ): BoundExpression {
+    const boundExpression = this.bindExpression(expression.expression);
+    const maybeVariable = this.tryGetVariable(expression.identifier, boundExpression.type);
+    if (isLeft(maybeVariable)) {
+      return maybeVariable.left;
+    }
+    const variable = maybeVariable.right;
+    const maybeOperator = this.tryBindBinaryOperator(
+      variable.type,
+      expression.operator,
+      boundExpression.type
+    );
+    if (isLeft(maybeOperator)) {
+      return maybeOperator.left;
+    }
+    const operator = maybeOperator.right;
+    return BoundOperatorAssignmentExpression(
+      operator.type,
+      variable.name,
+      operator,
+      boundExpression
+    );
+  }
+
+  private bindPostfixUnaryExpression(expression: PostfixUnaryExpressionSyntax): BoundExpression {
+    // postfix unary operators only support ints
+    const maybeVariable = this.tryGetVariable(expression.identifier, Int);
+    if (isLeft(maybeVariable)) {
+      return maybeVariable.left;
+    }
+    const variable = maybeVariable.right;
+    const maybeOperator = this.tryBindUnaryOperator(variable.type, expression.operator);
+    if (isLeft(maybeOperator)) {
+      return maybeOperator.left;
+    }
+    const operator = maybeOperator.right;
+    return BoundPostfixUnaryExpression(variable.type, variable.name, operator);
+  }
+
+  private tryGetVariable(
+    identifierToken: IdentifierTokenSyntax,
+    expectedType: TypeSymbol
+  ): Either<ErrorExpression, VariableSymbol> {
+    const { text: name, span } = identifierToken;
     const variable = this.scope.tryLookup(name);
     if (!variable) {
-      this.diagnostics.reportUndefinedVariable(expression.identifier.span, name);
-      return BoundErrorExpression(Err);
+      this.diagnostics.reportUndefinedVariable(span, name);
+      return left(BoundErrorExpression(Err));
     }
 
     if (variable.readonly) {
-      this.diagnostics.reportCannotAssignToReadonlyVariable(expression.equals.span, name);
-      return BoundErrorExpression(Err);
+      this.diagnostics.reportCannotAssignToReadonlyVariable(span, name);
+      return left(BoundErrorExpression(Err));
     }
 
-    if (type !== variable.type) {
-      this.diagnostics.reportCannotAssignIncompatibleTypes(
-        expression.equals.span,
-        variable.type,
-        type
-      );
-      return BoundErrorExpression(Err);
+    if (expectedType.name !== variable.type.name) {
+      this.diagnostics.reportCannotAssignIncompatibleTypes(span, variable.type, expectedType);
+      return left(BoundErrorExpression(Err));
     }
-    return BoundAssignmentExpression(type, name, boundExpression);
+    return right(variable);
+  }
+
+  private tryBindBinaryOperator(
+    leftType: TypeSymbol,
+    operator: TokenSyntax,
+    rightType: TypeSymbol
+  ): Either<ErrorExpression, BoundBinaryOperator> {
+    const boundOperator = bindBinaryOperator(operator.kind, leftType, rightType);
+    if (boundOperator === undefined) {
+      this.diagnostics.reportUndefinedBinaryOperator(
+        operator.span,
+        getTokenText(operator),
+        leftType,
+        rightType
+      );
+      return left(BoundErrorExpression(Err));
+    }
+    return right(boundOperator);
+  }
+
+  private tryBindUnaryOperator(
+    operandType: TypeSymbol,
+    operator: TokenSyntax
+  ): Either<ErrorExpression, BoundUnaryOperator> {
+    const boundOperator = bindUnaryOperator(operator.kind, operandType);
+    if (boundOperator === undefined) {
+      this.diagnostics.reportUndefinedUnaryOperator(
+        operator.span,
+        getTokenText(operator),
+        operandType
+      );
+      return left(BoundErrorExpression(Err));
+    }
+    return right(boundOperator);
   }
 
   private getLiteralType(span: TextSpan, value: any): TypeSymbol {

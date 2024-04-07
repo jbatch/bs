@@ -42,6 +42,26 @@ export type SlashTokenSyntax = {
   span: TextSpan;
   children: SyntaxNode[];
 };
+export type PlusEqualsSyntax = {
+  kind: 'PlusEquals';
+  span: TextSpan;
+  children: SyntaxNode[];
+};
+export type MinusEqualsSyntax = {
+  kind: 'MinusEquals';
+  span: TextSpan;
+  children: SyntaxNode[];
+};
+export type PlusPlusSyntax = {
+  kind: 'PlusPlus';
+  span: TextSpan;
+  children: SyntaxNode[];
+};
+export type MinusMinusSyntax = {
+  kind: 'MinusMinus';
+  span: TextSpan;
+  children: SyntaxNode[];
+};
 export type OpenParenthesisTokenSyntax = {
   kind: 'OpenParenthesisToken';
   span: TextSpan;
@@ -219,6 +239,10 @@ export type TokenSyntax =
   | MinusTokenSyntax
   | StarTokenSyntax
   | SlashTokenSyntax
+  | PlusEqualsSyntax
+  | MinusEqualsSyntax
+  | PlusPlusSyntax
+  | MinusMinusSyntax
   | OpenParenthesisTokenSyntax
   | CloseParenthesisTokenSyntax
   | OpenBraceTokenSyntax
@@ -306,6 +330,38 @@ export function SlashToken(span: TextSpan): SlashTokenSyntax {
   const children: SyntaxNode[] = [];
   return {
     kind: 'SlashToken',
+    span,
+    children,
+  };
+}
+export function PlusEquals(span: TextSpan): PlusEqualsSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'PlusEquals',
+    span,
+    children,
+  };
+}
+export function MinusEquals(span: TextSpan): MinusEqualsSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'MinusEquals',
+    span,
+    children,
+  };
+}
+export function PlusPlus(span: TextSpan): PlusPlusSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'PlusPlus',
+    span,
+    children,
+  };
+}
+export function MinusMinus(span: TextSpan): MinusMinusSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'MinusMinus',
     span,
     children,
   };

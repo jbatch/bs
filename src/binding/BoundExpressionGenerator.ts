@@ -48,6 +48,25 @@ const boundExpressionTypes: GeneratorTypeDefinitions = {
       name: StringTypeNode,
     },
   },
+  OperatorAssignmentExpression: {
+    children: {
+      operator: BoundBinaryOperatorTypeNode,
+      expression: BoundExpressionTypeNode,
+    },
+    other: {
+      type: TypeSymbolTypeNode,
+      name: StringTypeNode,
+    },
+  },
+  PostfixUnaryExpression: {
+    children: {
+      operator: BoundUnaryOperatorTypeNode,
+    },
+    other: {
+      type: TypeSymbolTypeNode,
+      name: StringTypeNode,
+    },
+  },
   ErrorExpression: {
     other: {
       type: TypeSymbolTypeNode,

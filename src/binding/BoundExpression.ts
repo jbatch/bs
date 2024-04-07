@@ -43,6 +43,21 @@ export type AssignmentExpression = {
   expression: BoundExpression;
   children: BoundNode[];
 };
+export type OperatorAssignmentExpression = {
+  kind: 'OperatorAssignmentExpression';
+  type: TypeSymbol;
+  name: string;
+  operator: BoundBinaryOperator;
+  expression: BoundExpression;
+  children: BoundNode[];
+};
+export type PostfixUnaryExpression = {
+  kind: 'PostfixUnaryExpression';
+  type: TypeSymbol;
+  name: string;
+  operator: BoundUnaryOperator;
+  children: BoundNode[];
+};
 export type ErrorExpression = {
   kind: 'ErrorExpression';
   type: TypeSymbol;
@@ -54,6 +69,8 @@ export type BoundExpression =
   | LiteralExpression
   | VariableExpression
   | AssignmentExpression
+  | OperatorAssignmentExpression
+  | PostfixUnaryExpression
   | ErrorExpression;
 export function BoundUnaryExpression(
   type: TypeSymbol,
@@ -117,6 +134,36 @@ export function BoundAssignmentExpression(
     type,
     name,
     expression,
+    children,
+  };
+}
+export function BoundOperatorAssignmentExpression(
+  type: TypeSymbol,
+  name: string,
+  operator: BoundBinaryOperator,
+  expression: BoundExpression
+): OperatorAssignmentExpression {
+  const children: BoundNode[] = [operator, expression];
+  return {
+    kind: 'OperatorAssignmentExpression',
+    type,
+    name,
+    operator,
+    expression,
+    children,
+  };
+}
+export function BoundPostfixUnaryExpression(
+  type: TypeSymbol,
+  name: string,
+  operator: BoundUnaryOperator
+): PostfixUnaryExpression {
+  const children: BoundNode[] = [operator];
+  return {
+    kind: 'PostfixUnaryExpression',
+    type,
+    name,
+    operator,
     children,
   };
 }

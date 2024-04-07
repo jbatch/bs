@@ -5,7 +5,9 @@ import {
   ExpressionSyntax,
   LiteralExpression,
   NameExpression,
+  OperatorAssignmentExpression,
   ParenthesizedExpression,
+  PostfixUnaryExpression,
   UnaryExpression,
 } from './ExpressionSyntax';
 import { Lexer } from './Lexer';
@@ -213,9 +215,31 @@ export class Parser {
     if (this.peek(0).kind === 'IdentifierToken' && this.peek(1).kind === 'EqualsToken') {
       const identifier = this.matchToken('IdentifierToken') as IdentifierTokenSyntax;
       const equals = this.nextToken();
-      const expression = this.parseAssignmentExpression();
+      const expression = this.parseExpression();
       return AssignmentExpression(identifier, equals, expression);
     }
+
+    // Postfix unary operators
+    if (
+      this.peek(0).kind === 'IdentifierToken' &&
+      (this.peek(1).kind === 'PlusPlus' || this.peek(1).kind === 'MinusMinus')
+    ) {
+      const identifier = this.matchToken('IdentifierToken') as IdentifierTokenSyntax;
+      const operator = this.nextToken();
+      return PostfixUnaryExpression(identifier, operator);
+    }
+
+    // Operator assignments
+    if (
+      this.peek(0).kind === 'IdentifierToken' &&
+      (this.peek(1).kind === 'PlusEquals' || this.peek(1).kind === 'MinusEquals')
+    ) {
+      const identifier = this.matchToken('IdentifierToken') as IdentifierTokenSyntax;
+      const operator = this.nextToken();
+      const expression = this.parseExpression();
+      return OperatorAssignmentExpression(identifier, operator, expression);
+    }
+
     return this.parseBinaryExpression();
   }
 

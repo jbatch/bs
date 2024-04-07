@@ -31,6 +31,10 @@ import {
   AmpersandToken,
   PipeToken,
   StringToken,
+  PlusPlus,
+  PlusEquals,
+  MinusMinus,
+  MinusEquals,
 } from './TokenSyntax';
 import { textSpan, textSpanWithEnd } from '../text/TextSpan';
 
@@ -98,8 +102,22 @@ export class Lexer {
 
     switch (current) {
       case '+':
+        if (this.lookAhead() === '+') {
+          this.position += 2;
+          return PlusPlus(textSpan(this.position - 2, 2));
+        } else if (this.lookAhead() === '=') {
+          this.position += 2;
+          return PlusEquals(textSpan(this.position - 2, 2));
+        }
         return PlusToken(textSpan(this.position++, 1));
       case '-':
+        if (this.lookAhead() === '-') {
+          this.position += 2;
+          return MinusMinus(textSpan(this.position - 2, 2));
+        } else if (this.lookAhead() === '=') {
+          this.position += 2;
+          return MinusEquals(textSpan(this.position - 2, 2));
+        }
         return MinusToken(textSpan(this.position++, 1));
       case '*':
         return StarToken(textSpan(this.position++, 1));

@@ -12,6 +12,17 @@ import {
   WhileStatement,
 } from '../binding/BoundStatement';
 import { BoundTreeRewriter } from '../binding/BoundTreeRewriter';
+import {
+  PostfixUnaryExpression,
+  BoundExpression,
+  BoundVariableExpression,
+  BoundLiteralExpression,
+  BoundAssignmentExpression,
+  OperatorAssignmentExpression,
+  BoundBinaryExpression,
+} from '../binding/BoundExpression';
+import { bindBinaryOperator } from '../binding/BoundBinaryOperator';
+import { Int } from '../symbols/Symbol';
 
 export class Lowerer extends BoundTreeRewriter {
   curLabelIndex = 0;
@@ -107,14 +118,9 @@ export class Lowerer extends BoundTreeRewriter {
     const goToTElseIfFalse = BoundConditionalGoToStatement(elseLabel.label, false, condition);
     const goToEnd = BoundGoToStatement(endLabel.label);
 
-    return BoundBlockStatement([
-      goToTElseIfFalse,
-      ifBlock,
-      goToEnd,
-      elseLabel,
-      elseBlock,
-      endLabel,
-    ]);
+    return this.rewriteBoundStatement(
+      BoundBlockStatement([goToTElseIfFalse, ifBlock, goToEnd, elseLabel, elseBlock, endLabel])
+    );
   }
 
   rewriteWhileStatement(statement: WhileStatement): BoundStatement {
@@ -137,6 +143,51 @@ export class Lowerer extends BoundTreeRewriter {
     const goToEndIfFalse = BoundConditionalGoToStatement(endLabel.label, false, loopCondition);
     const goToBegin = BoundGoToStatement(beginLabel.label);
 
-    return BoundBlockStatement([beginLabel, goToEndIfFalse, whileBlock, goToBegin, endLabel]);
+    return this.rewriteBoundStatement(
+      BoundBlockStatement([beginLabel, goToEndIfFalse, whileBlock, goToBegin, endLabel])
+    );
+  }
+
+  rewritePostfixUnaryExpression(expression: PostfixUnaryExpression): BoundExpression {
+    /**
+     * REWRITE
+     * i++
+     * TO
+     * i = i + 1
+     */
+    const { type, name, operator } = expression;
+    assert(operator.kind === 'Decrement' || operator.kind === 'Increment');
+    const newOperator = bindBinaryOperator(
+      operator.kind === 'Increment' ? 'PlusToken' : 'MinusToken',
+      type,
+      Int
+    )!;
+    const variable = BoundVariableExpression(type, name);
+    const right = BoundBinaryExpression(
+      newOperator.type,
+      variable,
+      newOperator,
+      BoundLiteralExpression(Int, 1)
+    );
+    return this.rewriteExpression(BoundAssignmentExpression(type, name, right));
+  }
+
+  rewriteOperatorAssignmentExpression(expression: OperatorAssignmentExpression): BoundExpression {
+    /**
+     * REWRITE
+     * i += <expression>
+     * TO
+     * i = i + <expression>
+     */
+    const { type, name, operator, expression: rightExpression } = expression;
+    assert(operator.kind === 'Addition' || operator.kind === 'Subtraction');
+    const newOperator = bindBinaryOperator(
+      operator.kind === 'Addition' ? 'PlusToken' : 'MinusToken',
+      type,
+      Int
+    )!;
+    const variable = BoundVariableExpression(type, name);
+    const right = BoundBinaryExpression(newOperator.type, variable, newOperator, rightExpression);
+    return this.rewriteExpression(BoundAssignmentExpression(type, name, right));
   }
 }

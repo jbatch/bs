@@ -9,6 +9,9 @@ import {
   BoundBinaryExpression,
   BoundAssignmentExpression,
   ErrorExpression,
+  OperatorAssignmentExpression,
+  PostfixUnaryExpression,
+  BoundOperatorAssignmentExpression,
 } from './BoundExpression';
 import {
   BlockStatement,
@@ -53,13 +56,13 @@ export class BoundTreeRewriter {
     }
   }
 
-  private rewriteExpressionStatement(statement: ExpressionStatement): BoundStatement {
+  protected rewriteExpressionStatement(statement: ExpressionStatement): BoundStatement {
     let { expression } = statement;
     expression = this.rewriteExpression(statement.expression);
     return BoundExpressionStatement(expression);
   }
 
-  private rewriteExpression(expression: BoundExpression): BoundExpression {
+  protected rewriteExpression(expression: BoundExpression): BoundExpression {
     switch (expression.kind) {
       case 'UnaryExpression':
         return this.rewriteUnaryExpression(expression);
@@ -71,17 +74,21 @@ export class BoundTreeRewriter {
         return this.rewriteVariableExpression(expression);
       case 'AssignmentExpression':
         return this.rewriteAssignmentExpression(expression);
+      case 'OperatorAssignmentExpression':
+        return this.rewriteOperatorAssignmentExpression(expression);
+      case 'PostfixUnaryExpression':
+        return this.rewritePostfixUnaryExpression(expression);
       case 'ErrorExpression':
         return this.rewriteErrorExpression(expression);
     }
   }
 
-  private rewriteBlockStatement(statement: BlockStatement): BoundStatement {
+  protected rewriteBlockStatement(statement: BlockStatement): BoundStatement {
     const statements = statement.statements;
     return BoundBlockStatement(statements.map((s) => this.rewriteBoundStatement(s)));
   }
 
-  private rewriteVariableDelcarationStatement(
+  protected rewriteVariableDelcarationStatement(
     statement: VariableDelcarationStatement
   ): BoundStatement {
     return statement;
@@ -112,48 +119,58 @@ export class BoundTreeRewriter {
     return BoundForStatement(beginStatement, loopCondition, endStatement, forBlock);
   }
 
-  private rewriteLabelStatement(statement: LabelStatement): BoundStatement {
+  protected rewriteLabelStatement(statement: LabelStatement): BoundStatement {
     return statement;
   }
 
-  private rewriteGoToStatement(statement: GoToStatement): BoundStatement {
+  protected rewriteGoToStatement(statement: GoToStatement): BoundStatement {
     return statement;
   }
 
-  private rewriteConditionalGoToStatement(statement: ConditionalGoToStatement): BoundStatement {
+  protected rewriteConditionalGoToStatement(statement: ConditionalGoToStatement): BoundStatement {
     let { label, jumpIfTrue, condition } = statement;
     condition = this.rewriteExpression(condition);
     return BoundConditionalGoToStatement(label, jumpIfTrue, condition);
   }
 
-  private rewriteUnaryExpression(expression: UnaryExpression): BoundExpression {
+  protected rewriteUnaryExpression(expression: UnaryExpression): BoundExpression {
     let { type, operator, operand } = expression;
     operand = this.rewriteExpression(operand);
     return BoundUnaryExpression(type, operand, operator);
   }
 
-  private rewriteBinaryExpression(expression: BinaryExpression): BoundExpression {
+  protected rewriteBinaryExpression(expression: BinaryExpression): BoundExpression {
     let { type, left, operator, right } = expression;
     left = this.rewriteExpression(left);
     right = this.rewriteExpression(right);
     return BoundBinaryExpression(type, left, operator, right);
   }
 
-  private rewriteLiteralExpression(expression: LiteralExpression): BoundExpression {
+  protected rewriteLiteralExpression(expression: LiteralExpression): BoundExpression {
     return expression;
   }
 
-  private rewriteVariableExpression(expression: VariableExpression): BoundExpression {
+  protected rewriteVariableExpression(expression: VariableExpression): BoundExpression {
     return expression;
   }
 
-  private rewriteAssignmentExpression(expression: AssignmentExpression): BoundExpression {
+  protected rewriteAssignmentExpression(expression: AssignmentExpression): BoundExpression {
     let { type, name, expression: right } = expression;
     right = this.rewriteExpression(right);
     return BoundAssignmentExpression(type, name, right);
   }
 
-  private rewriteErrorExpression(expression: ErrorExpression): BoundExpression {
+  rewriteOperatorAssignmentExpression(expression: OperatorAssignmentExpression): BoundExpression {
+    let { type, name, operator, expression: assignmentExpression } = expression;
+    assignmentExpression = this.rewriteExpression(assignmentExpression);
+    return BoundOperatorAssignmentExpression(type, name, operator, assignmentExpression);
+  }
+
+  rewritePostfixUnaryExpression(expression: PostfixUnaryExpression): BoundExpression {
+    return expression;
+  }
+
+  protected rewriteErrorExpression(expression: ErrorExpression): BoundExpression {
     return expression;
   }
 }

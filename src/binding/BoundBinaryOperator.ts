@@ -57,7 +57,9 @@ function boundBinaryOperator(
 
 const BINARY_OPERATORS: BoundBinaryOperator[] = [
   boundBinaryOperator('Addition', 'PlusToken', Int),
+  boundBinaryOperator('Addition', 'PlusEquals', Int),
   boundBinaryOperator('Subtraction', 'MinusToken', Int),
+  boundBinaryOperator('Subtraction', 'MinusEquals', Int),
   boundBinaryOperator('Multiplication', 'StarToken', Int),
   boundBinaryOperator('Division', 'SlashToken', Int),
   boundBinaryOperator('BitwiseAnd', 'AmpersandToken', Int),

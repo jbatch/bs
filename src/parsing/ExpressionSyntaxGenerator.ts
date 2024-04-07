@@ -53,6 +53,19 @@ const expressionTypes: GeneratorTypeDefinitions = {
       expression: ExpressionSyntaxTypeNode,
     },
   },
+  OperatorAssignmentExpression: {
+    children: {
+      identifier: IdentifierTokenSyntaxTypeNode,
+      operator: TokenSyntaxTypeNode,
+      expression: ExpressionSyntaxTypeNode,
+    },
+  },
+  PostfixUnaryExpression: {
+    children: {
+      identifier: IdentifierTokenSyntaxTypeNode,
+      operator: TokenSyntaxTypeNode,
+    },
+  },
 };
 
 const generator = new Generator(

@@ -57,13 +57,30 @@ export type AssignmentExpressionSyntax = {
   expression: ExpressionSyntax;
   children: SyntaxNode[];
 };
+export type OperatorAssignmentExpressionSyntax = {
+  kind: 'OperatorAssignmentExpression';
+  span: TextSpan;
+  identifier: IdentifierTokenSyntax;
+  operator: TokenSyntax;
+  expression: ExpressionSyntax;
+  children: SyntaxNode[];
+};
+export type PostfixUnaryExpressionSyntax = {
+  kind: 'PostfixUnaryExpression';
+  span: TextSpan;
+  identifier: IdentifierTokenSyntax;
+  operator: TokenSyntax;
+  children: SyntaxNode[];
+};
 export type ExpressionSyntax =
   | LiteralExpressionSyntax
   | BinaryExpressionSyntax
   | UnaryExpressionSyntax
   | ParenthesizedExpressionSyntax
   | NameExpressionSyntax
-  | AssignmentExpressionSyntax;
+  | AssignmentExpressionSyntax
+  | OperatorAssignmentExpressionSyntax
+  | PostfixUnaryExpressionSyntax;
 export function LiteralExpression(
   literal: NumberLiteralSyntax | BooleanLiteralSyntax | StringLiteralSyntax
 ): LiteralExpressionSyntax {
@@ -145,6 +162,36 @@ export function AssignmentExpression(
     identifier,
     equals,
     expression,
+    children,
+  };
+}
+export function OperatorAssignmentExpression(
+  identifier: IdentifierTokenSyntax,
+  operator: TokenSyntax,
+  expression: ExpressionSyntax
+): OperatorAssignmentExpressionSyntax {
+  const span = identifier.span;
+  const children: SyntaxNode[] = [identifier, operator, expression];
+  return {
+    kind: 'OperatorAssignmentExpression',
+    span,
+    identifier,
+    operator,
+    expression,
+    children,
+  };
+}
+export function PostfixUnaryExpression(
+  identifier: IdentifierTokenSyntax,
+  operator: TokenSyntax
+): PostfixUnaryExpressionSyntax {
+  const span = identifier.span;
+  const children: SyntaxNode[] = [identifier, operator];
+  return {
+    kind: 'PostfixUnaryExpression',
+    span,
+    identifier,
+    operator,
     children,
   };
 }

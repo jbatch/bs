@@ -151,6 +151,15 @@ export function getTokenText(token: TokenSyntax): string {
       return '\0';
     case 'EndOfFileToken':
       return '\0';
+    case 'StringToken':
+    case 'PlusEquals':
+      return '+=';
+    case 'MinusEquals':
+      return '-=';
+    case 'PlusPlus':
+      return '++';
+    case 'MinusMinus':
+      return '--';
     default:
       return '';
   }
