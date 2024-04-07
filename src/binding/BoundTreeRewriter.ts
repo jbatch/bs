@@ -8,6 +8,7 @@ import {
   BoundUnaryExpression,
   BoundBinaryExpression,
   BoundAssignmentExpression,
+  ErrorExpression,
 } from './BoundExpression';
 import {
   BlockStatement,
@@ -70,6 +71,8 @@ export class BoundTreeRewriter {
         return this.rewriteVariableExpression(expression);
       case 'AssignmentExpression':
         return this.rewriteAssignmentExpression(expression);
+      case 'ErrorExpression':
+        return this.rewriteErrorExpression(expression);
     }
   }
 
@@ -148,5 +151,9 @@ export class BoundTreeRewriter {
     let { type, name, expression: right } = expression;
     right = this.rewriteExpression(right);
     return BoundAssignmentExpression(type, name, right);
+  }
+
+  private rewriteErrorExpression(expression: ErrorExpression): BoundExpression {
+    return expression;
   }
 }

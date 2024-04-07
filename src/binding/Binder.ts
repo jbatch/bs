@@ -6,6 +6,7 @@ import { TextSpan } from '../text/TextSpan';
 import {
   BoundAssignmentExpression,
   BoundBinaryExpression,
+  BoundErrorExpression,
   BoundExpression,
   BoundLiteralExpression,
   BoundUnaryExpression,
@@ -24,7 +25,7 @@ import {
 import { bindUnaryOperator } from './BoundUnaryOperator';
 import { getTokenText } from '../parsing/SyntaxHelper';
 import { bindBinaryOperator } from './BoundBinaryOperator';
-import { Bool, Int, String, TypeSymbol, Variable } from '../symbols/Symbol';
+import { Bool, Err, Int, String, TypeSymbol, Variable } from '../symbols/Symbol';
 
 export class Binder {
   scope: BoundScope;
@@ -115,7 +116,7 @@ export class Binder {
     return BoundForStatement(beginStatement, loopCondition, endStatement, forBlock);
   }
 
-  private bindExpression(expression: ExpressionSyntax, expectedType?: TypeSymbol): BoundExpression {
+  private bindExpression(expression: ExpressionSyntax): BoundExpression {
     switch (expression.kind) {
       case 'LiteralExpression':
         return this.bindLiteralExpression(expression);
@@ -137,7 +138,7 @@ export class Binder {
     expectedType: TypeSymbol
   ): BoundExpression {
     const boundExpression = this.bindExpression(expression);
-    if (boundExpression.type !== expectedType) {
+    if (boundExpression.type !== expectedType && boundExpression.type.name !== Err.name) {
       this.diagnostics.reportTypeMismatch(expression.span, expectedType, boundExpression.type);
     }
     return boundExpression;
@@ -154,6 +155,9 @@ export class Binder {
     assert(expression.kind === 'BinaryExpression');
     const left = this.bindExpression(expression.left);
     const right = this.bindExpression(expression.right);
+    if (left.type.name === Err.name || right.type.name === Err.name) {
+      return BoundErrorExpression(Err);
+    }
     const operator = bindBinaryOperator(expression.operator.kind, left.type, right.type);
     if (operator === undefined) {
       this.diagnostics.reportUndefinedBinaryOperator(
@@ -162,7 +166,7 @@ export class Binder {
         left.type,
         right.type
       );
-      return left;
+      return BoundErrorExpression(Err);
     }
     const type = operator.type;
     return BoundBinaryExpression(type, left, operator, right);
@@ -171,6 +175,9 @@ export class Binder {
   private bindUnaryExpression(expression: ExpressionSyntax): BoundExpression {
     assert(expression.kind === 'UnaryExpression');
     const operand = this.bindExpression(expression.operand);
+    if (operand.type.name === Err.name) {
+      return BoundErrorExpression(Err);
+    }
     const type = operand.type;
     const operator = bindUnaryOperator(expression.operator.kind, operand.type);
     if (operator === undefined) {
@@ -179,7 +186,7 @@ export class Binder {
         getTokenText(expression.operator),
         operand.type
       );
-      return operand;
+      return BoundErrorExpression(Err);
     }
     return BoundUnaryExpression(type, operand, operator);
   }
@@ -192,10 +199,14 @@ export class Binder {
   private bindNameExpression(expression: ExpressionSyntax): BoundExpression {
     assert(expression.kind === 'NameExpression');
     const name = expression.identifier.text!;
+    if (name === '') {
+      // Means we fabricated a name expression and the error has already been reported
+      return BoundErrorExpression(Err);
+    }
     const variable = this.scope.tryLookup(name);
     if (variable === undefined) {
       this.diagnostics.reportUndefinedName(expression.identifier.span, name);
-      return BoundLiteralExpression(Int, 0);
+      return BoundErrorExpression(Err);
     }
     const type = variable.type;
     return BoundVariableExpression(type, name);
@@ -209,12 +220,12 @@ export class Binder {
     const variable = this.scope.tryLookup(name);
     if (!variable) {
       this.diagnostics.reportUndefinedVariable(expression.identifier.span, name);
-      return boundExpression;
+      return BoundErrorExpression(Err);
     }
 
     if (variable.readonly) {
       this.diagnostics.reportCannotAssignToReadonlyVariable(expression.equals.span, name);
-      return boundExpression;
+      return BoundErrorExpression(Err);
     }
 
     if (type !== variable.type) {
@@ -223,7 +234,7 @@ export class Binder {
         variable.type,
         type
       );
-      return boundExpression;
+      return BoundErrorExpression(Err);
     }
     return BoundAssignmentExpression(type, name, boundExpression);
   }
@@ -243,15 +254,6 @@ export class Binder {
       case 'function':
         this.diagnostics.reportUnexpectedLiteralType(span, typeof value);
         return Int;
-    }
-  }
-
-  private getDefaultValueForType(type: TypeSymbol) {
-    switch (type.name) {
-      case 'number':
-        return 0;
-      case 'boolean':
-        return false;
     }
   }
 }

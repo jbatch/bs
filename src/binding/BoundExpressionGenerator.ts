@@ -48,6 +48,11 @@ const boundExpressionTypes: GeneratorTypeDefinitions = {
       name: StringTypeNode,
     },
   },
+  ErrorExpression: {
+    other: {
+      type: TypeSymbolTypeNode,
+    },
+  },
 };
 
 const generator = new Generator(

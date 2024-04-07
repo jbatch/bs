@@ -1,5 +1,6 @@
+import assert from 'assert';
 import { EvaluationResult } from '../evaluation/EvaluationResult';
-import { TypeSymbol } from '../symbols/Symbol';
+import { Err, TypeSymbol } from '../symbols/Symbol';
 import { BoundBinaryOperator } from './BoundBinaryOperator';
 import { BoundNode } from './BoundNode';
 import { BoundUnaryOperator } from './BoundUnaryOperator';
@@ -42,12 +43,18 @@ export type AssignmentExpression = {
   expression: BoundExpression;
   children: BoundNode[];
 };
+export type ErrorExpression = {
+  kind: 'ErrorExpression';
+  type: TypeSymbol;
+  children: BoundNode[];
+};
 export type BoundExpression =
   | UnaryExpression
   | BinaryExpression
   | LiteralExpression
   | VariableExpression
-  | AssignmentExpression;
+  | AssignmentExpression
+  | ErrorExpression;
 export function BoundUnaryExpression(
   type: TypeSymbol,
   operand: BoundExpression,
@@ -110,6 +117,14 @@ export function BoundAssignmentExpression(
     type,
     name,
     expression,
+    children,
+  };
+}
+export function BoundErrorExpression(type: TypeSymbol): ErrorExpression {
+  const children: BoundNode[] = [];
+  return {
+    kind: 'ErrorExpression',
+    type,
     children,
   };
 }

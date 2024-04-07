@@ -1,6 +1,7 @@
 export const String: TypeSymbol = Type('string');
 export const Bool: TypeSymbol = Type('boolean');
 export const Int: TypeSymbol = Type('int');
+export const Err: TypeSymbol = Type('?');
 
 // Generated code
 
