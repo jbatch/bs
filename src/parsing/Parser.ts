@@ -17,6 +17,7 @@ import {
   IdentifierTokenSyntax,
   NumberLiteral,
   NumberTokenSyntax,
+  StringLiteral,
   TokenSyntax,
   TokenSyntaxKind,
 } from './TokenSyntax';
@@ -261,6 +262,11 @@ export class Parser {
       case 'IdentifierToken': {
         const identifier = this.matchToken('IdentifierToken') as IdentifierTokenSyntax;
         return NameExpression(identifier);
+      }
+      case 'StringToken': {
+        const stringToken = this.matchToken('StringToken');
+        assert(stringToken.kind === 'StringToken');
+        return LiteralExpression(StringLiteral(stringToken.span, stringToken.value));
       }
 
       default: {

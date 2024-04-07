@@ -11,6 +11,12 @@ export type NumberTokenSyntax = {
   value: number;
   children: SyntaxNode[];
 };
+export type StringTokenSyntax = {
+  kind: 'StringToken';
+  span: TextSpan;
+  value: string;
+  children: SyntaxNode[];
+};
 export type WhitespaceTokenSyntax = {
   kind: 'WhitespaceToken';
   span: TextSpan;
@@ -149,6 +155,12 @@ export type BooleanLiteralSyntax = {
   value: boolean;
   children: SyntaxNode[];
 };
+export type StringLiteralSyntax = {
+  kind: 'StringLiteral';
+  span: TextSpan;
+  value: string;
+  children: SyntaxNode[];
+};
 export type TrueKeywordSyntax = {
   kind: 'TrueKeyword';
   span: TextSpan;
@@ -201,6 +213,7 @@ export type EndOfFileTokenSyntax = {
 };
 export type TokenSyntax =
   | NumberTokenSyntax
+  | StringTokenSyntax
   | WhitespaceTokenSyntax
   | PlusTokenSyntax
   | MinusTokenSyntax
@@ -228,6 +241,7 @@ export type TokenSyntax =
   | IdentifierTokenSyntax
   | NumberLiteralSyntax
   | BooleanLiteralSyntax
+  | StringLiteralSyntax
   | TrueKeywordSyntax
   | FalseKeywordSyntax
   | ConstKeywordSyntax
@@ -242,6 +256,15 @@ export function NumberToken(span: TextSpan, value: number): NumberTokenSyntax {
   const children: SyntaxNode[] = [];
   return {
     kind: 'NumberToken',
+    span,
+    value,
+    children,
+  };
+}
+export function StringToken(span: TextSpan, value: string): StringTokenSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'StringToken',
     span,
     value,
     children,
@@ -461,6 +484,15 @@ export function BooleanLiteral(span: TextSpan, value: boolean): BooleanLiteralSy
   const children: SyntaxNode[] = [];
   return {
     kind: 'BooleanLiteral',
+    span,
+    value,
+    children,
+  };
+}
+export function StringLiteral(span: TextSpan, value: string): StringLiteralSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'StringLiteral',
     span,
     value,
     children,

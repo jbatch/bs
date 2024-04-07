@@ -4,6 +4,7 @@ import {
   BooleanLiteralSyntax,
   IdentifierTokenSyntax,
   NumberLiteralSyntax,
+  StringLiteralSyntax,
   TokenSyntax,
 } from './TokenSyntax';
 
@@ -16,7 +17,7 @@ function isDefined<T>(node: T | undefined): node is T {
 export type LiteralExpressionSyntax = {
   kind: 'LiteralExpression';
   span: TextSpan;
-  literal: NumberLiteralSyntax | BooleanLiteralSyntax;
+  literal: NumberLiteralSyntax | BooleanLiteralSyntax | StringLiteralSyntax;
   children: SyntaxNode[];
 };
 export type BinaryExpressionSyntax = {
@@ -64,7 +65,7 @@ export type ExpressionSyntax =
   | NameExpressionSyntax
   | AssignmentExpressionSyntax;
 export function LiteralExpression(
-  literal: NumberLiteralSyntax | BooleanLiteralSyntax
+  literal: NumberLiteralSyntax | BooleanLiteralSyntax | StringLiteralSyntax
 ): LiteralExpressionSyntax {
   const span = literal.span;
   const children: SyntaxNode[] = [literal].filter(isDefined);

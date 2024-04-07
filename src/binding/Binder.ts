@@ -235,8 +235,9 @@ export class Binder {
         return 'number';
       case 'boolean':
         return 'boolean';
-      case 'bigint':
       case 'string':
+        return 'string';
+      case 'bigint':
       case 'symbol':
       case 'undefined':
       case 'object':

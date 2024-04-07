@@ -6,12 +6,12 @@ import {
   StringTypeNode,
   SyntaxNodeTypeNode,
   TextSpanTypeNode,
-  TypeNodeMap,
 } from '../codegeneration/Generator';
 
 const statmentTypes: GeneratorTypeDefinitions = {
   // Tokens
   NumberToken: { other: { span: TextSpanTypeNode, value: NumberTypeNode } },
+  StringToken: { other: { span: TextSpanTypeNode, value: StringTypeNode } },
   WhitespaceToken: { other: { span: TextSpanTypeNode } },
   PlusToken: { other: { span: TextSpanTypeNode } },
   MinusToken: { other: { span: TextSpanTypeNode } },
@@ -40,6 +40,7 @@ const statmentTypes: GeneratorTypeDefinitions = {
   // Literals
   NumberLiteral: { other: { span: TextSpanTypeNode, value: NumberTypeNode } },
   BooleanLiteral: { other: { span: TextSpanTypeNode, value: BooleanTypeNode } },
+  StringLiteral: { other: { span: TextSpanTypeNode, value: StringTypeNode } },
   // Keywords
   TrueKeyword: { other: { span: TextSpanTypeNode } },
   FalseKeyword: { other: { span: TextSpanTypeNode } },

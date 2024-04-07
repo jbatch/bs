@@ -4,7 +4,8 @@ import { createInterface } from 'node:readline';
 const rl = createInterface({
   input: process.stdin,
   output: process.stdout,
-  terminal: false,
+  terminal: true,
+  history: ['for(var i = 0; i < 10; i = i + 1) { i }', 'if(1 == 1) { 2 } else { 3 }', '1+1'],
 });
 
 const inputPromise = utils.promisify(rl.question).bind(rl);

@@ -30,8 +30,9 @@ import {
   TildeToken,
   AmpersandToken,
   PipeToken,
+  StringToken,
 } from './TokenSyntax';
-import { textSpan } from '../text/TextSpan';
+import { textSpan, textSpanWithEnd } from '../text/TextSpan';
 
 export class Lexer {
   source: SourceText;
@@ -116,6 +117,8 @@ export class Lexer {
         return CaretToken(textSpan(this.position++, 1));
       case '~':
         return TildeToken(textSpan(this.position++, 1));
+      case '"':
+        return this.readString();
       case '!':
         if (this.lookAhead() === '=') {
           this.position += 2;
@@ -169,7 +172,7 @@ export class Lexer {
   }
 
   private readKeywordOrIdentifier() {
-    var start = this.position;
+    const start = this.position;
 
     while (this.isLetter(this.current())) {
       this.position++;
@@ -177,6 +180,33 @@ export class Lexer {
     const text = this.source.text.substring(start, this.position);
     const token = getKeywordOrIdentifier(text, this.position - text.length);
     return token;
+  }
+
+  private readString(): TokenSyntax {
+    const start = this.position++;
+
+    let done = false;
+    let stringBuilder = '';
+    while (!done) {
+      switch (this.current()) {
+        case '\n':
+        case '\n':
+        case '\r':
+          this.diagnostics.reportUnterminatedString(textSpan(start, 1));
+          done = true;
+          this.position++;
+          break;
+        case '"':
+          this.position++;
+          done = true;
+          break;
+        default:
+          stringBuilder += this.current();
+          this.position++;
+      }
+    }
+    const span = textSpanWithEnd(start, this.position - 1);
+    return StringToken(span, stringBuilder);
   }
 
   private readWhitespace() {

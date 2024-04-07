@@ -73,6 +73,11 @@ export const BooleanLiteralSyntaxTypeNode = factory.createTypeReferenceNode(
   undefined
 );
 
+export const StringLiteralSyntaxTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('StringLiteralSyntax'),
+  undefined
+);
+
 // Bound syntax nodes
 export const BoundNodeTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('BoundNode'),

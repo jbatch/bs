@@ -17,6 +17,7 @@ let showTree = false;
 let showProgram = false;
 
 async function main() {
+  console.log('Welcome to batchScript v0.0.1.');
   let quit = false;
   let lines = [];
   while (!quit) {
@@ -83,7 +84,12 @@ function evaluateBoundStatement(boundRoot: BlockStatement) {
   try {
     const evaluator = new Evaluator(boundRoot, variables);
     Terminal.writeLine();
-    Terminal.writeLine(evaluator.evaluate());
+    const result = evaluator.evaluate();
+    if (typeof result === 'string') {
+      Terminal.writeLine(`\x1b[1;32m'${result}'\x1b[1;39m`);
+    } else {
+      Terminal.writeLine(`\x1b[1;33m${result}\x1b[1;39m`);
+    }
   } catch (error: any) {
     console.error(error.message);
   }

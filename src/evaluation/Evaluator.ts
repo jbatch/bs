@@ -19,7 +19,7 @@ export class Evaluator {
     this.variables = variables;
   }
 
-  evaluate(): EvaluationResult | undefined {
+  evaluate(): EvaluationResult {
     const labelMap: Record<string, number> = {};
 
     this.root.statements.forEach((statement, index) => {
@@ -64,7 +64,7 @@ export class Evaluator {
       index++;
     }
 
-    return this.lastResult;
+    return this.lastResult!;
   }
 
   private evaluateStatement(statement: BoundStatement) {

@@ -3,7 +3,7 @@ import { BoundBinaryOperator } from './BoundBinaryOperator';
 import { BoundNode } from './BoundNode';
 import { BoundUnaryOperator } from './BoundUnaryOperator';
 
-export type Type = 'number' | 'boolean';
+export type Type = 'number' | 'boolean' | 'string';
 
 // Generated code
 

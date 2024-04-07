@@ -5,6 +5,7 @@ import {
   GeneratorTypeDefinitions,
   IdentifierTokenSyntaxTypeNode,
   NumberLiteralSyntaxTypeNode,
+  StringLiteralSyntaxTypeNode,
   SyntaxNodeTypeNode,
   TokenSyntaxTypeNode,
   TypeNodeMap,
@@ -14,7 +15,11 @@ import {
 const expressionTypes: GeneratorTypeDefinitions = {
   LiteralExpression: {
     children: {
-      literal: or(NumberLiteralSyntaxTypeNode, BooleanLiteralSyntaxTypeNode),
+      literal: or(
+        NumberLiteralSyntaxTypeNode,
+        BooleanLiteralSyntaxTypeNode,
+        StringLiteralSyntaxTypeNode
+      ),
     },
   },
   BinaryExpression: {

@@ -121,4 +121,9 @@ export class DiagnosticBag {
     const message = `TypeError: Cannot assign [${found}] to [${expected}] variable '${name}'`;
     this.report(message, span);
   }
+
+  reportUnterminatedString(span: TextSpan) {
+    const message = `Unterminated string literal`;
+    this.report(message, span);
+  }
 }
