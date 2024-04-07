@@ -7,7 +7,7 @@ import {
   Generator,
   GeneratorTypeDefinitions,
   StringTypeNode,
-  TypeTypeNode,
+  TypeSymbolTypeNode,
 } from '../codegeneration/Generator';
 
 const boundExpressionTypes: GeneratorTypeDefinitions = {
@@ -16,7 +16,7 @@ const boundExpressionTypes: GeneratorTypeDefinitions = {
       operand: BoundExpressionTypeNode,
       operator: BoundUnaryOperatorTypeNode,
     },
-    other: { type: TypeTypeNode },
+    other: { type: TypeSymbolTypeNode },
   },
   BinaryExpression: {
     children: {
@@ -24,18 +24,18 @@ const boundExpressionTypes: GeneratorTypeDefinitions = {
       operator: BoundBinaryOperatorTypeNode,
       right: BoundExpressionTypeNode,
     },
-    other: { type: TypeTypeNode },
+    other: { type: TypeSymbolTypeNode },
   },
   LiteralExpression: {
     other: {
-      type: TypeTypeNode,
+      type: TypeSymbolTypeNode,
       value: EvaluationResultTypeNode,
     },
   },
   VariableExpression: {
     children: {},
     other: {
-      type: TypeTypeNode,
+      type: TypeSymbolTypeNode,
       name: StringTypeNode,
     },
   },
@@ -44,7 +44,7 @@ const boundExpressionTypes: GeneratorTypeDefinitions = {
       expression: BoundExpressionTypeNode,
     },
     other: {
-      type: TypeTypeNode,
+      type: TypeSymbolTypeNode,
       name: StringTypeNode,
     },
   },

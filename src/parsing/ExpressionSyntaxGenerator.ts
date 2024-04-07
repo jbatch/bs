@@ -8,7 +8,6 @@ import {
   StringLiteralSyntaxTypeNode,
   SyntaxNodeTypeNode,
   TokenSyntaxTypeNode,
-  TypeNodeMap,
   or,
 } from '../codegeneration/Generator';
 

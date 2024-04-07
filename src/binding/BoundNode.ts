@@ -1,4 +1,4 @@
-import { VariableSymbol } from '../text/VariableSymbol';
+import { VariableSymbol } from '../symbols/Symbol';
 import { BoundBinaryOperator } from './BoundBinaryOperator';
 import { BoundExpression } from './BoundExpression';
 import { BoundStatement } from './BoundStatement';
@@ -19,7 +19,7 @@ export function prettyPrintProgram(node: BoundNode, indent: string = '', isLast:
   if (node.kind === 'LiteralExpression') {
     process.stdout.write(' (' + node.value.toString() + ')');
   }
-  if (node.kind === 'VariableSymbol') {
+  if (node.kind === 'Variable') {
     process.stdout.write(' (' + node.name + ')');
   }
   if (node.kind === 'VariableExpression') {
@@ -36,7 +36,7 @@ export function prettyPrintProgram(node: BoundNode, indent: string = '', isLast:
   }
   console.log();
   indent += isLast ? '   ' : '│  ';
-  if (node.kind !== 'VariableSymbol') {
+  if (node.kind !== 'Variable') {
     for (let i = 0; i < node.children.length; i++) {
       prettyPrintProgram(node.children[i], indent, i === node.children.length - 1);
     }

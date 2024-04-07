@@ -8,6 +8,7 @@ main() {
   yarn npx ts-node src/parsing/ExpressionSyntaxGenerator.ts
   yarn npx ts-node src/parsing/StatementSyntaxGenerator.ts
   yarn npx ts-node src/parsing/TokenSyntaxGenerator.ts
+  yarn npx ts-node src/symbols/SymbolGenerator.ts
   yarn prettier  --log-level silent  -w src
 }
 

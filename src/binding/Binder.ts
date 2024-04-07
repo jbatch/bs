@@ -10,7 +10,6 @@ import {
   BoundLiteralExpression,
   BoundUnaryExpression,
   BoundVariableExpression,
-  Type,
 } from './BoundExpression';
 import { BoundScope } from './BoundScope';
 import {
@@ -25,7 +24,7 @@ import {
 import { bindUnaryOperator } from './BoundUnaryOperator';
 import { getTokenText } from '../parsing/SyntaxHelper';
 import { bindBinaryOperator } from './BoundBinaryOperator';
-import { BoundVariableSymbol, VariableSymbol } from '../text/VariableSymbol';
+import { Bool, Int, String, TypeSymbol, Variable } from '../symbols/Symbol';
 
 export class Binder {
   scope: BoundScope;
@@ -74,7 +73,7 @@ export class Binder {
     const name = declaration.identifier.text!;
     const readonly = declaration.keyword.kind === 'ConstKeyword';
     const type = expression.type;
-    const variable = BoundVariableSymbol(name, type, readonly);
+    const variable = Variable(name, type, readonly);
 
     if (!this.scope.tryDeclare(variable)) {
       this.diagnostics.reportVariableAlreadyDeclared(declaration.equals.span, name);
@@ -85,7 +84,7 @@ export class Binder {
 
   private bindIfStatement(statement: StatementSyntax): BoundStatement {
     assert(statement.kind === 'IfStatement');
-    const condition = this.bindExpressionWithExpectedType(statement.condition, 'boolean');
+    const condition = this.bindExpressionWithExpectedType(statement.condition, Bool);
     const ifBlock = this.bindStatement(statement.ifBlock, 'BlockStatement');
     let elseBlock;
     if (statement.elseBlock) {
@@ -97,7 +96,7 @@ export class Binder {
 
   private bindWhileStatement(statement: StatementSyntax): BoundStatement {
     assert(statement.kind === 'WhileStatement');
-    const loopCondition = this.bindExpressionWithExpectedType(statement.loopCondition, 'boolean');
+    const loopCondition = this.bindExpressionWithExpectedType(statement.loopCondition, Bool);
     const whileBlock = this.bindStatement(statement.whileBlock, 'BlockStatement');
     return BoundWhileStatement(loopCondition, whileBlock);
   }
@@ -109,14 +108,14 @@ export class Binder {
       statement.beginStatement,
       'VariableDeclarationStatement'
     );
-    const loopCondition = this.bindExpressionWithExpectedType(statement.loopCondition, 'boolean');
+    const loopCondition = this.bindExpressionWithExpectedType(statement.loopCondition, Bool);
     const endStatement = this.bindStatement(statement.endStatement);
     const forBlock = this.bindStatement(statement.forBlock, 'BlockStatement');
     this.scope = this.scope.parent!;
     return BoundForStatement(beginStatement, loopCondition, endStatement, forBlock);
   }
 
-  private bindExpression(expression: ExpressionSyntax, expectedType?: Type): BoundExpression {
+  private bindExpression(expression: ExpressionSyntax, expectedType?: TypeSymbol): BoundExpression {
     switch (expression.kind) {
       case 'LiteralExpression':
         return this.bindLiteralExpression(expression);
@@ -135,7 +134,7 @@ export class Binder {
 
   private bindExpressionWithExpectedType(
     expression: ExpressionSyntax,
-    expectedType: Type
+    expectedType: TypeSymbol
   ): BoundExpression {
     const boundExpression = this.bindExpression(expression);
     if (boundExpression.type !== expectedType) {
@@ -196,7 +195,7 @@ export class Binder {
     const variable = this.scope.tryLookup(name);
     if (variable === undefined) {
       this.diagnostics.reportUndefinedName(expression.identifier.span, name);
-      return BoundLiteralExpression('number', 0);
+      return BoundLiteralExpression(Int, 0);
     }
     const type = variable.type;
     return BoundVariableExpression(type, name);
@@ -229,26 +228,26 @@ export class Binder {
     return BoundAssignmentExpression(type, name, boundExpression);
   }
 
-  private getLiteralType(span: TextSpan, value: any): Type {
+  private getLiteralType(span: TextSpan, value: any): TypeSymbol {
     switch (typeof value) {
       case 'number':
-        return 'number';
+        return Int;
       case 'boolean':
-        return 'boolean';
+        return Bool;
       case 'string':
-        return 'string';
+        return String;
       case 'bigint':
       case 'symbol':
       case 'undefined':
       case 'object':
       case 'function':
         this.diagnostics.reportUnexpectedLiteralType(span, typeof value);
-        return 'number';
+        return Int;
     }
   }
 
-  private getDefaultValueForType(type: Type) {
-    switch (type) {
+  private getDefaultValueForType(type: TypeSymbol) {
+    switch (type.name) {
       case 'number':
         return 0;
       case 'boolean':

@@ -18,8 +18,8 @@ export const EvaluationResultTypeNode = factory.createTypeReferenceNode(
   undefined
 );
 
-export const TypeTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('Type'),
+export const TypeSymbolTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('TypeSymbol'),
   undefined
 );
 
@@ -28,8 +28,13 @@ export const VariableSymbolTypeNode = factory.createTypeReferenceNode(
   undefined
 );
 
-export const LabelSymbolTypeNode = factory.createTypeReferenceNode(
-  factory.createIdentifier('LabelSymbol'),
+export const BoundLabelTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('BoundLabel'),
+  undefined
+);
+
+export const SymbolTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('Symbol'),
   undefined
 );
 

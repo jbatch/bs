@@ -1,6 +1,6 @@
-import { Type } from '../binding/BoundExpression';
 import { SyntaxKind } from '../parsing/SyntaxNode';
 import Terminal from '../repl/Terminal';
+import { TypeSymbol } from '../symbols/Symbol';
 import { SourceText } from '../text/SourceText';
 import { TextSpan, textSpan } from '../text/TextSpan';
 
@@ -63,8 +63,8 @@ export class DiagnosticBag {
     this.report(message, span);
   }
 
-  reportUndefinedUnaryOperator(span: TextSpan, operatorText: string, operandType: Type) {
-    const message = `Unary operator '${operatorText}' is not defined for type [${operandType}].`;
+  reportUndefinedUnaryOperator(span: TextSpan, operatorText: string, operandType: TypeSymbol) {
+    const message = `Unary operator '${operatorText}' is not defined for type [${operandType.name}].`;
     this.report(message, span);
   }
 
@@ -78,8 +78,8 @@ export class DiagnosticBag {
     this.report(message, span);
   }
 
-  reportTypeMismatch(span: TextSpan, expected: Type, found: Type) {
-    const message = `TypeError: expected [${expected}] but found [${found}]`;
+  reportTypeMismatch(span: TextSpan, expected: TypeSymbol, found: TypeSymbol) {
+    const message = `TypeError: expected [${expected.name}] but found [${found.name}]`;
     this.report(message, span);
   }
 
@@ -90,10 +90,10 @@ export class DiagnosticBag {
   reportUndefinedBinaryOperator(
     span: TextSpan,
     operatorText: string,
-    leftType: Type,
-    rightType: Type
+    leftType: TypeSymbol,
+    rightType: TypeSymbol
   ) {
-    const message = `Binary operator '${operatorText}' is not defined for types [${leftType}] and [${rightType}].`;
+    const message = `Binary operator '${operatorText}' is not defined for types [${leftType.name}] and [${rightType.name}].`;
     this.report(message, span);
   }
 
@@ -117,8 +117,8 @@ export class DiagnosticBag {
     this.report(message, span);
   }
 
-  reportCannotAssignIncompatibleTypes(span: TextSpan, expected: Type, found: Type) {
-    const message = `TypeError: Cannot assign [${found}] to [${expected}] variable '${name}'`;
+  reportCannotAssignIncompatibleTypes(span: TextSpan, expected: TypeSymbol, found: TypeSymbol) {
+    const message = `TypeError: Cannot assign [${found.name}] to [${expected.name}] variable '${name}'`;
     this.report(message, span);
   }
 

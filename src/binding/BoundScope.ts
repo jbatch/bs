@@ -1,4 +1,4 @@
-import { VariableSymbol } from '../text/VariableSymbol';
+import { VariableSymbol } from '../symbols/Symbol';
 
 /**
  * Holds which variables are in a given scope (but not their values)

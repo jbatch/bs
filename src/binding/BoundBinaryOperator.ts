@@ -1,5 +1,5 @@
 import { SyntaxKind } from '../parsing/SyntaxNode';
-import { Type } from './BoundExpression';
+import { Bool, Int, TypeSymbol } from '../symbols/Symbol';
 import { BoundNode } from './BoundNode';
 
 export type BoundBinaryOperatorKind =
@@ -22,17 +22,17 @@ export type BoundBinaryOperatorKind =
 export type BoundBinaryOperator = {
   kind: BoundBinaryOperatorKind;
   syntaxKind: SyntaxKind;
-  leftType: Type;
-  rightType: Type;
-  type: Type;
+  leftType: TypeSymbol;
+  rightType: TypeSymbol;
+  type: TypeSymbol;
   children: BoundNode[];
 };
 
 function boundBinaryOperator(
   kind: BoundBinaryOperatorKind,
   syntaxKind: SyntaxKind,
-  operandType: Type,
-  type?: Type
+  operandType: TypeSymbol,
+  type?: TypeSymbol
 ): BoundBinaryOperator {
   const children: BoundNode[] = [];
   if (type === undefined) {
@@ -56,29 +56,29 @@ function boundBinaryOperator(
 }
 
 const BINARY_OPERATORS: BoundBinaryOperator[] = [
-  boundBinaryOperator('Addition', 'PlusToken', 'number'),
-  boundBinaryOperator('Subtraction', 'MinusToken', 'number'),
-  boundBinaryOperator('Multiplication', 'StarToken', 'number'),
-  boundBinaryOperator('Division', 'SlashToken', 'number'),
-  boundBinaryOperator('BitwiseAnd', 'AmpersandToken', 'number'),
-  boundBinaryOperator('BitwiseOr', 'PipeToken', 'number'),
-  boundBinaryOperator('BitwiseXor', 'CaretToken', 'number'),
-  boundBinaryOperator('LogicalAnd', 'AmpersandAmpersandToken', 'boolean'),
-  boundBinaryOperator('LogicalOr', 'PipePipeToken', 'boolean'),
-  boundBinaryOperator('Equals', 'EqualsEqualsToken', 'number', 'boolean'),
-  boundBinaryOperator('NotEquals', 'BangEqualsToken', 'number', 'boolean'),
-  boundBinaryOperator('Equals', 'EqualsEqualsToken', 'boolean', 'boolean'),
-  boundBinaryOperator('NotEquals', 'BangEqualsToken', 'boolean', 'boolean'),
-  boundBinaryOperator('LessThan', 'LessToken', 'number', 'boolean'),
-  boundBinaryOperator('LessThanOrEqual', 'LessOrEqualsToken', 'number', 'boolean'),
-  boundBinaryOperator('GreaterThan', 'GreaterToken', 'number', 'boolean'),
-  boundBinaryOperator('GreaterThanOrEqual', 'GreaterOrEqualsToken', 'number', 'boolean'),
+  boundBinaryOperator('Addition', 'PlusToken', Int),
+  boundBinaryOperator('Subtraction', 'MinusToken', Int),
+  boundBinaryOperator('Multiplication', 'StarToken', Int),
+  boundBinaryOperator('Division', 'SlashToken', Int),
+  boundBinaryOperator('BitwiseAnd', 'AmpersandToken', Int),
+  boundBinaryOperator('BitwiseOr', 'PipeToken', Int),
+  boundBinaryOperator('BitwiseXor', 'CaretToken', Int),
+  boundBinaryOperator('LogicalAnd', 'AmpersandAmpersandToken', Bool),
+  boundBinaryOperator('LogicalOr', 'PipePipeToken', Bool),
+  boundBinaryOperator('Equals', 'EqualsEqualsToken', Int, Bool),
+  boundBinaryOperator('NotEquals', 'BangEqualsToken', Int, Bool),
+  boundBinaryOperator('Equals', 'EqualsEqualsToken', Bool, Bool),
+  boundBinaryOperator('NotEquals', 'BangEqualsToken', Bool, Bool),
+  boundBinaryOperator('LessThan', 'LessToken', Int, Bool),
+  boundBinaryOperator('LessThanOrEqual', 'LessOrEqualsToken', Int, Bool),
+  boundBinaryOperator('GreaterThan', 'GreaterToken', Int, Bool),
+  boundBinaryOperator('GreaterThanOrEqual', 'GreaterOrEqualsToken', Int, Bool),
 ];
 
 export function bindBinaryOperator(
   syntaxKind: SyntaxKind,
-  leftType: Type,
-  rightType: Type
+  leftType: TypeSymbol,
+  rightType: TypeSymbol
 ): BoundBinaryOperator | undefined {
   return BINARY_OPERATORS.find(
     (op) => op.syntaxKind === syntaxKind && op.leftType === leftType && op.rightType === rightType

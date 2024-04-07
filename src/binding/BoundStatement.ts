@@ -1,7 +1,7 @@
-import { VariableSymbol } from '../text/VariableSymbol';
+import { VariableSymbol } from '../symbols/Symbol';
 import { BoundExpression } from './BoundExpression';
+import { BoundLabel } from './BoundLabel';
 import { BoundNode } from './BoundNode';
-import { LabelSymbol } from './LabelSymbol';
 
 function isDefined<T>(node: T | undefined): node is T {
   return node !== undefined;
@@ -48,17 +48,17 @@ export type ForStatement = {
 };
 export type LabelStatement = {
   kind: 'LabelStatement';
-  label: LabelSymbol;
+  label: BoundLabel;
   children: BoundNode[];
 };
 export type GoToStatement = {
   kind: 'GoToStatement';
-  label: LabelSymbol;
+  label: BoundLabel;
   children: BoundNode[];
 };
 export type ConditionalGoToStatement = {
   kind: 'ConditionalGoToStatement';
-  label: LabelSymbol;
+  label: BoundLabel;
   jumpIfTrue: boolean;
   condition: BoundExpression;
   children: BoundNode[];
@@ -143,7 +143,7 @@ export function BoundForStatement(
     children,
   };
 }
-export function BoundLabelStatement(label: LabelSymbol): LabelStatement {
+export function BoundLabelStatement(label: BoundLabel): LabelStatement {
   const children: BoundNode[] = [];
   return {
     kind: 'LabelStatement',
@@ -151,7 +151,7 @@ export function BoundLabelStatement(label: LabelSymbol): LabelStatement {
     children,
   };
 }
-export function BoundGoToStatement(label: LabelSymbol): GoToStatement {
+export function BoundGoToStatement(label: BoundLabel): GoToStatement {
   const children: BoundNode[] = [];
   return {
     kind: 'GoToStatement',
@@ -160,7 +160,7 @@ export function BoundGoToStatement(label: LabelSymbol): GoToStatement {
   };
 }
 export function BoundConditionalGoToStatement(
-  label: LabelSymbol,
+  label: BoundLabel,
   jumpIfTrue: boolean,
   condition: BoundExpression
 ): ConditionalGoToStatement {

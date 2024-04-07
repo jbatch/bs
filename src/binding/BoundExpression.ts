@@ -1,22 +1,23 @@
 import { EvaluationResult } from '../evaluation/EvaluationResult';
+import { TypeSymbol } from '../symbols/Symbol';
 import { BoundBinaryOperator } from './BoundBinaryOperator';
 import { BoundNode } from './BoundNode';
 import { BoundUnaryOperator } from './BoundUnaryOperator';
 
-export type Type = 'number' | 'boolean' | 'string';
+// export type Type = 'number' | 'boolean' | 'string';
 
 // Generated code
 
 export type UnaryExpression = {
   kind: 'UnaryExpression';
-  type: Type;
+  type: TypeSymbol;
   operand: BoundExpression;
   operator: BoundUnaryOperator;
   children: BoundNode[];
 };
 export type BinaryExpression = {
   kind: 'BinaryExpression';
-  type: Type;
+  type: TypeSymbol;
   left: BoundExpression;
   operator: BoundBinaryOperator;
   right: BoundExpression;
@@ -24,19 +25,19 @@ export type BinaryExpression = {
 };
 export type LiteralExpression = {
   kind: 'LiteralExpression';
-  type: Type;
+  type: TypeSymbol;
   value: EvaluationResult;
   children: BoundNode[];
 };
 export type VariableExpression = {
   kind: 'VariableExpression';
-  type: Type;
+  type: TypeSymbol;
   name: string;
   children: BoundNode[];
 };
 export type AssignmentExpression = {
   kind: 'AssignmentExpression';
-  type: Type;
+  type: TypeSymbol;
   name: string;
   expression: BoundExpression;
   children: BoundNode[];
@@ -48,7 +49,7 @@ export type BoundExpression =
   | VariableExpression
   | AssignmentExpression;
 export function BoundUnaryExpression(
-  type: Type,
+  type: TypeSymbol,
   operand: BoundExpression,
   operator: BoundUnaryOperator
 ): UnaryExpression {
@@ -62,7 +63,7 @@ export function BoundUnaryExpression(
   };
 }
 export function BoundBinaryExpression(
-  type: Type,
+  type: TypeSymbol,
   left: BoundExpression,
   operator: BoundBinaryOperator,
   right: BoundExpression
@@ -77,7 +78,10 @@ export function BoundBinaryExpression(
     children,
   };
 }
-export function BoundLiteralExpression(type: Type, value: EvaluationResult): LiteralExpression {
+export function BoundLiteralExpression(
+  type: TypeSymbol,
+  value: EvaluationResult
+): LiteralExpression {
   const children: BoundNode[] = [];
   return {
     kind: 'LiteralExpression',
@@ -86,7 +90,7 @@ export function BoundLiteralExpression(type: Type, value: EvaluationResult): Lit
     children,
   };
 }
-export function BoundVariableExpression(type: Type, name: string): VariableExpression {
+export function BoundVariableExpression(type: TypeSymbol, name: string): VariableExpression {
   const children: BoundNode[] = [];
   return {
     kind: 'VariableExpression',
@@ -96,7 +100,7 @@ export function BoundVariableExpression(type: Type, name: string): VariableExpre
   };
 }
 export function BoundAssignmentExpression(
-  type: Type,
+  type: TypeSymbol,
   name: string,
   expression: BoundExpression
 ): AssignmentExpression {
