@@ -9,7 +9,7 @@ import {
   VariableSymbolTypeNode,
   array,
   optional,
-} from '../codegeneration/Generator';
+} from '../codegeneration/Generator.ts';
 
 const boundStatementTypes: GeneratorTypeDefinitions = {
   ExpressionStatement: {

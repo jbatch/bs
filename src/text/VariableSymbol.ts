@@ -1,4 +1,4 @@
-import { Type } from '../binding/BoundExpression';
+import { Type } from '../binding/BoundExpression.ts';
 
 export type VariableSymbol = {
   kind: 'VariableSymbol';

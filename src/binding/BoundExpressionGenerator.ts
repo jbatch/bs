@@ -8,7 +8,7 @@ import {
   GeneratorTypeDefinitions,
   StringTypeNode,
   TypeTypeNode,
-} from '../codegeneration/Generator';
+} from '../codegeneration/Generator.ts';
 
 const boundExpressionTypes: GeneratorTypeDefinitions = {
   UnaryExpression: {

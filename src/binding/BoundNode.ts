@@ -1,8 +1,8 @@
-import { VariableSymbol } from '../text/VariableSymbol';
-import { BoundBinaryOperator } from './BoundBinaryOperator';
-import { BoundExpression } from './BoundExpression';
-import { BoundStatement } from './BoundStatement';
-import { BoundUnaryOperator } from './BoundUnaryOperator';
+import { VariableSymbol } from '../text/VariableSymbol.ts';
+import { BoundBinaryOperator } from './BoundBinaryOperator.ts';
+import { BoundExpression } from './BoundExpression.ts';
+import { BoundStatement } from './BoundStatement.ts';
+import { BoundUnaryOperator } from './BoundUnaryOperator.ts';
 
 export type BoundNode =
   | BoundStatement

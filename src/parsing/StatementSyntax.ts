@@ -1,7 +1,7 @@
-import { TextSpan } from '../text/TextSpan';
-import { ExpressionSyntax } from './ExpressionSyntax';
-import { SyntaxNode } from './SyntaxNode';
-import { IdentifierTokenSyntax, TokenSyntax } from './TokenSyntax';
+import { TextSpan } from '../text/TextSpan.ts';
+import { ExpressionSyntax } from './ExpressionSyntax.ts';
+import { SyntaxNode } from './SyntaxNode.ts';
+import { IdentifierTokenSyntax, TokenSyntax } from './TokenSyntax.ts';
 
 function isDefined<T>(node: T | undefined): node is T {
   return node !== undefined;

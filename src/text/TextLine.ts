@@ -1,4 +1,4 @@
-import { TextSpan, textSpan } from './TextSpan';
+import { TextSpan, textSpan } from './TextSpan.ts';
 
 export class TextLine {
   start: number;

@@ -1,13 +1,13 @@
 import assert from 'node:assert';
-import { BoundExpression } from '../binding/BoundExpression';
-import { EvaluationResult } from './EvaluationResult';
+import { BoundExpression } from '../binding/BoundExpression.ts';
+import { EvaluationResult } from './EvaluationResult.ts';
 import {
   BoundStatement,
   LabelStatement,
   GoToStatement,
   ConditionalGoToStatement,
   BlockStatement,
-} from '../binding/BoundStatement';
+} from '../binding/BoundStatement.ts';
 
 export class Evaluator {
   root: BlockStatement;
@@ -148,6 +148,7 @@ export class Evaluator {
       case 'OnesCompliment':
         return ~operand;
     }
+    throw new Error(`Unexpected expression type ${node}`);
   }
 
   private evaluateBinaryExpression(node: BoundExpression): EvaluationResult {
@@ -187,6 +188,7 @@ export class Evaluator {
       case 'BitwiseXor':
         return Number(left) ^ Number(right);
     }
+    throw new Error(`Unexpected expression type ${node}`);
   }
 
   private evaluateLiteralExpression(node: BoundExpression): EvaluationResult {

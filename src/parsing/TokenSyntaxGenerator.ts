@@ -7,7 +7,7 @@ import {
   SyntaxNodeTypeNode,
   TextSpanTypeNode,
   TypeNodeMap,
-} from '../codegeneration/Generator';
+} from '../codegeneration/Generator.ts';
 
 const statmentTypes: GeneratorTypeDefinitions = {
   // Tokens

@@ -1,11 +1,11 @@
-import { TextSpan } from '../text/TextSpan';
-import { SyntaxNode } from './SyntaxNode';
+import { TextSpan } from '../text/TextSpan.ts';
+import { SyntaxNode } from './SyntaxNode.ts';
 import {
   BooleanLiteralSyntax,
   IdentifierTokenSyntax,
   NumberLiteralSyntax,
   TokenSyntax,
-} from './TokenSyntax';
+} from './TokenSyntax.ts';
 
 function isDefined<T>(node: T | undefined): node is T {
   return node !== undefined;

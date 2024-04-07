@@ -9,7 +9,7 @@ import {
   TypeNodeMap,
   array,
   optional,
-} from '../codegeneration/Generator';
+} from '../codegeneration/Generator.ts';
 
 const statmentTypes: GeneratorTypeDefinitions = {
   ExpressionStatement: {

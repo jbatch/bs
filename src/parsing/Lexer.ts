@@ -1,6 +1,6 @@
-import { DiagnosticBag } from '../reporting/Diagnostic';
-import { SourceText } from '../text/SourceText';
-import { getKeywordOrIdentifier } from './SyntaxHelper';
+import { DiagnosticBag } from '../reporting/Diagnostic.ts';
+import { SourceText } from '../text/SourceText.ts';
+import { getKeywordOrIdentifier } from './SyntaxHelper.ts';
 import {
   EndOfFileToken,
   NumberToken,
@@ -30,8 +30,8 @@ import {
   TildeToken,
   AmpersandToken,
   PipeToken,
-} from './TokenSyntax';
-import { textSpan } from '../text/TextSpan';
+} from './TokenSyntax.ts';
+import { textSpan } from '../text/TextSpan.ts';
 
 export class Lexer {
   source: SourceText;

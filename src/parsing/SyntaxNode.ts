@@ -1,6 +1,6 @@
-import { ExpressionSyntax } from './ExpressionSyntax';
-import { StatementSyntax } from './StatementSyntax';
-import { TokenSyntax } from './TokenSyntax';
+import { ExpressionSyntax } from './ExpressionSyntax.ts';
+import { StatementSyntax } from './StatementSyntax.ts';
+import { TokenSyntax } from './TokenSyntax.ts';
 
 export type CompilationUnit = {
   kind: 'CompilationUnit';

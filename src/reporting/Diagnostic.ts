@@ -1,8 +1,8 @@
-import { Type } from '../binding/BoundExpression';
-import { SyntaxKind } from '../parsing/SyntaxNode';
-import Terminal from '../repl/Terminal';
-import { SourceText } from '../text/SourceText';
-import { TextSpan, textSpan } from '../text/TextSpan';
+import { Type } from '../binding/BoundExpression.ts';
+import { SyntaxKind } from '../parsing/SyntaxNode.ts';
+import Terminal from '../repl/Terminal.ts';
+import { SourceText } from '../text/SourceText.ts';
+import { TextSpan, textSpan } from '../text/TextSpan.ts';
 
 export type Diagnostic = { message: string; span: TextSpan };
 

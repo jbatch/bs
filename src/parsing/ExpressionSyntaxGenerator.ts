@@ -9,7 +9,7 @@ import {
   TokenSyntaxTypeNode,
   TypeNodeMap,
   or,
-} from '../codegeneration/Generator';
+} from '../codegeneration/Generator.ts';
 
 const expressionTypes: GeneratorTypeDefinitions = {
   LiteralExpression: {

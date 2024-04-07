@@ -1,15 +1,15 @@
-import { Binder } from './binding/Binder';
-import { DiagnosticBag } from './reporting/Diagnostic';
-import Terminal from './repl/Terminal';
-import { Parser } from './parsing/Parser';
+import { Binder } from './binding/Binder.ts';
+import { DiagnosticBag } from './reporting/Diagnostic.ts';
+import Terminal from './repl/Terminal.ts';
+import { Parser } from './parsing/Parser.ts';
 
-import { Evaluator } from './evaluation/Evaluator';
+import { Evaluator } from './evaluation/Evaluator.ts';
 
-import { BoundScope } from './binding/BoundScope';
-import { BlockStatement, BoundStatement } from './binding/BoundStatement';
-import { prettyPrintTree } from './parsing/SyntaxNode';
-import { prettyPrintProgram } from './binding/BoundNode';
-import { Lowerer } from './lowerer/Lowerer';
+import { BoundScope } from './binding/BoundScope.ts';
+import { BlockStatement, BoundStatement } from './binding/BoundStatement.ts';
+import { prettyPrintTree } from './parsing/SyntaxNode.ts';
+import { prettyPrintProgram } from './binding/BoundNode.ts';
+import { Lowerer } from './lowerer/Lowerer.ts';
 
 const variables = {};
 let globalScope = new BoundScope();

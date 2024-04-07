@@ -10,9 +10,9 @@ import {
   TrueKeyword,
   VarKeyword,
   WhileKeyword,
-} from './TokenSyntax';
-import { textSpan } from '../text/TextSpan';
-import { SyntaxKind } from './SyntaxNode';
+} from './TokenSyntax.ts';
+import { textSpan } from '../text/TextSpan.ts';
+import { SyntaxKind } from './SyntaxNode.ts';
 
 export function getBinaryOperatorPrecedence(kind: SyntaxKind) {
   switch (kind) {

@@ -1,8 +1,8 @@
 import assert from 'node:assert';
-import { ExpressionSyntax } from '../parsing/ExpressionSyntax';
-import { StatementKind, StatementSyntax } from '../parsing/StatementSyntax';
-import { DiagnosticBag } from '../reporting/Diagnostic';
-import { TextSpan } from '../text/TextSpan';
+import { ExpressionSyntax } from '../parsing/ExpressionSyntax.ts';
+import { StatementKind, StatementSyntax } from '../parsing/StatementSyntax.ts';
+import { DiagnosticBag } from '../reporting/Diagnostic.ts';
+import { TextSpan } from '../text/TextSpan.ts';
 import {
   BoundAssignmentExpression,
   BoundBinaryExpression,
@@ -11,8 +11,8 @@ import {
   BoundUnaryExpression,
   BoundVariableExpression,
   Type,
-} from './BoundExpression';
-import { BoundScope } from './BoundScope';
+} from './BoundExpression.ts';
+import { BoundScope } from './BoundScope.ts';
 import {
   BoundBlockStatement,
   BoundExpressionStatement,
@@ -21,11 +21,11 @@ import {
   BoundStatement,
   BoundVariableDelcarationStatement,
   BoundWhileStatement,
-} from './BoundStatement';
-import { bindUnaryOperator } from './BoundUnaryOperator';
-import { getTokenText } from '../parsing/SyntaxHelper';
-import { bindBinaryOperator } from './BoundBinaryOperator';
-import { BoundVariableSymbol, VariableSymbol } from '../text/VariableSymbol';
+} from './BoundStatement.ts';
+import { bindUnaryOperator } from './BoundUnaryOperator.ts';
+import { getTokenText } from '../parsing/SyntaxHelper.ts';
+import { bindBinaryOperator } from './BoundBinaryOperator.ts';
+import { BoundVariableSymbol, VariableSymbol } from '../text/VariableSymbol.ts';
 
 export class Binder {
   scope: BoundScope;

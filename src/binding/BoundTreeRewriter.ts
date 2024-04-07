@@ -8,7 +8,7 @@ import {
   BoundUnaryExpression,
   BoundBinaryExpression,
   BoundAssignmentExpression,
-} from './BoundExpression';
+} from './BoundExpression.ts';
 import {
   BlockStatement,
   BoundStatement,
@@ -26,7 +26,7 @@ import {
   ConditionalGoToStatement,
   BoundConditionalGoToStatement,
   BoundBlockStatement,
-} from './BoundStatement';
+} from './BoundStatement.ts';
 
 export class BoundTreeRewriter {
   public rewriteBoundStatement(boundTreeRoot: BoundStatement): BoundStatement {

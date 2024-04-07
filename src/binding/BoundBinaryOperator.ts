@@ -1,6 +1,6 @@
-import { SyntaxKind } from '../parsing/SyntaxNode';
-import { Type } from './BoundExpression';
-import { BoundNode } from './BoundNode';
+import { SyntaxKind } from '../parsing/SyntaxNode.ts';
+import { Type } from './BoundExpression.ts';
+import { BoundNode } from './BoundNode.ts';
 
 export type BoundBinaryOperatorKind =
   | 'Addition'

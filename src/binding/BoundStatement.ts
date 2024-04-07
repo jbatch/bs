@@ -1,7 +1,7 @@
-import { VariableSymbol } from '../text/VariableSymbol';
-import { BoundExpression } from './BoundExpression';
-import { BoundNode } from './BoundNode';
-import { LabelSymbol } from './LabelSymbol';
+import { VariableSymbol } from '../text/VariableSymbol.ts';
+import { BoundExpression } from './BoundExpression.ts';
+import { BoundNode } from './BoundNode.ts';
+import { LabelSymbol } from './LabelSymbol.ts';
 
 function isDefined<T>(node: T | undefined): node is T {
   return node !== undefined;

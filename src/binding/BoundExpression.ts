@@ -1,7 +1,7 @@
-import { EvaluationResult } from '../evaluation/EvaluationResult';
-import { BoundBinaryOperator } from './BoundBinaryOperator';
-import { BoundNode } from './BoundNode';
-import { BoundUnaryOperator } from './BoundUnaryOperator';
+import { EvaluationResult } from '../evaluation/EvaluationResult.ts';
+import { BoundBinaryOperator } from './BoundBinaryOperator.ts';
+import { BoundNode } from './BoundNode.ts';
+import { BoundUnaryOperator } from './BoundUnaryOperator.ts';
 
 export type Type = 'number' | 'boolean';
 

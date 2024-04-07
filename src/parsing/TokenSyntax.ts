@@ -1,5 +1,5 @@
-import { TextSpan } from '../text/TextSpan';
-import { SyntaxNode } from './SyntaxNode';
+import { TextSpan } from '../text/TextSpan.ts';
+import { SyntaxNode } from './SyntaxNode.ts';
 
 export type TokenSyntaxKind = TokenSyntax['kind'];
 

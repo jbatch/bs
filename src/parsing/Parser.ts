@@ -1,4 +1,4 @@
-import { DiagnosticBag } from '../reporting/Diagnostic';
+import { DiagnosticBag } from '../reporting/Diagnostic.ts';
 import {
   AssignmentExpression,
   BinaryExpression,
@@ -7,11 +7,11 @@ import {
   NameExpression,
   ParenthesizedExpression,
   UnaryExpression,
-} from './ExpressionSyntax';
-import { Lexer } from './Lexer';
-import { SourceText } from '../text/SourceText';
-import { textSpan } from '../text/TextSpan';
-import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
+} from './ExpressionSyntax.ts';
+import { Lexer } from './Lexer.ts';
+import { SourceText } from '../text/SourceText.ts';
+import { textSpan } from '../text/TextSpan.ts';
+import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper.ts';
 import {
   BooleanLiteral,
   IdentifierTokenSyntax,
@@ -19,8 +19,8 @@ import {
   NumberTokenSyntax,
   TokenSyntax,
   TokenSyntaxKind,
-} from './TokenSyntax';
-import { CompilationUnit } from './SyntaxNode';
+} from './TokenSyntax.ts';
+import { CompilationUnit } from './SyntaxNode.ts';
 import {
   BlockStatement,
   ExpressionStatement,
@@ -29,7 +29,7 @@ import {
   StatementSyntax,
   VariableDeclarationStatement,
   WhileStatement,
-} from './StatementSyntax';
+} from './StatementSyntax.ts';
 import assert from 'node:assert';
 
 export class Parser {
