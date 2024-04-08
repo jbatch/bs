@@ -76,35 +76,35 @@ export class Evaluator {
         this.lastResult = await this.evaluateExpression(statement.expression);
         break;
       case 'BlockStatement':
-        this.evaluateBlockStatement(statement);
+        await this.evaluateBlockStatement(statement);
         break;
       case 'VariableDelcarationStatement':
-        this.evaluateVariableDeclarationStatement(statement);
+        await this.evaluateVariableDeclarationStatement(statement);
         break;
       case 'LabelStatement':
-        this.evaluateLabelStatement(statement);
+        await this.evaluateLabelStatement(statement);
         break;
       case 'GoToStatement':
-        this.evaluateGoToStatement(statement);
+        await this.evaluateGoToStatement(statement);
         break;
       case 'ConditionalGoToStatement':
-        this.evaluateConditionalGoToStatement(statement);
+        await this.evaluateConditionalGoToStatement(statement);
         break;
     }
   }
 
-  private evaluateBlockStatement(block: BoundStatement) {
+  private async evaluateBlockStatement(block: BoundStatement) {
     assert(block.kind === 'BlockStatement');
 
     for (let statement of block.statements) {
-      this.evaluateStatement(statement);
+      await this.evaluateStatement(statement);
     }
   }
 
   private async evaluateVariableDeclarationStatement(declaration: BoundStatement) {
     assert(declaration.kind === 'VariableDelcarationStatement');
 
-    var value = this.evaluateExpression(declaration.expression);
+    var value = await this.evaluateExpression(declaration.expression);
     this.variables[declaration.variable.name] = await value;
     this.lastResult = await value;
   }
@@ -227,7 +227,8 @@ export class Evaluator {
         Terminal.writeLine(result);
         return undefined;
       case 'input':
-        return await Terminal.input('');
+        const a = await Terminal.input('? ');
+        return a;
       default:
         throw new Error('Unexpected function call');
     }
