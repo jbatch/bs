@@ -18,7 +18,15 @@ function write(s: string | number | boolean) {
 }
 
 function writeLine(s?: string | number | boolean) {
-  console.log(s ?? '');
+  if (s === undefined) {
+    console.log();
+    return;
+  }
+  if (typeof s === 'string') {
+    console.log(`\x1b[1;32m'${s}'\x1b[1;39m`);
+  } else {
+    console.log(`\x1b[1;33m${s}\x1b[1;39m`);
+  }
 }
 
 export default { input, write, writeLine };

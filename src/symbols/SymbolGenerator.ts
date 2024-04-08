@@ -5,6 +5,8 @@ import {
   StringTypeNode,
   SymbolTypeNode,
   TypeSymbolTypeNode,
+  VariableSymbolTypeNode,
+  array,
 } from '../codegeneration/Generator';
 
 const symbolTypes: GeneratorTypeDefinitions = {
@@ -18,6 +20,13 @@ const symbolTypes: GeneratorTypeDefinitions = {
   Type: {
     other: {
       name: StringTypeNode,
+    },
+  },
+  Function: {
+    other: {
+      name: StringTypeNode,
+      type: TypeSymbolTypeNode,
+      parameters: array(VariableSymbolTypeNode),
     },
   },
 };

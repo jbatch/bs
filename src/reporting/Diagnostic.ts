@@ -93,7 +93,7 @@ export class DiagnosticBag {
     leftType: TypeSymbol,
     rightType: TypeSymbol
   ) {
-    const message = `Binary operator '${operatorText}' is not defined for types [${leftType.name}] and [${rightType.name}].`;
+    const message = `Type error: Binary operator '${operatorText}' is not defined for types [${leftType.name}] and [${rightType.name}].`;
     this.report(message, span);
   }
 
@@ -108,7 +108,7 @@ export class DiagnosticBag {
   }
 
   reportUndefinedVariable(span: TextSpan, name: string) {
-    const message = `Variable '${name}' is not defined`;
+    const message = `Reference error: variable '${name}' is not defined`;
     this.report(message, span);
   }
 
@@ -129,6 +129,26 @@ export class DiagnosticBag {
 
   reportUnterminatedString(span: TextSpan) {
     const message = `Unterminated string literal`;
+    this.report(message, span);
+  }
+
+  reportUndefinedFunction(span: TextSpan, name: string) {
+    const message = `Reference error: function ${name} is not defined`;
+    this.report(message, span);
+  }
+
+  reportArguementCountMismatch(span: TextSpan, name: string, expected: number, found: number) {
+    const message = `Function ${name} called with ${found} arguments, expected ${expected}`;
+    this.report(message, span);
+  }
+
+  reportArguementTypeMismatch(
+    span: TextSpan,
+    name: string,
+    expected: TypeSymbol,
+    found: TypeSymbol
+  ) {
+    const message = `TypeError: ${name} expected [${expected.name}] argument but got [${found.name}]`;
     this.report(message, span);
   }
 }

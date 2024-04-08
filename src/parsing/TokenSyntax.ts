@@ -117,6 +117,11 @@ export type SemicolonTokenSyntax = {
   span: TextSpan;
   children: SyntaxNode[];
 };
+export type CommaTokenSyntax = {
+  kind: 'CommaToken';
+  span: TextSpan;
+  children: SyntaxNode[];
+};
 export type LessTokenSyntax = {
   kind: 'LessToken';
   span: TextSpan;
@@ -254,6 +259,7 @@ export type TokenSyntax =
   | AmpersandTokenSyntax
   | PipeTokenSyntax
   | SemicolonTokenSyntax
+  | CommaTokenSyntax
   | LessTokenSyntax
   | GreaterTokenSyntax
   | LessOrEqualsTokenSyntax
@@ -450,6 +456,14 @@ export function SemicolonToken(span: TextSpan): SemicolonTokenSyntax {
   const children: SyntaxNode[] = [];
   return {
     kind: 'SemicolonToken',
+    span,
+    children,
+  };
+}
+export function CommaToken(span: TextSpan): CommaTokenSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'CommaToken',
     span,
     children,
   };

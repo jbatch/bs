@@ -72,6 +72,15 @@ export type PostfixUnaryExpressionSyntax = {
   operator: TokenSyntax;
   children: SyntaxNode[];
 };
+export type CallExpressionSyntax = {
+  kind: 'CallExpression';
+  span: TextSpan;
+  identifier: IdentifierTokenSyntax;
+  open: TokenSyntax;
+  args: (ExpressionSyntax | TokenSyntax)[];
+  close: TokenSyntax;
+  children: SyntaxNode[];
+};
 export type ExpressionSyntax =
   | LiteralExpressionSyntax
   | BinaryExpressionSyntax
@@ -80,7 +89,8 @@ export type ExpressionSyntax =
   | NameExpressionSyntax
   | AssignmentExpressionSyntax
   | OperatorAssignmentExpressionSyntax
-  | PostfixUnaryExpressionSyntax;
+  | PostfixUnaryExpressionSyntax
+  | CallExpressionSyntax;
 export function LiteralExpression(
   literal: NumberLiteralSyntax | BooleanLiteralSyntax | StringLiteralSyntax
 ): LiteralExpressionSyntax {
@@ -192,6 +202,24 @@ export function PostfixUnaryExpression(
     span,
     identifier,
     operator,
+    children,
+  };
+}
+export function CallExpression(
+  identifier: IdentifierTokenSyntax,
+  open: TokenSyntax,
+  args: (ExpressionSyntax | TokenSyntax)[],
+  close: TokenSyntax
+): CallExpressionSyntax {
+  const span = identifier.span;
+  const children: SyntaxNode[] = [identifier, open, ...args, close];
+  return {
+    kind: 'CallExpression',
+    span,
+    identifier,
+    open,
+    args,
+    close,
     children,
   };
 }

@@ -1,3 +1,4 @@
+import assert from 'node:assert';
 import { VariableSymbol } from '../symbols/Symbol';
 import { BoundBinaryOperator } from './BoundBinaryOperator';
 import { BoundExpression } from './BoundExpression';
@@ -17,6 +18,7 @@ export function prettyPrintProgram(node: BoundNode, indent: string = '', isLast:
   process.stdout.write(marker);
   process.stdout.write(node.kind);
   if (node.kind === 'LiteralExpression') {
+    assert(node.value !== undefined);
     process.stdout.write(' (' + node.value.toString() + ')');
   }
   if (node.kind === 'Variable') {

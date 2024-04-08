@@ -8,6 +8,7 @@ import {
   StringLiteralSyntaxTypeNode,
   SyntaxNodeTypeNode,
   TokenSyntaxTypeNode,
+  array,
   or,
 } from '../codegeneration/Generator';
 
@@ -64,6 +65,14 @@ const expressionTypes: GeneratorTypeDefinitions = {
     children: {
       identifier: IdentifierTokenSyntaxTypeNode,
       operator: TokenSyntaxTypeNode,
+    },
+  },
+  CallExpression: {
+    children: {
+      identifier: IdentifierTokenSyntaxTypeNode,
+      open: TokenSyntaxTypeNode,
+      args: array(or(ExpressionSyntaxTypeNode, TokenSyntaxTypeNode)),
+      close: TokenSyntaxTypeNode,
     },
   },
 };

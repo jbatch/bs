@@ -1,1 +1,1 @@
-export type EvaluationResult = number | string | boolean;
+export type EvaluationResult = number | string | boolean | undefined;

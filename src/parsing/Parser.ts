@@ -2,6 +2,7 @@ import { DiagnosticBag } from '../reporting/Diagnostic';
 import {
   AssignmentExpression,
   BinaryExpression,
+  CallExpression,
   ExpressionSyntax,
   LiteralExpression,
   NameExpression,
@@ -284,8 +285,7 @@ export class Parser {
         return LiteralExpression(BooleanLiteral(token.span, false));
       }
       case 'IdentifierToken': {
-        const identifier = this.matchToken('IdentifierToken') as IdentifierTokenSyntax;
-        return NameExpression(identifier);
+        return this.parseNameOrCall();
       }
       case 'StringToken': {
         const stringToken = this.matchToken('StringToken');
@@ -298,5 +298,33 @@ export class Parser {
         return LiteralExpression(NumberLiteral(number.span, number.value));
       }
     }
+  }
+
+  parseNameOrCall(): ExpressionSyntax {
+    if (this.peek(0).kind === 'IdentifierToken' && this.peek(1).kind === 'OpenParenthesisToken') {
+      return this.parseCallExpression();
+    }
+    return this.parseNameExpression();
+  }
+
+  parseCallExpression(): ExpressionSyntax {
+    const identifier = this.matchToken('IdentifierToken');
+    assert(identifier.kind === 'IdentifierToken');
+    const open = this.matchToken('OpenParenthesisToken');
+    const args = [];
+    while (this.peek(0).kind !== 'CloseParenthesisToken') {
+      args.push(this.parseExpression());
+      if (this.peek(0).kind !== 'CloseParenthesisToken') {
+        args.push(this.matchToken('CommaToken'));
+      }
+    }
+    const close = this.matchToken('CloseParenthesisToken');
+    return CallExpression(identifier, open, args, close);
+  }
+
+  parseNameExpression(): ExpressionSyntax {
+    const identifier = this.matchToken('IdentifierToken');
+    assert(identifier.kind === 'IdentifierToken');
+    return NameExpression(identifier);
   }
 }

@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import {
   AssignmentExpressionSyntax,
+  CallExpressionSyntax,
   ExpressionSyntax,
   OperatorAssignmentExpressionSyntax,
   PostfixUnaryExpressionSyntax,
@@ -11,6 +12,7 @@ import { TextSpan } from '../text/TextSpan';
 import {
   BoundAssignmentExpression,
   BoundBinaryExpression,
+  BoundCallExpression,
   BoundExpression,
   BoundLiteralExpression,
   BoundOperatorAssignmentExpression,
@@ -32,7 +34,16 @@ import {
 import { BoundUnaryOperator, bindUnaryOperator } from './BoundUnaryOperator';
 import { getTokenText } from '../parsing/SyntaxHelper';
 import { BoundBinaryOperator, bindBinaryOperator } from './BoundBinaryOperator';
-import { Bool, Err, Int, String, TypeSymbol, Variable, VariableSymbol } from '../symbols/Symbol';
+import {
+  BUILT_IN_FUNCTIONS,
+  Bool,
+  Err,
+  Int,
+  String,
+  TypeSymbol,
+  Variable,
+  VariableSymbol,
+} from '../symbols/Symbol';
 import { Either, isLeft, left, right } from '../container/Either';
 import { IdentifierTokenSyntax, TokenSyntax } from '../parsing/TokenSyntax';
 import { BoundErrorExpression } from './BoundExpression';
@@ -144,6 +155,8 @@ export class Binder {
         return this.bindOperatorAssignmentExpression(expression);
       case 'PostfixUnaryExpression':
         return this.bindPostfixUnaryExpression(expression);
+      case 'CallExpression':
+        return this.bindCallExpression(expression);
     }
   }
 
@@ -237,14 +250,6 @@ export class Binder {
     }
     const variable = maybeVariable.right;
     const boundExpression = this.bindExpression(expression.expression);
-    // if (variable.type.name !== boundExpression.type.name) {
-    //   this.diagnostics.reportCannotAssignIncompatibleTypes(
-    //     expression.identifier.span,
-    //     expression.identifier.text,
-    //     variable.type,
-    //     boundExpression.type
-    //   );
-    // }
     const maybeOperator = this.tryBindBinaryOperator(
       variable.type,
       expression.operator,
@@ -275,6 +280,36 @@ export class Binder {
     }
     const operator = maybeOperator.right;
     return BoundPostfixUnaryExpression(variable.type, variable.name, operator);
+  }
+
+  private bindCallExpression(expression: CallExpressionSyntax): BoundExpression {
+    function isNotComma(arg: TokenSyntax | ExpressionSyntax): arg is ExpressionSyntax {
+      return arg.kind !== 'CommaToken';
+    }
+    const args = expression.args.filter(isNotComma);
+
+    const fn = BUILT_IN_FUNCTIONS[expression.identifier.text];
+    if (!fn) {
+      this.diagnostics.reportUndefinedFunction(
+        expression.identifier.span,
+        expression.identifier.text
+      );
+      return BoundErrorExpression(Err);
+    }
+
+    const boundArgs = [];
+    for (let i = 0; i < fn.parameters.length; i++) {
+      const param = fn.parameters[i];
+      const arg = args[i];
+      const boundArg = this.bindExpression(arg);
+      if (param.type.name !== boundArg.type.name) {
+        this.diagnostics.reportArguementTypeMismatch(arg.span, fn.name, param.type, boundArg.type);
+        return BoundErrorExpression(Err);
+      }
+      boundArgs.push(boundArg);
+    }
+
+    return BoundCallExpression(fn.name, fn.type, boundArgs);
   }
 
   private tryGetVariable(

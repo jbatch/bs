@@ -32,6 +32,7 @@ const statmentTypes: GeneratorTypeDefinitions = {
   AmpersandToken: { other: { span: TextSpanTypeNode } },
   PipeToken: { other: { span: TextSpanTypeNode } },
   SemicolonToken: { other: { span: TextSpanTypeNode } },
+  CommaToken: { other: { span: TextSpanTypeNode } },
   LessToken: { other: { span: TextSpanTypeNode } },
   GreaterToken: { other: { span: TextSpanTypeNode } },
   LessOrEqualsToken: { other: { span: TextSpanTypeNode } },

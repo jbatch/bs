@@ -8,6 +8,7 @@ import {
   GeneratorTypeDefinitions,
   StringTypeNode,
   TypeSymbolTypeNode,
+  array,
 } from '../codegeneration/Generator';
 
 const boundExpressionTypes: GeneratorTypeDefinitions = {
@@ -65,6 +66,15 @@ const boundExpressionTypes: GeneratorTypeDefinitions = {
     other: {
       type: TypeSymbolTypeNode,
       name: StringTypeNode,
+    },
+  },
+  CallExpression: {
+    children: {
+      args: array(BoundExpressionTypeNode),
+    },
+    other: {
+      name: StringTypeNode,
+      type: TypeSymbolTypeNode,
     },
   },
   ErrorExpression: {

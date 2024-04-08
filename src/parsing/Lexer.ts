@@ -35,8 +35,9 @@ import {
   PlusEquals,
   MinusMinus,
   MinusEquals,
+  CommaToken,
 } from './TokenSyntax';
-import { textSpan, textSpanWithEnd } from '../text/TextSpan';
+import { TextSpan, textSpan, textSpanWithEnd } from '../text/TextSpan';
 
 export class Lexer {
   source: SourceText;
@@ -80,6 +81,12 @@ export class Lexer {
     return this.source.text[index];
   }
 
+  private consumeSymbols(n: number): TextSpan {
+    const start = this.position;
+    this.position += n;
+    return textSpan(start, n);
+  }
+
   nextToken(): TokenSyntax {
     if (this.position >= this.source.length) {
       const span = textSpan(this.position, 1);
@@ -103,85 +110,77 @@ export class Lexer {
     switch (current) {
       case '+':
         if (this.lookAhead() === '+') {
-          this.position += 2;
-          return PlusPlus(textSpan(this.position - 2, 2));
+          return PlusPlus(this.consumeSymbols(2));
         } else if (this.lookAhead() === '=') {
-          this.position += 2;
-          return PlusEquals(textSpan(this.position - 2, 2));
+          return PlusEquals(this.consumeSymbols(2));
         }
-        return PlusToken(textSpan(this.position++, 1));
+        return PlusToken(this.consumeSymbols(1));
       case '-':
         if (this.lookAhead() === '-') {
-          this.position += 2;
-          return MinusMinus(textSpan(this.position - 2, 2));
+          return MinusMinus(this.consumeSymbols(2));
         } else if (this.lookAhead() === '=') {
-          this.position += 2;
-          return MinusEquals(textSpan(this.position - 2, 2));
+          return MinusEquals(this.consumeSymbols(2));
         }
-        return MinusToken(textSpan(this.position++, 1));
+        return MinusToken(this.consumeSymbols(1));
       case '*':
-        return StarToken(textSpan(this.position++, 1));
+        return StarToken(this.consumeSymbols(1));
       case '/':
-        return SlashToken(textSpan(this.position++, 1));
+        return SlashToken(this.consumeSymbols(1));
       case '(':
-        return OpenParenthesisToken(textSpan(this.position++, 1));
+        return OpenParenthesisToken(this.consumeSymbols(1));
       case ')':
-        return CloseParenthesisToken(textSpan(this.position++, 1));
+        return CloseParenthesisToken(this.consumeSymbols(1));
       case '{':
-        return OpenBraceToken(textSpan(this.position++, 1));
+        return OpenBraceToken(this.consumeSymbols(1));
       case '}':
-        return CloseBraceToken(textSpan(this.position++, 1));
+        return CloseBraceToken(this.consumeSymbols(1));
       case '^':
-        return CaretToken(textSpan(this.position++, 1));
+        return CaretToken(this.consumeSymbols(1));
       case '~':
-        return TildeToken(textSpan(this.position++, 1));
+        return TildeToken(this.consumeSymbols(1));
       case '"':
         return this.readString();
       case '!':
         if (this.lookAhead() === '=') {
-          this.position += 2;
-          return BangEqualsToken(textSpan(this.position - 2, 2));
+          return BangEqualsToken(this.consumeSymbols(2));
         }
-        return BangToken(textSpan(this.position++, 1));
+        return BangToken(this.consumeSymbols(1));
       case '&': {
         if (this.lookAhead() === '&') {
-          this.position += 2;
-          return AmpersandAmpersandToken(textSpan(this.position - 2, 2));
+          return AmpersandAmpersandToken(this.consumeSymbols(2));
         } else {
-          return AmpersandToken(textSpan(this.position++, 1));
+          return AmpersandToken(this.consumeSymbols(1));
         }
       }
       case '|': {
         if (this.lookAhead() === '|') {
-          this.position += 2;
-          return PipePipeToken(textSpan(this.position - 2, 2));
+          return PipePipeToken(this.consumeSymbols(2));
         } else {
-          return PipeToken(textSpan(this.position++, 1));
+          return PipeToken(this.consumeSymbols(1));
         }
       }
       case ';':
-        return SemicolonToken(textSpan(this.position++, 1));
+        return SemicolonToken(this.consumeSymbols(1));
+      case ',':
+        return CommaToken(this.consumeSymbols(1));
       case '=': {
         if (this.lookAhead() === '=') {
-          this.position += 2;
-          return EqualsEqualsToken(textSpan(this.position - 2, 2));
+          return EqualsEqualsToken(this.consumeSymbols(2));
         } else {
-          return EqualsToken(textSpan(this.position++, 1));
+          return EqualsToken(this.consumeSymbols(1));
         }
       }
       case '<': {
         if (this.lookAhead() === '=') {
-          this.position += 2;
-          return LessOrEqualsToken(textSpan(this.position - 2, 2));
+          return LessOrEqualsToken(this.consumeSymbols(2));
         }
-        return LessToken(textSpan(this.position++, 1));
+        return LessToken(this.consumeSymbols(1));
       }
       case '>': {
         if (this.lookAhead() === '=') {
-          this.position += 2;
-          return GreaterOrEqualsToken(textSpan(this.position - 2, 2));
+          return GreaterOrEqualsToken(this.consumeSymbols(2));
         }
-        return GreaterToken(textSpan(this.position++, 1));
+        return GreaterToken(this.consumeSymbols(1));
       }
     }
 

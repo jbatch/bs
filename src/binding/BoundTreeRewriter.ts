@@ -12,6 +12,8 @@ import {
   OperatorAssignmentExpression,
   PostfixUnaryExpression,
   BoundOperatorAssignmentExpression,
+  CallExpression,
+  BoundCallExpression,
 } from './BoundExpression';
 import {
   BlockStatement,
@@ -78,6 +80,8 @@ export class BoundTreeRewriter {
         return this.rewriteOperatorAssignmentExpression(expression);
       case 'PostfixUnaryExpression':
         return this.rewritePostfixUnaryExpression(expression);
+      case 'CallExpression':
+        return this.rewriteCallExpression(expression);
       case 'ErrorExpression':
         return this.rewriteErrorExpression(expression);
     }
@@ -160,14 +164,21 @@ export class BoundTreeRewriter {
     return BoundAssignmentExpression(type, name, right);
   }
 
-  rewriteOperatorAssignmentExpression(expression: OperatorAssignmentExpression): BoundExpression {
+  protected rewriteOperatorAssignmentExpression(
+    expression: OperatorAssignmentExpression
+  ): BoundExpression {
     let { type, name, operator, expression: assignmentExpression } = expression;
     assignmentExpression = this.rewriteExpression(assignmentExpression);
     return BoundOperatorAssignmentExpression(type, name, operator, assignmentExpression);
   }
 
-  rewritePostfixUnaryExpression(expression: PostfixUnaryExpression): BoundExpression {
+  protected rewritePostfixUnaryExpression(expression: PostfixUnaryExpression): BoundExpression {
     return expression;
+  }
+
+  protected rewriteCallExpression(expression: CallExpression): BoundExpression {
+    const newArgs = expression.args.map((arg) => this.rewriteExpression(arg));
+    return BoundCallExpression(expression.name, expression.type, newArgs);
   }
 
   protected rewriteErrorExpression(expression: ErrorExpression): BoundExpression {

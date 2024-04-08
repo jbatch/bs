@@ -73,23 +73,22 @@ async function main() {
     }
 
     // Evaluate
-    evaluateBoundStatement(loweredBlockStatment);
+    await evaluateBoundStatement(loweredBlockStatment);
   }
   process.exit(0);
 }
 
 main();
 
-function evaluateBoundStatement(boundRoot: BlockStatement) {
+async function evaluateBoundStatement(boundRoot: BlockStatement) {
   try {
     const evaluator = new Evaluator(boundRoot, variables);
     Terminal.writeLine();
-    const result = evaluator.evaluate();
-    if (typeof result === 'string') {
-      Terminal.writeLine(`\x1b[1;32m'${result}'\x1b[1;39m`);
-    } else {
-      Terminal.writeLine(`\x1b[1;33m${result}\x1b[1;39m`);
+    const result = await evaluator.evaluate();
+    if (result === undefined) {
+      return;
     }
+    Terminal.writeLine(result);
   } catch (error: any) {
     console.error(error.message);
   }

@@ -113,6 +113,8 @@ export function getTokenText(token: TokenSyntax): string {
       return '|';
     case 'SemicolonToken':
       return ';';
+    case 'CommaToken':
+      return ',';
     case 'LessToken':
       return '<';
     case 'GreaterToken':

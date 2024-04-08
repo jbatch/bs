@@ -58,6 +58,13 @@ export type PostfixUnaryExpression = {
   operator: BoundUnaryOperator;
   children: BoundNode[];
 };
+export type CallExpression = {
+  kind: 'CallExpression';
+  name: string;
+  type: TypeSymbol;
+  args: BoundExpression[];
+  children: BoundNode[];
+};
 export type ErrorExpression = {
   kind: 'ErrorExpression';
   type: TypeSymbol;
@@ -71,6 +78,7 @@ export type BoundExpression =
   | AssignmentExpression
   | OperatorAssignmentExpression
   | PostfixUnaryExpression
+  | CallExpression
   | ErrorExpression;
 export function BoundUnaryExpression(
   type: TypeSymbol,
@@ -164,6 +172,20 @@ export function BoundPostfixUnaryExpression(
     type,
     name,
     operator,
+    children,
+  };
+}
+export function BoundCallExpression(
+  name: string,
+  type: TypeSymbol,
+  args: BoundExpression[]
+): CallExpression {
+  const children: BoundNode[] = [...args];
+  return {
+    kind: 'CallExpression',
+    name,
+    type,
+    args,
     children,
   };
 }

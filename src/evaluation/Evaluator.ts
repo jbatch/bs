@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { BoundExpression } from '../binding/BoundExpression';
+import { BoundExpression, CallExpression } from '../binding/BoundExpression';
 import { EvaluationResult } from './EvaluationResult';
 import {
   BoundStatement,
@@ -10,6 +10,7 @@ import {
 } from '../binding/BoundStatement';
 
 import { Int, String as StringTypeSymbol } from '../symbols/Symbol';
+import Terminal from '../repl/Terminal';
 
 export class Evaluator {
   root: BlockStatement;
@@ -21,7 +22,7 @@ export class Evaluator {
     this.variables = variables;
   }
 
-  evaluate(): EvaluationResult {
+  async evaluate(): Promise<EvaluationResult> {
     const labelMap: Record<string, number> = {};
 
     this.root.statements.forEach((statement, index) => {
@@ -36,11 +37,11 @@ export class Evaluator {
 
       switch (statement.kind) {
         case 'ExpressionStatement':
-          this.lastResult = this.evaluateExpression(statement.expression);
+          this.lastResult = await this.evaluateExpression(statement.expression);
           break;
         case 'BlockStatement':
         case 'VariableDelcarationStatement':
-          this.evaluateStatement(statement);
+          await this.evaluateStatement(statement);
           break;
         case 'IfStatement':
         case 'WhileStatement':
@@ -54,7 +55,7 @@ export class Evaluator {
           index = labelMap[statement.label.name];
           continue;
         case 'ConditionalGoToStatement':
-          const condition = Boolean(this.evaluateExpression(statement.condition));
+          const condition = Boolean(await this.evaluateExpression(statement.condition));
           if (condition === statement.jumpIfTrue) {
             index = labelMap[statement.label.name];
             continue;
@@ -69,10 +70,10 @@ export class Evaluator {
     return this.lastResult!;
   }
 
-  private evaluateStatement(statement: BoundStatement) {
+  private async evaluateStatement(statement: BoundStatement) {
     switch (statement.kind) {
       case 'ExpressionStatement':
-        this.lastResult = this.evaluateExpression(statement.expression);
+        this.lastResult = await this.evaluateExpression(statement.expression);
         break;
       case 'BlockStatement':
         this.evaluateBlockStatement(statement);
@@ -100,12 +101,12 @@ export class Evaluator {
     }
   }
 
-  private evaluateVariableDeclarationStatement(declaration: BoundStatement) {
+  private async evaluateVariableDeclarationStatement(declaration: BoundStatement) {
     assert(declaration.kind === 'VariableDelcarationStatement');
 
     var value = this.evaluateExpression(declaration.expression);
-    this.variables[declaration.variable.name] = value;
-    this.lastResult = value;
+    this.variables[declaration.variable.name] = await value;
+    this.lastResult = await value;
   }
 
   evaluateLabelStatement(statement: LabelStatement) {
@@ -120,7 +121,7 @@ export class Evaluator {
     throw new Error('Method not implemented.');
   }
 
-  private evaluateExpression(node: BoundExpression): EvaluationResult {
+  private async evaluateExpression(node: BoundExpression): Promise<EvaluationResult> {
     switch (node.kind) {
       case 'UnaryExpression':
         return this.evaluateUnaryExpression(node);
@@ -132,12 +133,14 @@ export class Evaluator {
         return this.evaluateVariableExpression(node);
       case 'AssignmentExpression':
         return this.evaluateAssignmentExpression(node);
+      case 'CallExpression':
+        return this.evaluateCallExpression(node);
     }
 
     throw new Error(`Unexpected expression type ${node.kind}`);
   }
 
-  private evaluateUnaryExpression(node: BoundExpression): EvaluationResult {
+  private async evaluateUnaryExpression(node: BoundExpression): Promise<EvaluationResult> {
     assert(node.kind === 'UnaryExpression');
     var operand = this.evaluateExpression(node.operand);
     switch (node.operator.kind) {
@@ -153,10 +156,11 @@ export class Evaluator {
     throw new Error(`Unhandled unary operator: ${node.operator.kind}`);
   }
 
-  private evaluateBinaryExpression(node: BoundExpression): EvaluationResult {
+  private async evaluateBinaryExpression(node: BoundExpression): Promise<EvaluationResult> {
     assert(node.kind === 'BinaryExpression');
-    const left = this.evaluateExpression(node.left);
-    const right = this.evaluateExpression(node.right);
+    const left = await this.evaluateExpression(node.left);
+    const right = await this.evaluateExpression(node.right);
+    assert(left !== undefined && right !== undefined);
 
     switch (node.operator.kind) {
       case 'Addition':
@@ -199,20 +203,33 @@ export class Evaluator {
     }
   }
 
-  private evaluateLiteralExpression(node: BoundExpression): EvaluationResult {
+  private async evaluateLiteralExpression(node: BoundExpression): Promise<EvaluationResult> {
     assert(node.kind === 'LiteralExpression');
     return node.value!;
   }
 
-  private evaluateVariableExpression(node: BoundExpression): EvaluationResult {
+  private async evaluateVariableExpression(node: BoundExpression): Promise<EvaluationResult> {
     assert(node.kind === 'VariableExpression');
     return this.variables[node.name];
   }
 
-  private evaluateAssignmentExpression(node: BoundExpression): EvaluationResult {
+  private async evaluateAssignmentExpression(node: BoundExpression): Promise<EvaluationResult> {
     assert(node.kind === 'AssignmentExpression');
     var value = this.evaluateExpression(node.expression);
-    this.variables[node.name] = value;
+    this.variables[node.name] = await value;
     return value;
+  }
+
+  private async evaluateCallExpression(node: CallExpression): Promise<EvaluationResult> {
+    switch (node.name) {
+      case 'print':
+        const result = await this.evaluateExpression(node.args[0]);
+        Terminal.writeLine(result);
+        return undefined;
+      case 'input':
+        return await Terminal.input('');
+      default:
+        throw new Error('Unexpected function call');
+    }
   }
 }
