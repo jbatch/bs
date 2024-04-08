@@ -231,12 +231,20 @@ export class Binder {
   private bindOperatorAssignmentExpression(
     expression: OperatorAssignmentExpressionSyntax
   ): BoundExpression {
-    const boundExpression = this.bindExpression(expression.expression);
-    const maybeVariable = this.tryGetVariable(expression.identifier, boundExpression.type);
+    const maybeVariable = this.tryGetVariable(expression.identifier);
     if (isLeft(maybeVariable)) {
       return maybeVariable.left;
     }
     const variable = maybeVariable.right;
+    const boundExpression = this.bindExpression(expression.expression);
+    // if (variable.type.name !== boundExpression.type.name) {
+    //   this.diagnostics.reportCannotAssignIncompatibleTypes(
+    //     expression.identifier.span,
+    //     expression.identifier.text,
+    //     variable.type,
+    //     boundExpression.type
+    //   );
+    // }
     const maybeOperator = this.tryBindBinaryOperator(
       variable.type,
       expression.operator,
@@ -271,7 +279,7 @@ export class Binder {
 
   private tryGetVariable(
     identifierToken: IdentifierTokenSyntax,
-    expectedType: TypeSymbol
+    expectedType?: TypeSymbol
   ): Either<ErrorExpression, VariableSymbol> {
     const { text: name, span } = identifierToken;
     const variable = this.scope.tryLookup(name);
@@ -285,8 +293,13 @@ export class Binder {
       return left(BoundErrorExpression(Err));
     }
 
-    if (expectedType.name !== variable.type.name) {
-      this.diagnostics.reportCannotAssignIncompatibleTypes(span, variable.type, expectedType);
+    if (expectedType && expectedType.name !== variable.type.name) {
+      this.diagnostics.reportCannotAssignIncompatibleTypes(
+        span,
+        variable.name,
+        variable.type,
+        expectedType
+      );
       return left(BoundErrorExpression(Err));
     }
     return right(variable);

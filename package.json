@@ -2,6 +2,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "NODE_NO_WARNINGS=1 node --watch build/index.js",
+    "debug": "node --inspect --enable-source-maps build/index.js",
     "generate": "./scripts/generate_boilerplate.sh"
   },
   "devDependencies": {

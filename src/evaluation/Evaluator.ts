@@ -8,7 +8,8 @@ import {
   ConditionalGoToStatement,
   BlockStatement,
 } from '../binding/BoundStatement';
-import { getTokenText } from '../parsing/SyntaxHelper';
+
+import { Int, String as StringTypeSymbol } from '../symbols/Symbol';
 
 export class Evaluator {
   root: BlockStatement;
@@ -159,7 +160,14 @@ export class Evaluator {
 
     switch (node.operator.kind) {
       case 'Addition':
-        return +left + +right;
+        if (node.left.type.name === Int.name && node.right.type.name === Int.name) {
+          return +left + +right;
+        } else if (
+          node.left.type.name === StringTypeSymbol.name &&
+          node.right.type.name === StringTypeSymbol.name
+        ) {
+          return String(left) + String(right);
+        }
       case 'Subtraction':
         return +left - +right;
       case 'Multiplication':

@@ -117,7 +117,12 @@ export class DiagnosticBag {
     this.report(message, span);
   }
 
-  reportCannotAssignIncompatibleTypes(span: TextSpan, expected: TypeSymbol, found: TypeSymbol) {
+  reportCannotAssignIncompatibleTypes(
+    span: TextSpan,
+    name: string,
+    expected: TypeSymbol,
+    found: TypeSymbol
+  ) {
     const message = `TypeError: Cannot assign [${found.name}] to [${expected.name}] variable '${name}'`;
     this.report(message, span);
   }

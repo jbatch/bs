@@ -6,7 +6,7 @@ import { Parser } from './parsing/Parser';
 import { Evaluator } from './evaluation/Evaluator';
 
 import { BoundScope } from './binding/BoundScope';
-import { BlockStatement, BoundStatement } from './binding/BoundStatement';
+import { BlockStatement } from './binding/BoundStatement';
 import { prettyPrintTree } from './parsing/SyntaxNode';
 import { prettyPrintProgram } from './binding/BoundNode';
 import { Lowerer } from './lowerer/Lowerer';

@@ -184,7 +184,7 @@ export class Lowerer extends BoundTreeRewriter {
     const newOperator = bindBinaryOperator(
       operator.kind === 'Addition' ? 'PlusToken' : 'MinusToken',
       type,
-      Int
+      type
     )!;
     const variable = BoundVariableExpression(type, name);
     const right = BoundBinaryExpression(newOperator.type, variable, newOperator, rightExpression);

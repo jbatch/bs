@@ -1,5 +1,5 @@
 import { SyntaxKind } from '../parsing/SyntaxNode';
-import { Bool, Int, TypeSymbol } from '../symbols/Symbol';
+import { Bool, Int, String, TypeSymbol } from '../symbols/Symbol';
 import { BoundNode } from './BoundNode';
 
 export type BoundBinaryOperatorKind =
@@ -58,6 +58,8 @@ function boundBinaryOperator(
 const BINARY_OPERATORS: BoundBinaryOperator[] = [
   boundBinaryOperator('Addition', 'PlusToken', Int),
   boundBinaryOperator('Addition', 'PlusEquals', Int),
+  boundBinaryOperator('Addition', 'PlusToken', String),
+  boundBinaryOperator('Addition', 'PlusEquals', String),
   boundBinaryOperator('Subtraction', 'MinusToken', Int),
   boundBinaryOperator('Subtraction', 'MinusEquals', Int),
   boundBinaryOperator('Multiplication', 'StarToken', Int),
@@ -83,6 +85,9 @@ export function bindBinaryOperator(
   rightType: TypeSymbol
 ): BoundBinaryOperator | undefined {
   return BINARY_OPERATORS.find(
-    (op) => op.syntaxKind === syntaxKind && op.leftType === leftType && op.rightType === rightType
+    (op) =>
+      op.syntaxKind === syntaxKind &&
+      op.leftType.name === leftType.name &&
+      op.rightType.name === rightType.name
   );
 }
