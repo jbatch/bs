@@ -10,6 +10,7 @@ import { BlockStatement } from './binding/BoundStatement';
 import { prettyPrintTree } from './parsing/SyntaxNode';
 import { prettyPrintProgram } from './binding/BoundNode';
 import { Lowerer } from './lowerer/Lowerer';
+import fs from 'fs';
 
 const variables = {};
 let globalScope = new BoundScope();
@@ -18,28 +19,47 @@ let showProgram = false;
 
 async function main() {
   console.log('Welcome to batchScript v0.0.1.');
+
   let quit = false;
-  let lines = [];
+  let lines: string[] = [];
   while (!quit) {
     const prompt = lines.length === 0 ? '> ' : '| ';
-    const line = await Terminal.input(prompt);
-    if (line === '#q' || line === '#quit') {
+    let line = await Terminal.input(prompt);
+    if (['.q', '.quit', '.exit'].includes(line)) {
       quit = true;
       break;
     }
 
-    if (line === '#t' || line === '#showTree') {
+    if (['.t', '.showTree'].includes(line)) {
       showTree = !showTree;
       const msg = `Print tree ${showTree ? 'enabled' : 'disabled'}`;
       Terminal.writeLine(msg);
       continue;
     }
 
-    if (line === '#p' || line === '#showProgram') {
+    if (['.p', '.showProgram'].includes(line)) {
       showProgram = !showProgram;
       const msg = `Print program ${showProgram ? 'enabled' : 'disabled'}`;
       Terminal.writeLine(msg);
       continue;
+    }
+
+    if (line.startsWith('.load')) {
+      const m = line.match(/.load (.*)/);
+      if (!m) {
+        Terminal.writeLine(`Usage: .load <source_file>`);
+        continue;
+      }
+      const filename = m[1];
+      if (!fs.existsSync(filename)) {
+        Terminal.writeLine(`File not found: ${filename}`);
+        continue;
+      }
+      Terminal.writeLine(`Opening file: ${filename}`);
+      const fileLines = fs.readFileSync(filename).toString().split('\n');
+      lines = fileLines;
+      // HACK to make file run right away
+      line = '';
     }
 
     if (lines.length === 0) {

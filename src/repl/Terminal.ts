@@ -1,11 +1,24 @@
 import utils from 'node:util';
 import { createInterface } from 'node:readline';
+import fs from 'fs';
+
+function completer(line: string) {
+  if (line.startsWith('.load')) {
+    const files = fs.readdirSync('./programs');
+    const completions = files.map((f) => `.load programs/${f}`);
+    return [completions, line];
+  }
+  const completions = ['.load', '.showTree', '.showProgram', '.exit'];
+  const options = completions.filter((c) => c.startsWith(line));
+  return [options, line];
+}
 
 const rl = createInterface({
   input: process.stdin,
   output: process.stdout,
   terminal: true,
   history: ['for(var i = 0; i < 10; i = i + 1) { i }', 'if(1 == 1) { 2 } else { 3 }', '1+1'],
+  completer,
 });
 
 const inputPromise = utils.promisify(rl.question).bind(rl);

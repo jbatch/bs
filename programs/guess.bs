@@ -1,0 +1,11 @@
+{
+  const r = rand(1, 10)
+  var guess = 11
+  print("Guess the number between 1-10")
+  while(guess != r) {
+    guess = int(input())
+    if(guess < r) { print("Higher!") }
+    if(guess > r) { print("Lower!") }
+  }
+  print("Correct!")
+}

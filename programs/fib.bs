@@ -1,0 +1,12 @@
+{
+  var fiba = 0
+  var fibb = 1
+  var fibonacci = fibb
+  for (var i = 0; i < 10; i++) {
+    print(string(fibonacci))
+    fibonacci = fiba + fibb
+    fiba = fibb
+    fibb = fibonacci
+  }
+  0
+}
