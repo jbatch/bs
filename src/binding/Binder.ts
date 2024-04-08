@@ -99,7 +99,7 @@ export class Binder {
     const type = expression.type;
     const variable = Variable(name, type, readonly);
 
-    if (!this.scope.tryDeclare(variable)) {
+    if (!this.scope.tryDeclareVariable(variable)) {
       this.diagnostics.reportVariableAlreadyDeclared(declaration.equals.span, name);
     }
 
@@ -223,7 +223,7 @@ export class Binder {
       // Means we fabricated a name expression and the error has already been reported
       return BoundErrorExpression(Err);
     }
-    const variable = this.scope.tryLookup(name);
+    const variable = this.scope.tryLookupVariable(name);
     if (variable === undefined) {
       this.diagnostics.reportUndefinedName(expression.identifier.span, name);
       return BoundErrorExpression(Err);
@@ -299,7 +299,7 @@ export class Binder {
       }
     }
 
-    const fn = BUILT_IN_FUNCTIONS[expression.identifier.text];
+    const fn = this.scope.tryLookupFunction(expression.identifier.text);
     if (!fn) {
       this.diagnostics.reportUndefinedFunction(
         expression.identifier.span,
@@ -328,7 +328,7 @@ export class Binder {
     expectedType?: TypeSymbol
   ): Either<ErrorExpression, VariableSymbol> {
     const { text: name, span } = identifierToken;
-    const variable = this.scope.tryLookup(name);
+    const variable = this.scope.tryLookupVariable(name);
     if (!variable) {
       this.diagnostics.reportUndefinedVariable(span, name);
       return left(BoundErrorExpression(Err));

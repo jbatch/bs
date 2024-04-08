@@ -13,7 +13,7 @@ import { Lowerer } from './lowerer/Lowerer';
 import fs from 'fs';
 
 const variables = {};
-let globalScope = new BoundScope();
+let globalScope = BoundScope.createRootScope();
 let showTree = false;
 let showProgram = false;
 
