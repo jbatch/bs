@@ -17,6 +17,7 @@ import {
   BoundLiteralExpression,
   BoundOperatorAssignmentExpression,
   BoundPostfixUnaryExpression,
+  BoundTypeCastExpression,
   BoundUnaryExpression,
   BoundVariableExpression,
   ErrorExpression,
@@ -43,6 +44,7 @@ import {
   TypeSymbol,
   Variable,
   VariableSymbol,
+  CASTABLE_TYPES,
 } from '../symbols/Symbol';
 import { Either, isLeft, left, right } from '../container/Either';
 import { IdentifierTokenSyntax, TokenSyntax } from '../parsing/TokenSyntax';
@@ -286,7 +288,16 @@ export class Binder {
     function isNotComma(arg: TokenSyntax | ExpressionSyntax): arg is ExpressionSyntax {
       return arg.kind !== 'CommaToken';
     }
+
     const args = expression.args.filter(isNotComma);
+
+    // Check if function is a type cast call
+    if (args.length === 1) {
+      const t = CASTABLE_TYPES[expression.identifier.text];
+      if (t !== undefined) {
+        return this.bindTypeCast(t, args[0]);
+      }
+    }
 
     const fn = BUILT_IN_FUNCTIONS[expression.identifier.text];
     if (!fn) {
@@ -390,5 +401,10 @@ export class Binder {
         this.diagnostics.reportUnexpectedLiteralType(span, typeof value);
         return Int;
     }
+  }
+
+  bindTypeCast(type: TypeSymbol, expression: ExpressionSyntax): BoundExpression {
+    const boundExpression = this.bindExpression(expression);
+    return BoundTypeCastExpression(type, boundExpression);
   }
 }

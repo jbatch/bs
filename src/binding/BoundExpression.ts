@@ -65,6 +65,12 @@ export type CallExpression = {
   args: BoundExpression[];
   children: BoundNode[];
 };
+export type TypeCastExpression = {
+  kind: 'TypeCastExpression';
+  type: TypeSymbol;
+  expression: BoundExpression;
+  children: BoundNode[];
+};
 export type ErrorExpression = {
   kind: 'ErrorExpression';
   type: TypeSymbol;
@@ -79,6 +85,7 @@ export type BoundExpression =
   | OperatorAssignmentExpression
   | PostfixUnaryExpression
   | CallExpression
+  | TypeCastExpression
   | ErrorExpression;
 export function BoundUnaryExpression(
   type: TypeSymbol,
@@ -186,6 +193,18 @@ export function BoundCallExpression(
     name,
     type,
     args,
+    children,
+  };
+}
+export function BoundTypeCastExpression(
+  type: TypeSymbol,
+  expression: BoundExpression
+): TypeCastExpression {
+  const children: BoundNode[] = [expression];
+  return {
+    kind: 'TypeCastExpression',
+    type,
+    expression,
     children,
   };
 }

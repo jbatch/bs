@@ -14,6 +14,8 @@ import {
   BoundOperatorAssignmentExpression,
   CallExpression,
   BoundCallExpression,
+  TypeCastExpression,
+  BoundTypeCastExpression,
 } from './BoundExpression';
 import {
   BlockStatement,
@@ -82,6 +84,8 @@ export class BoundTreeRewriter {
         return this.rewritePostfixUnaryExpression(expression);
       case 'CallExpression':
         return this.rewriteCallExpression(expression);
+      case 'TypeCastExpression':
+        return this.rewriteTypeCastExpression(expression);
       case 'ErrorExpression':
         return this.rewriteErrorExpression(expression);
     }
@@ -179,6 +183,12 @@ export class BoundTreeRewriter {
   protected rewriteCallExpression(expression: CallExpression): BoundExpression {
     const newArgs = expression.args.map((arg) => this.rewriteExpression(arg));
     return BoundCallExpression(expression.name, expression.type, newArgs);
+  }
+
+  protected rewriteTypeCastExpression(expression: TypeCastExpression): BoundExpression {
+    const newExpression = this.rewriteExpression(expression.expression);
+
+    return BoundTypeCastExpression(expression.type, newExpression);
   }
 
   protected rewriteErrorExpression(expression: ErrorExpression): BoundExpression {

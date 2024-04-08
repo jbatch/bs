@@ -77,6 +77,14 @@ const boundExpressionTypes: GeneratorTypeDefinitions = {
       type: TypeSymbolTypeNode,
     },
   },
+  TypeCastExpression: {
+    children: {
+      expression: BoundExpressionTypeNode,
+    },
+    other: {
+      type: TypeSymbolTypeNode,
+    },
+  },
   ErrorExpression: {
     other: {
       type: TypeSymbolTypeNode,

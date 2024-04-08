@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { BoundExpression, CallExpression } from '../binding/BoundExpression';
+import { BoundExpression, CallExpression, TypeCastExpression } from '../binding/BoundExpression';
 import { EvaluationResult } from './EvaluationResult';
 import {
   BoundStatement,
@@ -135,6 +135,8 @@ export class Evaluator {
         return this.evaluateAssignmentExpression(node);
       case 'CallExpression':
         return this.evaluateCallExpression(node);
+      case 'TypeCastExpression':
+        return this.evaluateTypeCastExpression(node);
     }
 
     throw new Error(`Unexpected expression type ${node.kind}`);
@@ -237,5 +239,24 @@ export class Evaluator {
       default:
         throw new Error('Unexpected function call');
     }
+  }
+
+  private async evaluateTypeCastExpression(node: TypeCastExpression): Promise<EvaluationResult> {
+    const arg = await this.evaluateExpression(node.expression);
+    assert(arg !== undefined);
+    switch (node.type.name) {
+      case 'int':
+        const n = Number(arg);
+        if (!Number.isInteger(n)) {
+          // TODO runtime error reporting
+          return 0;
+        }
+        return n;
+      case 'boolean':
+        return Boolean(arg);
+      case 'string':
+        return String(arg);
+    }
+    throw new Error('Unexpected type cast expresison type' + node.type.name);
   }
 }

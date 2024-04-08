@@ -5,6 +5,12 @@ export const Int: TypeSymbol = Type('int');
 export const Void: TypeSymbol = Type('void');
 export const Err: TypeSymbol = Type('?');
 
+export const CASTABLE_TYPES: Record<string, TypeSymbol | undefined> = {
+  string: String,
+  bool: Bool,
+  int: Int,
+};
+
 // Built in Functions
 export const BUILT_IN_FUNCTIONS: Record<string, FunctionSymbol | undefined> = {
   print: Function('print', Void, [Variable('text', String, true)]),

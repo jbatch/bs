@@ -71,6 +71,8 @@ const BINARY_OPERATORS: BoundBinaryOperator[] = [
   boundBinaryOperator('LogicalOr', 'PipePipeToken', Bool),
   boundBinaryOperator('Equals', 'EqualsEqualsToken', Int, Bool),
   boundBinaryOperator('NotEquals', 'BangEqualsToken', Int, Bool),
+  boundBinaryOperator('Equals', 'EqualsEqualsToken', String, Bool),
+  boundBinaryOperator('NotEquals', 'BangEqualsToken', String, Bool),
   boundBinaryOperator('Equals', 'EqualsEqualsToken', Bool, Bool),
   boundBinaryOperator('NotEquals', 'BangEqualsToken', Bool, Bool),
   boundBinaryOperator('LessThan', 'LessToken', Int, Bool),
