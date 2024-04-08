@@ -229,6 +229,11 @@ export class Evaluator {
       case 'input':
         const a = await Terminal.input('? ');
         return a;
+      case 'rand':
+        const min = await this.evaluateExpression(node.args[0]);
+        const max = await this.evaluateExpression(node.args[1]);
+        assert(typeof min === 'number' && typeof max === 'number');
+        return Math.floor(Math.random() * (max - min) + min);
       default:
         throw new Error('Unexpected function call');
     }

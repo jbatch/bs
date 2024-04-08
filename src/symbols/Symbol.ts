@@ -9,6 +9,7 @@ export const Err: TypeSymbol = Type('?');
 export const BUILT_IN_FUNCTIONS: Record<string, FunctionSymbol | undefined> = {
   print: Function('print', Void, [Variable('text', String, true)]),
   input: Function('input', String, []),
+  rand: Function('rand', Int, [Variable('min', Int, true), Variable('max', Int, true)]),
 };
 
 // Generated code

@@ -36,6 +36,9 @@ export function prettyPrintProgram(node: BoundNode, indent: string = '', isLast:
   if (node.kind === 'ConditionalGoToStatement') {
     process.stdout.write(`(label=${node.label.name}, jumpIfTrue=${node.jumpIfTrue})`);
   }
+  if (node.kind === 'CallExpression') {
+    process.stdout.write(' (' + node.name + ')');
+  }
   console.log();
   indent += isLast ? '   ' : '│  ';
   if (node.kind !== 'Variable') {
