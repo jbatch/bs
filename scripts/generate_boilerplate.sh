@@ -1,6 +1,10 @@
 #! /usr/bin/env bash
 
-set -euo pipefail
+set -eo pipefail
+
+# if [[ ! -z "$GENERATE_ALL" || -z `git diff -s --exit-code` ]]  ; then echo "yes"; else echo "no"; fi
+
+# exit 0
 
 main() {
   declare -a sources=(
@@ -9,12 +13,13 @@ main() {
     src/parsing/ExpressionSyntaxGenerator.ts
     src/parsing/StatementSyntaxGenerator.ts
     src/parsing/TokenSyntaxGenerator.ts
+    src/parsing/ContainerNodeGenerator.ts
     src/symbols/SymbolGenerator.ts
   )
   for f in "${sources[@]}"
   do
     # Only try to generate sources if generator file has changed 
-    git diff -s --exit-code $f ||  yarn npx ts-node $f
+    if [[ ! -z "$GENERATE_ALL" || -z $"git diff -s --exit-code $f" ]]  ; then  yarn npx ts-node $f ; fi
   done  
  
   yarn prettier  --log-level silent  -w src

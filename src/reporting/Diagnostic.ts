@@ -73,6 +73,11 @@ export class DiagnosticBag {
     this.report(message, span);
   }
 
+  reportInvalidTypeSymbol(span: TextSpan, text: string) {
+    const message = `Invalid type symbol [${text}]`;
+    this.report(message, span);
+  }
+
   reportUnexpectedLiteralValue(span: TextSpan, text: string) {
     const message = `Unexpected literal '${text}'`;
     this.report(message, span);

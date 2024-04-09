@@ -1,4 +1,5 @@
 import { TextSpan } from '../text/TextSpan';
+import { TypeClauseNode } from './ContainerNode';
 import { ExpressionSyntax } from './ExpressionSyntax';
 import { SyntaxNode } from './SyntaxNode';
 import { IdentifierTokenSyntax, TokenSyntax } from './TokenSyntax';
@@ -30,6 +31,7 @@ export type VariableDeclarationStatementSyntax = {
   span: TextSpan;
   keyword: TokenSyntax;
   identifier: IdentifierTokenSyntax;
+  typeClause: TypeClauseNode | undefined;
   equals: TokenSyntax;
   expression: ExpressionSyntax;
   children: SyntaxNode[];
@@ -104,16 +106,20 @@ export function BlockStatement(
 export function VariableDeclarationStatement(
   keyword: TokenSyntax,
   identifier: IdentifierTokenSyntax,
+  typeClause: TypeClauseNode | undefined,
   equals: TokenSyntax,
   expression: ExpressionSyntax
 ): VariableDeclarationStatementSyntax {
   const span = keyword.span;
-  const children: SyntaxNode[] = [keyword, identifier, equals, expression];
+  const children: SyntaxNode[] = [keyword, identifier, typeClause, equals, expression].filter(
+    isDefined
+  );
   return {
     kind: 'VariableDeclarationStatement',
     span,
     keyword,
     identifier,
+    typeClause,
     equals,
     expression,
     children,

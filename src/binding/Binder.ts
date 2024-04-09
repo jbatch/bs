@@ -94,9 +94,23 @@ export class Binder {
   private bindVariableDeclarationStatement(declaration: StatementSyntax): BoundStatement {
     assert(declaration.kind === 'VariableDeclarationStatement');
     const expression = this.bindExpression(declaration.expression);
-    const name = declaration.identifier.text!;
+    const name = declaration.identifier.text;
     const readonly = declaration.keyword.kind === 'ConstKeyword';
+
+    // Check expression type matches declared type
     const type = expression.type;
+    if (declaration.typeClause) {
+      const declaredType = this.bindTypeSymbol(declaration.typeClause.identifier);
+      if (declaredType && declaredType.name !== type.name) {
+        this.diagnostics.reportCannotAssignIncompatibleTypes(
+          declaration.expression.span,
+          name,
+          declaredType,
+          type
+        );
+      }
+    }
+
     const variable = Variable(name, type, readonly);
 
     if (!this.scope.tryDeclareVariable(variable)) {
@@ -401,6 +415,19 @@ export class Binder {
         this.diagnostics.reportUnexpectedLiteralType(span, typeof value);
         return Int;
     }
+  }
+
+  private bindTypeSymbol(identifier: IdentifierTokenSyntax): TypeSymbol | undefined {
+    switch (identifier.text) {
+      case 'Int':
+        return Int;
+      case 'Bool':
+        return Bool;
+      case 'String':
+        return String;
+    }
+    this.diagnostics.reportInvalidTypeSymbol(identifier.span, identifier.text);
+    return undefined;
   }
 
   bindTypeCast(type: TypeSymbol, expression: ExpressionSyntax): BoundExpression {

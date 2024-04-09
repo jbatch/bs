@@ -24,7 +24,6 @@ import {
   TokenSyntax,
   TokenSyntaxKind,
 } from './TokenSyntax';
-import { CompilationUnit } from './SyntaxNode';
 import {
   BlockStatement,
   ExpressionStatement,
@@ -35,6 +34,7 @@ import {
   WhileStatement,
 } from './StatementSyntax';
 import assert from 'node:assert';
+import { CompilationUnitNode, TypeClause, TypeClauseNode } from './ContainerNode';
 
 export class Parser {
   tokens: TokenSyntax[];
@@ -58,7 +58,7 @@ export class Parser {
     this.diagnostics.addBag(lexer.diagnostics);
   }
 
-  parse(): CompilationUnit {
+  parse(): CompilationUnitNode {
     const statement = this.parseStatement();
     const eof = this.matchToken('EndOfFileToken');
     const children = [statement, eof];
@@ -101,6 +101,16 @@ export class Parser {
     } as TokenSyntax;
   }
 
+  private matchOptionalToken(kind: TokenSyntaxKind): TokenSyntax | undefined {
+    const current = this.current();
+    if (current.kind === kind) {
+      this.position++;
+      return current;
+    }
+
+    return undefined;
+  }
+
   private parseStatement(): StatementSyntax {
     switch (this.current().kind) {
       case 'OpenBraceToken':
@@ -138,9 +148,14 @@ export class Parser {
     assert(this.current().kind === 'VarKeyword' || this.current().kind === 'ConstKeyword');
     const keyword = this.matchToken(this.current().kind);
     const identifier = this.matchToken('IdentifierToken') as IdentifierTokenSyntax;
+
+    let typeClause = undefined;
+    if (this.current().kind === 'ColonToken') {
+      typeClause = this.parseTypeClause();
+    }
     const equals = this.matchToken('EqualsToken');
     const expression = this.parseExpression();
-    return VariableDeclarationStatement(keyword, identifier, equals, expression);
+    return VariableDeclarationStatement(keyword, identifier, typeClause, equals, expression);
   }
 
   private parseIfStatement(): StatementSyntax {
@@ -326,5 +341,12 @@ export class Parser {
     const identifier = this.matchToken('IdentifierToken');
     assert(identifier.kind === 'IdentifierToken');
     return NameExpression(identifier);
+  }
+
+  parseTypeClause(): TypeClauseNode {
+    const colon = this.matchToken('ColonToken');
+    const identifier = this.matchToken('IdentifierToken');
+    assert(identifier.kind === 'IdentifierToken');
+    return TypeClause(colon, identifier);
   }
 }

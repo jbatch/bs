@@ -6,6 +6,7 @@ import {
   StatementSyntaxTypeNode,
   SyntaxNodeTypeNode,
   TokenSyntaxTypeNode,
+  TypeClauseNodeTypeNode,
   TypeNodeMap,
   array,
   optional,
@@ -28,6 +29,7 @@ const statmentTypes: GeneratorTypeDefinitions = {
     children: {
       keyword: TokenSyntaxTypeNode,
       identifier: IdentifierTokenSyntaxTypeNode,
+      typeClause: optional(TypeClauseNodeTypeNode),
       equals: TokenSyntaxTypeNode,
       expression: ExpressionSyntaxTypeNode,
     },

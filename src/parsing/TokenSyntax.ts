@@ -112,6 +112,11 @@ export type PipeTokenSyntax = {
   span: TextSpan;
   children: SyntaxNode[];
 };
+export type ColonTokenSyntax = {
+  kind: 'ColonToken';
+  span: TextSpan;
+  children: SyntaxNode[];
+};
 export type SemicolonTokenSyntax = {
   kind: 'SemicolonToken';
   span: TextSpan;
@@ -258,6 +263,7 @@ export type TokenSyntax =
   | CaretTokenSyntax
   | AmpersandTokenSyntax
   | PipeTokenSyntax
+  | ColonTokenSyntax
   | SemicolonTokenSyntax
   | CommaTokenSyntax
   | LessTokenSyntax
@@ -448,6 +454,14 @@ export function PipeToken(span: TextSpan): PipeTokenSyntax {
   const children: SyntaxNode[] = [];
   return {
     kind: 'PipeToken',
+    span,
+    children,
+  };
+}
+export function ColonToken(span: TextSpan): ColonTokenSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'ColonToken',
     span,
     children,
   };

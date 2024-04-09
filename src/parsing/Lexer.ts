@@ -36,6 +36,7 @@ import {
   MinusMinus,
   MinusEquals,
   CommaToken,
+  ColonToken,
 } from './TokenSyntax';
 import { TextSpan, textSpan, textSpanWithEnd } from '../text/TextSpan';
 
@@ -159,6 +160,8 @@ export class Lexer {
           return PipeToken(this.consumeSymbols(1));
         }
       }
+      case ':':
+        return ColonToken(this.consumeSymbols(1));
       case ';':
         return SemicolonToken(this.consumeSymbols(1));
       case ',':
@@ -222,7 +225,7 @@ export class Lexer {
           this.position++;
       }
     }
-    const span = textSpanWithEnd(start, this.position - 1);
+    const span = textSpanWithEnd(start, this.position);
     return StringToken(span, stringBuilder);
   }
 

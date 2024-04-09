@@ -6,7 +6,6 @@ import {
   IdentifierToken,
   IfKeyword,
   TokenSyntax,
-  TokenSyntaxKind,
   TrueKeyword,
   VarKeyword,
   WhileKeyword,
@@ -111,6 +110,8 @@ export function getTokenText(token: TokenSyntax): string {
       return '&';
     case 'PipeToken':
       return '|';
+    case 'ColonToken':
+      return ':';
     case 'SemicolonToken':
       return ';';
     case 'CommaToken':

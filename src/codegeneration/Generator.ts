@@ -38,6 +38,11 @@ export const SymbolTypeNode = factory.createTypeReferenceNode(
   undefined
 );
 
+export const TypeClauseNodeTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('TypeClauseNode'),
+  undefined
+);
+
 // Syntax nodes
 export const SyntaxNodeTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('SyntaxNode'),
