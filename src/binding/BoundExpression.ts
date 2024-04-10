@@ -1,6 +1,5 @@
-import assert from 'assert';
 import { EvaluationResult } from '../evaluation/EvaluationResult';
-import { Err, TypeSymbol } from '../symbols/Symbol';
+import { TypeSymbol } from '../symbols/Symbol';
 import { BoundBinaryOperator } from './BoundBinaryOperator';
 import { BoundNode } from './BoundNode';
 import { BoundUnaryOperator } from './BoundUnaryOperator';

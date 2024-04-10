@@ -1,4 +1,14 @@
 import assert from 'node:assert';
+import { bindBinaryOperator } from '../binding/BoundBinaryOperator';
+import {
+  BoundAssignmentExpression,
+  BoundBinaryExpression,
+  BoundExpression,
+  BoundLiteralExpression,
+  BoundVariableExpression,
+  OperatorAssignmentExpression,
+  PostfixUnaryExpression,
+} from '../binding/BoundExpression';
 import {
   BlockStatement,
   BoundBlockStatement,
@@ -12,16 +22,6 @@ import {
   WhileStatement,
 } from '../binding/BoundStatement';
 import { BoundTreeRewriter } from '../binding/BoundTreeRewriter';
-import {
-  PostfixUnaryExpression,
-  BoundExpression,
-  BoundVariableExpression,
-  BoundLiteralExpression,
-  BoundAssignmentExpression,
-  OperatorAssignmentExpression,
-  BoundBinaryExpression,
-} from '../binding/BoundExpression';
-import { bindBinaryOperator } from '../binding/BoundBinaryOperator';
 import { Int } from '../symbols/Symbol';
 
 export class Lowerer extends BoundTreeRewriter {

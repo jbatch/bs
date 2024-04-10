@@ -1,17 +1,17 @@
 import { Binder } from './binding/Binder';
-import { DiagnosticBag } from './reporting/Diagnostic';
-import Terminal from './repl/Terminal';
 import { Parser } from './parsing/Parser';
+import Terminal from './repl/Terminal';
+import { DiagnosticBag } from './reporting/Diagnostic';
 
 import { Evaluator } from './evaluation/Evaluator';
 
+import fs from 'fs';
+import { prettyPrintProgram } from './binding/BoundNode';
 import { BoundScope } from './binding/BoundScope';
 import { BlockStatement, BoundBlockStatement } from './binding/BoundStatement';
-import { prettyPrintTree } from './parsing/SyntaxNode';
-import { prettyPrintProgram } from './binding/BoundNode';
 import { Lowerer } from './lowerer/Lowerer';
-import fs from 'fs';
 import { FunctionDeclarationSyntax } from './parsing/StatementSyntax';
+import { prettyPrintTree } from './parsing/SyntaxNode';
 
 const variables = {};
 let globalScope = BoundScope.createRootScope();

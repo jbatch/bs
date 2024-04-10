@@ -4,7 +4,6 @@ import {
   BoundLabelTypeNode,
   BoundNodeTypeNode,
   BoundStatementTypeNode,
-  FunctionParameterNodeTypeNode,
   FunctionSymbolTypeNode,
   Generator,
   GeneratorTypeDefinitions,

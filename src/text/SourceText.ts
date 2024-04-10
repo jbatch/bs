@@ -1,5 +1,5 @@
-import { TextSpan } from './TextSpan';
 import { TextLine } from './TextLine';
+import { TextSpan } from './TextSpan';
 
 export class SourceText {
   text: string;

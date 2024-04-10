@@ -1,6 +1,6 @@
-import utils from 'node:util';
-import { createInterface } from 'node:readline';
 import fs from 'fs';
+import { createInterface } from 'node:readline';
+import utils from 'node:util';
 
 function completer(line: string) {
   if (line.startsWith('.l')) {

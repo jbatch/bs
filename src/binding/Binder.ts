@@ -1,4 +1,5 @@
 import assert from 'node:assert';
+import { Either, isLeft, left, right } from '../container/Either';
 import {
   AssignmentExpressionSyntax,
   CallExpressionSyntax,
@@ -11,12 +12,28 @@ import {
   StatementKind,
   StatementSyntax,
 } from '../parsing/StatementSyntax';
+import { getTokenText } from '../parsing/SyntaxHelper';
+import { IdentifierTokenSyntax, TokenSyntax } from '../parsing/TokenSyntax';
 import { DiagnosticBag } from '../reporting/Diagnostic';
+import {
+  Bool,
+  CASTABLE_TYPES,
+  Err,
+  FunctionSymbol,
+  Int,
+  String,
+  TypeSymbol,
+  Variable,
+  VariableSymbol,
+  Void,
+} from '../symbols/Symbol';
 import { TextSpan } from '../text/TextSpan';
+import { BoundBinaryOperator, bindBinaryOperator } from './BoundBinaryOperator';
 import {
   BoundAssignmentExpression,
   BoundBinaryExpression,
   BoundCallExpression,
+  BoundErrorExpression,
   BoundExpression,
   BoundLiteralExpression,
   BoundOperatorAssignmentExpression,
@@ -37,24 +54,6 @@ import {
   BoundWhileStatement,
 } from './BoundStatement';
 import { BoundUnaryOperator, bindUnaryOperator } from './BoundUnaryOperator';
-import { getTokenText } from '../parsing/SyntaxHelper';
-import { BoundBinaryOperator, bindBinaryOperator } from './BoundBinaryOperator';
-import {
-  BUILT_IN_FUNCTIONS,
-  Bool,
-  Err,
-  Int,
-  String,
-  TypeSymbol,
-  Variable,
-  VariableSymbol,
-  CASTABLE_TYPES,
-  FunctionSymbol,
-  Void,
-} from '../symbols/Symbol';
-import { Either, isLeft, left, right } from '../container/Either';
-import { IdentifierTokenSyntax, TokenSyntax } from '../parsing/TokenSyntax';
-import { BoundErrorExpression } from './BoundExpression';
 
 export class Binder {
   scope: BoundScope;

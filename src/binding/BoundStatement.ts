@@ -1,4 +1,3 @@
-import { FunctionParameterNode } from '../parsing/ContainerNode';
 import { FunctionSymbol, VariableSymbol } from '../symbols/Symbol';
 import { BoundExpression } from './BoundExpression';
 import { BoundLabel } from './BoundLabel';

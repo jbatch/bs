@@ -9,11 +9,9 @@ import {
   SyntaxNodeTypeNode,
   TokenSyntaxTypeNode,
   TypeClauseNodeTypeNode,
-  TypeNodeMap,
   array,
   optional,
 } from '../codegeneration/Generator';
-import { FunctionParameter } from './ContainerNode';
 
 const statmentTypes: GeneratorTypeDefinitions = {
   ExpressionStatement: {

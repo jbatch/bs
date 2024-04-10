@@ -1,5 +1,5 @@
-import ts, { Expression, Statement, TypeAliasDeclaration, TypeNode, factory } from 'typescript';
 import fs from 'fs';
+import ts, { Expression, Statement, TypeAliasDeclaration, TypeNode, factory } from 'typescript';
 
 export const exportKeyword = factory.createToken(ts.SyntaxKind.ExportKeyword);
 

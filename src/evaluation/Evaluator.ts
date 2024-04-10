@@ -1,16 +1,16 @@
 import assert from 'node:assert';
 import { BoundExpression, CallExpression, TypeCastExpression } from '../binding/BoundExpression';
-import { EvaluationResult } from './EvaluationResult';
 import {
-  BoundStatement,
-  LabelStatement,
-  GoToStatement,
-  ConditionalGoToStatement,
   BlockStatement,
+  BoundStatement,
+  ConditionalGoToStatement,
+  GoToStatement,
+  LabelStatement,
 } from '../binding/BoundStatement';
+import { EvaluationResult } from './EvaluationResult';
 
-import { Int, String as StringTypeSymbol } from '../symbols/Symbol';
 import Terminal from '../repl/Terminal';
+import { Int, String as StringTypeSymbol } from '../symbols/Symbol';
 
 export class Evaluator {
   root: BlockStatement;

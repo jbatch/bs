@@ -1,3 +1,5 @@
+import { textSpan } from '../text/TextSpan';
+import { SyntaxKind } from './SyntaxNode';
 import {
   ConstKeyword,
   ElseKeyword,
@@ -11,8 +13,6 @@ import {
   VarKeyword,
   WhileKeyword,
 } from './TokenSyntax';
-import { TextSpan, textSpan } from '../text/TextSpan';
-import { SyntaxKind } from './SyntaxNode';
 
 export function getBinaryOperatorPrecedence(kind: SyntaxKind) {
   switch (kind) {
