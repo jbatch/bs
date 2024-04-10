@@ -1,5 +1,7 @@
 import {
+  BlockStatementSyntaxTypeNode,
   ExpressionSyntaxTypeNode,
+  FunctionParameterNodeTypeNode,
   Generator,
   GeneratorTypeDefinitions,
   IdentifierTokenSyntaxTypeNode,
@@ -11,6 +13,7 @@ import {
   array,
   optional,
 } from '../codegeneration/Generator';
+import { FunctionParameter } from './ContainerNode';
 
 const statmentTypes: GeneratorTypeDefinitions = {
   ExpressionStatement: {
@@ -63,6 +66,16 @@ const statmentTypes: GeneratorTypeDefinitions = {
       endStatement: StatementSyntaxTypeNode,
       closeParenthesis: TokenSyntaxTypeNode,
       forBlock: StatementSyntaxTypeNode,
+    },
+  },
+  FunctionDeclaration: {
+    children: {
+      functionKeyword: TokenSyntaxTypeNode,
+      identifier: IdentifierTokenSyntaxTypeNode,
+      openParenthesis: TokenSyntaxTypeNode,
+      parameters: array(FunctionParameterNodeTypeNode),
+      closeParenthesis: TokenSyntaxTypeNode,
+      functionBlock: BlockStatementSyntaxTypeNode,
     },
   },
 };

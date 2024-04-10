@@ -11,7 +11,7 @@ function isDefined<T>(node: T | undefined): node is T {
 
 export type CompilationUnitNode = {
   kind: 'CompilationUnit';
-  statement: StatementSyntax;
+  statements: StatementSyntax[];
   eof: TokenSyntax;
   children: SyntaxNode[];
 };
@@ -27,12 +27,26 @@ export type FunctionArgumentNode = {
   comma: TokenSyntax | undefined;
   children: SyntaxNode[];
 };
-export type ContainerNode = CompilationUnitNode | TypeClauseNode | FunctionArgumentNode;
-export function CompilationUnit(statement: StatementSyntax, eof: TokenSyntax): CompilationUnitNode {
+export type FunctionParameterNode = {
+  kind: 'FunctionParameter';
+  identifier: IdentifierTokenSyntax;
+  type: TypeClauseNode;
+  comma: TokenSyntax | undefined;
+  children: SyntaxNode[];
+};
+export type ContainerNode =
+  | CompilationUnitNode
+  | TypeClauseNode
+  | FunctionArgumentNode
+  | FunctionParameterNode;
+export function CompilationUnit(
+  statements: StatementSyntax[],
+  eof: TokenSyntax
+): CompilationUnitNode {
   const children: SyntaxNode[] = [];
   return {
     kind: 'CompilationUnit',
-    statement,
+    statements,
     eof,
     children,
   };
@@ -54,6 +68,20 @@ export function FunctionArgument(
   return {
     kind: 'FunctionArgument',
     expression,
+    comma,
+    children,
+  };
+}
+export function FunctionParameter(
+  identifier: IdentifierTokenSyntax,
+  type: TypeClauseNode,
+  comma: TokenSyntax | undefined
+): FunctionParameterNode {
+  const children: SyntaxNode[] = [identifier, type, comma].filter(isDefined);
+  return {
+    kind: 'FunctionParameter',
+    identifier,
+    type,
     comma,
     children,
   };

@@ -231,6 +231,11 @@ export type ForKeywordSyntax = {
   span: TextSpan;
   children: SyntaxNode[];
 };
+export type FunctionKeywordSyntax = {
+  kind: 'FunctionKeyword';
+  span: TextSpan;
+  children: SyntaxNode[];
+};
 export type BadTokenSyntax = {
   kind: 'BadToken';
   span: TextSpan;
@@ -286,6 +291,7 @@ export type TokenSyntax =
   | ElseKeywordSyntax
   | WhileKeywordSyntax
   | ForKeywordSyntax
+  | FunctionKeywordSyntax
   | BadTokenSyntax
   | EndOfFileTokenSyntax;
 export function NumberToken(span: TextSpan, value: number): NumberTokenSyntax {
@@ -642,6 +648,14 @@ export function ForKeyword(span: TextSpan): ForKeywordSyntax {
   const children: SyntaxNode[] = [];
   return {
     kind: 'ForKeyword',
+    span,
+    children,
+  };
+}
+export function FunctionKeyword(span: TextSpan): FunctionKeywordSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'FunctionKeyword',
     span,
     children,
   };

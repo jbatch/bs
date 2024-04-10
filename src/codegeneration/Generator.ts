@@ -28,6 +28,11 @@ export const VariableSymbolTypeNode = factory.createTypeReferenceNode(
   undefined
 );
 
+export const FunctionSymbolTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('FunctionSymbol'),
+  undefined
+);
+
 export const BoundLabelTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('BoundLabel'),
   undefined
@@ -45,6 +50,11 @@ export const TypeClauseNodeTypeNode = factory.createTypeReferenceNode(
 
 export const FunctionArgumentNodeTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('FunctionArgumentNode'),
+  undefined
+);
+
+export const FunctionParameterNodeTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('FunctionParameterNode'),
   undefined
 );
 
@@ -71,6 +81,11 @@ export const StatementSyntaxTypeNode = factory.createTypeReferenceNode(
 
 export const IdentifierTokenSyntaxTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('IdentifierTokenSyntax'),
+  undefined
+);
+
+export const BlockStatementSyntaxTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('BlockStatementSyntax'),
   undefined
 );
 

@@ -6,13 +6,15 @@ import {
   StatementSyntaxTypeNode,
   SyntaxNodeTypeNode,
   TokenSyntaxTypeNode,
+  TypeClauseNodeTypeNode,
+  array,
   optional,
 } from '../codegeneration/Generator';
 
 const containerNodeTypes: GeneratorTypeDefinitions = {
   CompilationUnit: {
     other: {
-      statement: StatementSyntaxTypeNode,
+      statements: array(StatementSyntaxTypeNode),
       eof: TokenSyntaxTypeNode,
     },
   },
@@ -25,6 +27,13 @@ const containerNodeTypes: GeneratorTypeDefinitions = {
   FunctionArgument: {
     children: {
       expression: ExpressionSyntaxTypeNode,
+      comma: optional(TokenSyntaxTypeNode),
+    },
+  },
+  FunctionParameter: {
+    children: {
+      identifier: IdentifierTokenSyntaxTypeNode,
+      type: TypeClauseNodeTypeNode,
       comma: optional(TokenSyntaxTypeNode),
     },
   },

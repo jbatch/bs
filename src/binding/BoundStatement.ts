@@ -1,4 +1,5 @@
-import { VariableSymbol } from '../symbols/Symbol';
+import { FunctionParameterNode } from '../parsing/ContainerNode';
+import { FunctionSymbol, VariableSymbol } from '../symbols/Symbol';
 import { BoundExpression } from './BoundExpression';
 import { BoundLabel } from './BoundLabel';
 import { BoundNode } from './BoundNode';
@@ -46,6 +47,11 @@ export type ForStatement = {
   forBlock: BoundStatement;
   children: BoundNode[];
 };
+export type FunctionDeclarationStatement = {
+  kind: 'FunctionDeclarationStatement';
+  functionSymbol: FunctionSymbol;
+  children: BoundNode[];
+};
 export type LabelStatement = {
   kind: 'LabelStatement';
   label: BoundLabel;
@@ -70,6 +76,7 @@ export type BoundStatement =
   | IfStatement
   | WhileStatement
   | ForStatement
+  | FunctionDeclarationStatement
   | LabelStatement
   | GoToStatement
   | ConditionalGoToStatement;
@@ -140,6 +147,16 @@ export function BoundForStatement(
     loopCondition,
     endStatement,
     forBlock,
+    children,
+  };
+}
+export function BoundFunctionDeclarationStatement(
+  functionSymbol: FunctionSymbol
+): FunctionDeclarationStatement {
+  const children: BoundNode[] = [];
+  return {
+    kind: 'FunctionDeclarationStatement',
+    functionSymbol,
     children,
   };
 }

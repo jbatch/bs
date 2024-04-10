@@ -34,6 +34,7 @@ import {
   ConditionalGoToStatement,
   BoundConditionalGoToStatement,
   BoundBlockStatement,
+  FunctionDeclarationStatement,
 } from './BoundStatement';
 
 export class BoundTreeRewriter {
@@ -57,6 +58,8 @@ export class BoundTreeRewriter {
         return this.rewriteGoToStatement(boundTreeRoot);
       case 'ConditionalGoToStatement':
         return this.rewriteConditionalGoToStatement(boundTreeRoot);
+      case 'FunctionDeclarationStatement':
+        return this.rewriteFunctionDeclarationStatement(boundTreeRoot);
     }
   }
 
@@ -139,6 +142,12 @@ export class BoundTreeRewriter {
     let { label, jumpIfTrue, condition } = statement;
     condition = this.rewriteExpression(condition);
     return BoundConditionalGoToStatement(label, jumpIfTrue, condition);
+  }
+
+  protected rewriteFunctionDeclarationStatement(
+    statement: FunctionDeclarationStatement
+  ): BoundStatement {
+    return statement;
   }
 
   protected rewriteUnaryExpression(expression: UnaryExpression): BoundExpression {

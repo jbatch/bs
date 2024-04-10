@@ -6,7 +6,11 @@ import {
   OperatorAssignmentExpressionSyntax,
   PostfixUnaryExpressionSyntax,
 } from '../parsing/ExpressionSyntax';
-import { StatementKind, StatementSyntax } from '../parsing/StatementSyntax';
+import {
+  FunctionDeclarationSyntax,
+  StatementKind,
+  StatementSyntax,
+} from '../parsing/StatementSyntax';
 import { DiagnosticBag } from '../reporting/Diagnostic';
 import { TextSpan } from '../text/TextSpan';
 import {
@@ -45,6 +49,8 @@ import {
   Variable,
   VariableSymbol,
   CASTABLE_TYPES,
+  FunctionSymbol,
+  Void,
 } from '../symbols/Symbol';
 import { Either, isLeft, left, right } from '../container/Either';
 import { IdentifierTokenSyntax, TokenSyntax } from '../parsing/TokenSyntax';
@@ -58,7 +64,52 @@ export class Binder {
     this.scope = new BoundScope(parent);
   }
 
-  public bindStatement(statement: StatementSyntax, expectedKind?: StatementKind): BoundStatement {
+  public bindGlobalStatements(statements: StatementSyntax[]): BoundStatement[] {
+    // No function declarations should be bound as global statements
+    assert(!statements.some((s) => s.kind === 'FunctionDeclaration'));
+    return statements.map((s) => this.bindStatement(s));
+  }
+
+  public bindFunctionDeclarations(functions: FunctionDeclarationSyntax[]): void {
+    for (const declaration of functions) {
+      this.bindFunctionDeclaration(declaration);
+    }
+  }
+
+  private bindFunctionDeclaration(declaration: FunctionDeclarationSyntax) {
+    const name = declaration.identifier.text;
+    // We only support void functions right now
+    const type = Void;
+
+    const parameters = declaration.parameters.map((param) => {
+      const type = this.bindTypeSymbol(param.type.identifier) ?? Err;
+      if (type.name === Err.name) {
+        this.diagnostics.reportInvalidTypeSymbol(
+          param.type.identifier.span,
+          param.type.identifier.text
+        );
+      }
+      const name = param.identifier.text;
+      return Variable(name, type, true);
+    });
+
+    // Check for repeated parameter names
+    const names = parameters.map((param) => param.name);
+    const firstDuplicate = names.findIndex((name, idx) => names.lastIndexOf(name) !== idx);
+    if (firstDuplicate != -1) {
+      const param = declaration.parameters[firstDuplicate];
+      this.diagnostics.reportDuplicateParameterName(param.identifier.span, param.identifier.text);
+    }
+
+    const fn: FunctionSymbol = {
+      kind: 'Function',
+      name,
+      type,
+      parameters,
+    };
+  }
+
+  private bindStatement(statement: StatementSyntax, expectedKind?: StatementKind): BoundStatement {
     if (expectedKind && statement.kind !== expectedKind) {
       this.diagnostics.reportSyntaxError(statement.span, expectedKind, statement.kind);
     }
@@ -75,6 +126,8 @@ export class Binder {
         return this.bindWhileStatement(statement);
       case 'ForStatement':
         return this.bindForStatement(statement);
+      case 'FunctionDeclaration':
+        throw new Error('Function declarations should not be bound');
     }
   }
 
@@ -435,7 +488,7 @@ export class Binder {
     return undefined;
   }
 
-  bindTypeCast(type: TypeSymbol, expression: ExpressionSyntax): BoundExpression {
+  private bindTypeCast(type: TypeSymbol, expression: ExpressionSyntax): BoundExpression {
     const boundExpression = this.bindExpression(expression);
     return BoundTypeCastExpression(type, boundExpression);
   }

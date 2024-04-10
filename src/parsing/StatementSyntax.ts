@@ -1,5 +1,5 @@
 import { TextSpan } from '../text/TextSpan';
-import { TypeClauseNode } from './ContainerNode';
+import { FunctionParameterNode, TypeClauseNode } from './ContainerNode';
 import { ExpressionSyntax } from './ExpressionSyntax';
 import { SyntaxNode } from './SyntaxNode';
 import { IdentifierTokenSyntax, TokenSyntax } from './TokenSyntax';
@@ -70,13 +70,25 @@ export type ForStatementSyntax = {
   forBlock: StatementSyntax;
   children: SyntaxNode[];
 };
+export type FunctionDeclarationSyntax = {
+  kind: 'FunctionDeclaration';
+  span: TextSpan;
+  functionKeyword: TokenSyntax;
+  identifier: IdentifierTokenSyntax;
+  openParenthesis: TokenSyntax;
+  parameters: FunctionParameterNode[];
+  closeParenthesis: TokenSyntax;
+  functionBlock: BlockStatementSyntax;
+  children: SyntaxNode[];
+};
 export type StatementSyntax =
   | ExpressionStatementSyntax
   | BlockStatementSyntax
   | VariableDeclarationStatementSyntax
   | IfStatementSyntax
   | WhileStatementSyntax
-  | ForStatementSyntax;
+  | ForStatementSyntax
+  | FunctionDeclarationSyntax;
 export function ExpressionStatement(expression: ExpressionSyntax): ExpressionStatementSyntax {
   const span = expression.span;
   const children: SyntaxNode[] = [expression];
@@ -212,6 +224,35 @@ export function ForStatement(
     endStatement,
     closeParenthesis,
     forBlock,
+    children,
+  };
+}
+export function FunctionDeclaration(
+  functionKeyword: TokenSyntax,
+  identifier: IdentifierTokenSyntax,
+  openParenthesis: TokenSyntax,
+  parameters: FunctionParameterNode[],
+  closeParenthesis: TokenSyntax,
+  functionBlock: BlockStatementSyntax
+): FunctionDeclarationSyntax {
+  const span = functionKeyword.span;
+  const children: SyntaxNode[] = [
+    functionKeyword,
+    identifier,
+    openParenthesis,
+    ...parameters,
+    closeParenthesis,
+    functionBlock,
+  ];
+  return {
+    kind: 'FunctionDeclaration',
+    span,
+    functionKeyword,
+    identifier,
+    openParenthesis,
+    parameters,
+    closeParenthesis,
+    functionBlock,
     children,
   };
 }

@@ -4,6 +4,8 @@ import {
   BoundLabelTypeNode,
   BoundNodeTypeNode,
   BoundStatementTypeNode,
+  FunctionParameterNodeTypeNode,
+  FunctionSymbolTypeNode,
   Generator,
   GeneratorTypeDefinitions,
   VariableSymbolTypeNode,
@@ -47,6 +49,11 @@ const boundStatementTypes: GeneratorTypeDefinitions = {
       loopCondition: BoundExpressionTypeNode,
       endStatement: BoundStatementTypeNode,
       forBlock: BoundStatementTypeNode,
+    },
+  },
+  FunctionDeclarationStatement: {
+    other: {
+      functionSymbol: FunctionSymbolTypeNode,
     },
   },
   LabelStatement: {

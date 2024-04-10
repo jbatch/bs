@@ -3,6 +3,7 @@ import {
   ElseKeyword,
   FalseKeyword,
   ForKeyword,
+  FunctionKeyword,
   IdentifierToken,
   IfKeyword,
   TokenSyntax,
@@ -10,7 +11,7 @@ import {
   VarKeyword,
   WhileKeyword,
 } from './TokenSyntax';
-import { textSpan } from '../text/TextSpan';
+import { TextSpan, textSpan } from '../text/TextSpan';
 import { SyntaxKind } from './SyntaxNode';
 
 export function getBinaryOperatorPrecedence(kind: SyntaxKind) {
@@ -71,6 +72,8 @@ export function getKeywordOrIdentifier(text: string, position: number): TokenSyn
       return WhileKeyword(span);
     case 'for':
       return ForKeyword(span);
+    case 'function':
+      return FunctionKeyword(span);
     default:
       return IdentifierToken(span, text);
   }

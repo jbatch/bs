@@ -1,4 +1,15 @@
+import assert from 'node:assert';
 import { DiagnosticBag } from '../reporting/Diagnostic';
+import { SourceText } from '../text/SourceText';
+import { textSpan } from '../text/TextSpan';
+import {
+  CompilationUnitNode,
+  FunctionArgument,
+  FunctionParameter,
+  FunctionParameterNode,
+  TypeClause,
+  TypeClauseNode,
+} from './ContainerNode';
 import {
   AssignmentExpression,
   BinaryExpression,
@@ -12,12 +23,19 @@ import {
   UnaryExpression,
 } from './ExpressionSyntax';
 import { Lexer } from './Lexer';
-import { SourceText } from '../text/SourceText';
-import { textSpan } from '../text/TextSpan';
+import {
+  BlockStatement,
+  ExpressionStatement,
+  ForStatement,
+  FunctionDeclaration,
+  IfStatement,
+  StatementSyntax,
+  VariableDeclarationStatement,
+  WhileStatement,
+} from './StatementSyntax';
 import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
 import {
   BooleanLiteral,
-  CommaToken,
   IdentifierTokenSyntax,
   NumberLiteral,
   NumberTokenSyntax,
@@ -25,17 +43,6 @@ import {
   TokenSyntax,
   TokenSyntaxKind,
 } from './TokenSyntax';
-import {
-  BlockStatement,
-  ExpressionStatement,
-  ForStatement,
-  IfStatement,
-  StatementSyntax,
-  VariableDeclarationStatement,
-  WhileStatement,
-} from './StatementSyntax';
-import assert from 'node:assert';
-import { CompilationUnitNode, FunctionArgument, TypeClause, TypeClauseNode } from './ContainerNode';
 
 export class Parser {
   tokens: TokenSyntax[];
@@ -60,10 +67,19 @@ export class Parser {
   }
 
   parse(): CompilationUnitNode {
-    const statement = this.parseStatement();
+    const statements = [];
+    while (this.current().kind !== 'EndOfFileToken') {
+      const start = this.position;
+      const statement = this.parseStatement();
+      statements.push(statement);
+      // If we didn't make any progress parsing a statment skip the current token (the error was already reported)
+      if (this.position === start) {
+        this.position++;
+      }
+    }
     const eof = this.matchToken('EndOfFileToken');
-    const children = [statement, eof];
-    return { kind: 'CompilationUnit', statement, eof, children };
+    const children = [...statements, eof];
+    return { kind: 'CompilationUnit', statements, eof, children };
   }
 
   private current(): TokenSyntax {
@@ -125,7 +141,8 @@ export class Parser {
         return this.parseWhileStatement();
       case 'ForKeyword':
         return this.parseForStatement();
-
+      case 'FunctionKeyword':
+        return this.parseFunctionDeclarationStatement();
       default:
         return this.parseExpressionStatement();
     }
@@ -150,10 +167,7 @@ export class Parser {
     const keyword = this.matchToken(this.current().kind);
     const identifier = this.matchToken('IdentifierToken') as IdentifierTokenSyntax;
 
-    let typeClause = undefined;
-    if (this.current().kind === 'ColonToken') {
-      typeClause = this.parseTypeClause();
-    }
+    const typeClause = this.parseOptionalTypeClause();
     const equals = this.matchToken('EqualsToken');
     const expression = this.parseExpression();
     return VariableDeclarationStatement(keyword, identifier, typeClause, equals, expression);
@@ -217,6 +231,39 @@ export class Parser {
       closeParenthesis,
       forBlock
     );
+  }
+
+  private parseFunctionDeclarationStatement(): StatementSyntax {
+    const functionKeyword = this.matchToken('FunctionKeyword');
+    const identifier = this.matchToken('IdentifierToken');
+    assert(identifier.kind === 'IdentifierToken');
+    const openParenthesis = this.matchToken('OpenParenthesisToken');
+    const parameters = this.parseFunctionParameters();
+    const closeParenthesis = this.matchToken('CloseParenthesisToken');
+    const functionBlock = this.parseBlockStatement();
+    assert(functionBlock.kind === 'BlockStatement');
+
+    return FunctionDeclaration(
+      functionKeyword,
+      identifier,
+      openParenthesis,
+      parameters,
+      closeParenthesis,
+      functionBlock
+    );
+  }
+
+  parseFunctionParameters(): FunctionParameterNode[] {
+    const parameters = [];
+    while (this.current().kind !== 'CloseParenthesisToken') {
+      const identifier = this.matchToken('IdentifierToken');
+      assert(identifier.kind === 'IdentifierToken');
+      const typeCluase = this.parseTypeClause();
+      const comma = this.matchOptionalToken('CommaToken');
+      const parameter = FunctionParameter(identifier, typeCluase, comma);
+      parameters.push(parameter);
+    }
+    return parameters;
   }
 
   private parseExpressionStatement(): StatementSyntax {
@@ -341,6 +388,13 @@ export class Parser {
     const identifier = this.matchToken('IdentifierToken');
     assert(identifier.kind === 'IdentifierToken');
     return NameExpression(identifier);
+  }
+
+  parseOptionalTypeClause(): TypeClauseNode | undefined {
+    if (this.current().kind === 'ColonToken') {
+      return this.parseTypeClause();
+    }
+    return undefined;
   }
 
   parseTypeClause(): TypeClauseNode {

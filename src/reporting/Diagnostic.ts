@@ -78,6 +78,11 @@ export class DiagnosticBag {
     this.report(message, span);
   }
 
+  reportDuplicateParameterName(span: TextSpan, text: string) {
+    const message = `Duplicate parameter name: [${text}]`;
+    this.report(message, span);
+  }
+
   reportUnexpectedLiteralValue(span: TextSpan, text: string) {
     const message = `Unexpected literal '${text}'`;
     this.report(message, span);

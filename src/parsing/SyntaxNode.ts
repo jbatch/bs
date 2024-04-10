@@ -1,9 +1,14 @@
 import { ContainerNode } from './ContainerNode';
 import { ExpressionSyntax } from './ExpressionSyntax';
-import { StatementSyntax } from './StatementSyntax';
+import {
+  BlockStatementSyntax,
+  FunctionDeclarationSyntax,
+  StatementSyntax,
+} from './StatementSyntax';
 import { TokenSyntax } from './TokenSyntax';
 
 // TODO find somewhere nicer to put else clause
+export type MemberNode = BlockStatementSyntax | FunctionDeclarationSyntax;
 export type SyntaxNode = ExpressionSyntax | TokenSyntax | ContainerNode | StatementSyntax;
 
 export type SyntaxKind = SyntaxNode['kind'];

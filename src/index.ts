@@ -6,11 +6,12 @@ import { Parser } from './parsing/Parser';
 import { Evaluator } from './evaluation/Evaluator';
 
 import { BoundScope } from './binding/BoundScope';
-import { BlockStatement } from './binding/BoundStatement';
+import { BlockStatement, BoundBlockStatement } from './binding/BoundStatement';
 import { prettyPrintTree } from './parsing/SyntaxNode';
 import { prettyPrintProgram } from './binding/BoundNode';
 import { Lowerer } from './lowerer/Lowerer';
 import fs from 'fs';
+import { FunctionDeclarationSyntax } from './parsing/StatementSyntax';
 
 const variables = {};
 let globalScope = BoundScope.createRootScope();
@@ -119,7 +120,16 @@ function parseCode(inputText: string) {
   const sourceText = parser.source;
   const compilationUnit = parser.parse();
   const binder = new Binder(globalScope);
-  const statement = binder.bindStatement(compilationUnit.statement);
+  const globalStatements = compilationUnit.statements.filter(
+    (s) => s.kind !== 'FunctionDeclaration'
+  );
+  const functionDeclarations = compilationUnit.statements.filter(
+    (s): s is FunctionDeclarationSyntax => s.kind === 'FunctionDeclaration'
+  );
+  // Bind function definitions first
+  binder.bindFunctionDeclarations(functionDeclarations);
+  const boundGlobalStatments = binder.bindGlobalStatements(globalStatements);
+  const statement = BoundBlockStatement(boundGlobalStatments);
   const boundScope = binder.scope;
 
   const diagnostics = new DiagnosticBag();
@@ -127,7 +137,7 @@ function parseCode(inputText: string) {
   diagnostics.addBag(binder.diagnostics);
 
   if (showTree) {
-    prettyPrintTree(compilationUnit.statement);
+    prettyPrintTree(compilationUnit.statements[0]);
   }
 
   // Print errors
