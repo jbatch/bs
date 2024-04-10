@@ -101,12 +101,13 @@ export class Binder {
       this.diagnostics.reportDuplicateParameterName(param.identifier.span, param.identifier.text);
     }
 
-    const fn: FunctionSymbol = {
+    const func: FunctionSymbol = {
       kind: 'Function',
       name,
       type,
       parameters,
     };
+    this.scope.tryDeclareFunction(func);
   }
 
   private bindStatement(statement: StatementSyntax, expectedKind?: StatementKind): BoundStatement {

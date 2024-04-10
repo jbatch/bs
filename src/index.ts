@@ -45,6 +45,17 @@ async function main() {
       continue;
     }
 
+    if (['.ls'].includes(line)) {
+      const variables = globalScope.getDecalredVariables();
+      const functions = globalScope.getDecalredFunctions();
+      Terminal.writeLine('Variables');
+      variables.forEach((v) => Terminal.writeLine(`\t${v.name}: ${v.type}`));
+      Terminal.writeLine();
+      Terminal.writeLine('Functions');
+      functions.forEach((f) => Terminal.writeLine(`\t${f.name}(): ${f.type.name}`));
+      continue;
+    }
+
     if (line.startsWith('.load')) {
       const m = line.match(/.load (.*)/);
       if (!m) {

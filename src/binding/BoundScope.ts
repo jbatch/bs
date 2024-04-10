@@ -64,10 +64,16 @@ export class BoundScope {
   }
 
   public getDecalredVariables(): VariableSymbol[] {
+    if (this.parent) {
+      return [...this.parent.getDecalredVariables(), ...Object.values(this.variables)];
+    }
     return Object.values(this.variables);
   }
 
   public getDecalredFunctions(): FunctionSymbol[] {
+    if (this.parent) {
+      return [...this.parent.getDecalredFunctions(), ...Object.values(this.functions)];
+    }
     return Object.values(this.functions);
   }
 }
