@@ -2,7 +2,7 @@ import { SyntaxKind } from '../parsing/SyntaxNode';
 import Terminal from '../repl/Terminal';
 import { TypeSymbol } from '../symbols/Symbol';
 import { SourceText } from '../text/SourceText';
-import { TextSpan, textSpan } from '../text/TextSpan';
+import { TextSpan, textSpan, textSpanWithEnd } from '../text/TextSpan';
 
 export type Diagnostic = { message: string; span: TextSpan };
 
@@ -23,8 +23,8 @@ export class DiagnosticBag {
       const character = diagnostic.span.start - sourceText.lines[lineIndex].start + 1;
       Terminal.writeLine(`[${lineNumber}:${character}] ${diagnostic.message}`);
 
-      const prefixSpan = textSpan(0, diagnostic.span.start);
-      const suffixSpan = textSpan(diagnostic.span.end, errorLine.end);
+      const prefixSpan = textSpanWithEnd(0, diagnostic.span.start);
+      const suffixSpan = textSpanWithEnd(diagnostic.span.end, errorLine.end);
       const prefix = sourceText.getText(prefixSpan);
       const error = sourceText.getText(diagnostic.span);
       const suffix = sourceText.getText(suffixSpan);
@@ -143,12 +143,12 @@ export class DiagnosticBag {
   }
 
   reportUndefinedFunction(span: TextSpan, name: string) {
-    const message = `Reference error: function ${name} is not defined`;
+    const message = `Reference error: function '${name}' is not defined`;
     this.report(message, span);
   }
 
   reportArguementCountMismatch(span: TextSpan, name: string, expected: number, found: number) {
-    const message = `Function ${name} called with ${found} arguments, expected ${expected}`;
+    const message = `Function '${name}' called with ${found} arguments, expected ${expected}`;
     this.report(message, span);
   }
 

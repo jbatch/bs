@@ -28,7 +28,7 @@ import {
   VariableSymbol,
   Void,
 } from '../symbols/Symbol';
-import { TextSpan } from '../text/TextSpan';
+import { TextSpan, textSpanWithEnd } from '../text/TextSpan';
 import { BoundBinaryOperator, bindBinaryOperator } from './BoundBinaryOperator';
 import {
   BoundAssignmentExpression,
@@ -389,6 +389,16 @@ export class Binder {
       this.diagnostics.reportUndefinedFunction(
         expression.identifier.span,
         expression.identifier.text
+      );
+      return BoundErrorExpression(Err);
+    }
+
+    if (fn.parameters.length != args.length) {
+      this.diagnostics.reportArguementCountMismatch(
+        textSpanWithEnd(expression.open.span.start, expression.close.span.end),
+        expression.identifier.text,
+        fn.parameters.length,
+        args.length
       );
       return BoundErrorExpression(Err);
     }
