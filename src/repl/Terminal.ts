@@ -3,9 +3,9 @@ import { createInterface } from 'node:readline';
 import fs from 'fs';
 
 function completer(line: string) {
-  if (line.startsWith('.load')) {
+  if (line.startsWith('.l')) {
     const files = fs.readdirSync('./programs');
-    const completions = files.map((f) => `.load programs/${f}`);
+    const completions = files.map((f) => `.load programs/${f}`).filter((f) => f.startsWith(line));
     return [completions, line];
   }
   const completions = ['.load', '.showTree', '.showProgram', '.exit'];
