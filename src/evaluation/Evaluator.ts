@@ -1,5 +1,14 @@
 import assert from 'node:assert';
-import { BoundExpression, CallExpression, TypeCastExpression } from '../binding/BoundExpression';
+import {
+  AssignmentExpression,
+  BinaryExpression,
+  BoundExpression,
+  CallExpression,
+  LiteralExpression,
+  TypeCastExpression,
+  UnaryExpression,
+  VariableExpression,
+} from '../binding/BoundExpression';
 import {
   BlockStatement,
   BoundStatement,
@@ -9,39 +18,54 @@ import {
 } from '../binding/BoundStatement';
 import { EvaluationResult } from './EvaluationResult';
 
+import { SymbolTable } from '../binding/SymbolTable';
 import Terminal from '../repl/Terminal';
-import { Int, String as StringTypeSymbol } from '../symbols/Symbol';
+import { FunctionSymbol, Int, String as StringTypeSymbol, VariableSymbol } from '../symbols/Symbol';
 
 export class Evaluator {
   root: BlockStatement;
-  variables: Record<string, EvaluationResult>;
+  gloablVariables: Record<string, EvaluationResult>;
+  functions: SymbolTable<FunctionSymbol, BlockStatement>;
+  // Stack to hold current lock variable values
+  locals: SymbolTable<VariableSymbol, EvaluationResult>[] = [];
   lastResult?: EvaluationResult;
 
-  constructor(root: BlockStatement, variables: Record<string, EvaluationResult>) {
+  constructor(
+    root: BlockStatement,
+    gloablVariables: Record<string, EvaluationResult>,
+    functions: SymbolTable<FunctionSymbol, BlockStatement>
+  ) {
     this.root = root;
-    this.variables = variables;
+    this.gloablVariables = gloablVariables;
+    this.functions = functions;
   }
 
-  async evaluate(): Promise<EvaluationResult> {
+  async evaluate() {
+    this.evaluateBlockStatement(this.root);
+  }
+
+  async evaluateBlockStatement(block: BlockStatement): Promise<EvaluationResult> {
     const labelMap: Record<string, number> = {};
 
-    this.root.statements.forEach((statement, index) => {
+    block.statements.forEach((statement, index) => {
       if (statement.kind === 'LabelStatement') {
         labelMap[statement.label.name] = index;
       }
     });
 
     let index = 0;
-    while (index < this.root.statements.length) {
-      const statement = this.root.statements[index];
+    while (index < block.statements.length) {
+      const statement = block.statements[index];
 
       switch (statement.kind) {
         case 'ExpressionStatement':
           this.lastResult = await this.evaluateExpression(statement.expression);
           break;
         case 'BlockStatement':
+          // Should never happen because we flatten the statment tree
+          throw new Error('Encountered unexpected block statement');
         case 'VariableDelcarationStatement':
-          await this.evaluateStatement(statement);
+          await this.evaluateVariableDeclarationStatement(statement);
           break;
         case 'IfStatement':
         case 'WhileStatement':
@@ -70,42 +94,15 @@ export class Evaluator {
     return this.lastResult!;
   }
 
-  private async evaluateStatement(statement: BoundStatement) {
-    switch (statement.kind) {
-      case 'ExpressionStatement':
-        this.lastResult = await this.evaluateExpression(statement.expression);
-        break;
-      case 'BlockStatement':
-        await this.evaluateBlockStatement(statement);
-        break;
-      case 'VariableDelcarationStatement':
-        await this.evaluateVariableDeclarationStatement(statement);
-        break;
-      case 'LabelStatement':
-        await this.evaluateLabelStatement(statement);
-        break;
-      case 'GoToStatement':
-        await this.evaluateGoToStatement(statement);
-        break;
-      case 'ConditionalGoToStatement':
-        await this.evaluateConditionalGoToStatement(statement);
-        break;
-    }
-  }
-
-  private async evaluateBlockStatement(block: BoundStatement) {
-    assert(block.kind === 'BlockStatement');
-
-    for (let statement of block.statements) {
-      await this.evaluateStatement(statement);
-    }
-  }
-
   private async evaluateVariableDeclarationStatement(declaration: BoundStatement) {
     assert(declaration.kind === 'VariableDelcarationStatement');
 
     var value = await this.evaluateExpression(declaration.expression);
-    this.variables[declaration.variable.name] = await value;
+    if (declaration.variable.isLocal) {
+      this.locals[0].setValue(declaration.variable, value);
+    } else {
+      this.gloablVariables[declaration.variable.name] = value;
+    }
     this.lastResult = await value;
   }
 
@@ -142,8 +139,7 @@ export class Evaluator {
     throw new Error(`Unexpected expression type ${node.kind}`);
   }
 
-  private async evaluateUnaryExpression(node: BoundExpression): Promise<EvaluationResult> {
-    assert(node.kind === 'UnaryExpression');
+  private async evaluateUnaryExpression(node: UnaryExpression): Promise<EvaluationResult> {
     var operand = this.evaluateExpression(node.operand);
     switch (node.operator.kind) {
       case 'Identity':
@@ -158,8 +154,7 @@ export class Evaluator {
     throw new Error(`Unhandled unary operator: ${node.operator.kind}`);
   }
 
-  private async evaluateBinaryExpression(node: BoundExpression): Promise<EvaluationResult> {
-    assert(node.kind === 'BinaryExpression');
+  private async evaluateBinaryExpression(node: BinaryExpression): Promise<EvaluationResult> {
     const left = await this.evaluateExpression(node.left);
     const right = await this.evaluateExpression(node.right);
     assert(left !== undefined && right !== undefined);
@@ -205,25 +200,45 @@ export class Evaluator {
     }
   }
 
-  private async evaluateLiteralExpression(node: BoundExpression): Promise<EvaluationResult> {
-    assert(node.kind === 'LiteralExpression');
+  private async evaluateLiteralExpression(node: LiteralExpression): Promise<EvaluationResult> {
     return node.value!;
   }
 
-  private async evaluateVariableExpression(node: BoundExpression): Promise<EvaluationResult> {
-    assert(node.kind === 'VariableExpression');
-    return this.variables[node.name];
+  private async evaluateVariableExpression(node: VariableExpression): Promise<EvaluationResult> {
+    if (node.variable.isLocal) {
+      return this.locals[0].getValue(node.variable);
+    }
+    return this.gloablVariables[node.variable.name];
   }
 
-  private async evaluateAssignmentExpression(node: BoundExpression): Promise<EvaluationResult> {
-    assert(node.kind === 'AssignmentExpression');
-    var value = this.evaluateExpression(node.expression);
-    this.variables[node.name] = await value;
+  private async evaluateAssignmentExpression(
+    node: AssignmentExpression
+  ): Promise<EvaluationResult> {
+    var value = await this.evaluateExpression(node.expression);
+    if (node.variable.isLocal) {
+      this.locals[0].setValue(node.variable, value);
+    } else {
+      this.gloablVariables[node.variable.name] = value;
+    }
     return value;
   }
 
   private async evaluateCallExpression(node: CallExpression): Promise<EvaluationResult> {
-    switch (node.name) {
+    const userDefinedFunction = this.functions.getValue(node.functionSymbol);
+    if (userDefinedFunction) {
+      const functionLocals = new SymbolTable<VariableSymbol, EvaluationResult>([]);
+      for (let i = 0; i < node.args.length; i++) {
+        const arg = node.args[i];
+        const param = node.functionSymbol.parameters[i];
+        const value = await this.evaluateExpression(arg);
+        functionLocals.setValue(param, value);
+      }
+      this.locals.unshift(functionLocals);
+      await this.evaluateBlockStatement(userDefinedFunction);
+      this.locals.shift();
+      return;
+    }
+    switch (node.functionSymbol.name) {
       case 'print':
         const result = await this.evaluateExpression(node.args[0]);
         Terminal.writeLine(result);

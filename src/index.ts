@@ -9,9 +9,11 @@ import fs from 'fs';
 import { prettyPrintProgram } from './binding/BoundNode';
 import { BoundScope } from './binding/BoundScope';
 import { BlockStatement, BoundBlockStatement } from './binding/BoundStatement';
+import { SymbolTable } from './binding/SymbolTable';
 import { Lowerer } from './lowerer/Lowerer';
 import { FunctionDeclarationSyntax } from './parsing/StatementSyntax';
 import { prettyPrintTree } from './parsing/SyntaxNode';
+import { FunctionSymbol } from './symbols/Symbol';
 
 const variables = {};
 let globalScope = BoundScope.createRootScope();
@@ -91,7 +93,7 @@ async function main() {
     // Reset collected lines
     lines = [];
 
-    let { diagnostics, statement } = parseCode(inputText);
+    let { diagnostics, statement, functionTable } = parseCode(inputText);
 
     if (diagnostics.hasDiagnostics()) {
       continue;
@@ -105,16 +107,19 @@ async function main() {
     }
 
     // Evaluate
-    await evaluateBoundStatement(loweredBlockStatment);
+    await evaluateBoundStatement(loweredBlockStatment, functionTable);
   }
   process.exit(0);
 }
 
 main();
 
-async function evaluateBoundStatement(boundRoot: BlockStatement) {
+async function evaluateBoundStatement(
+  boundRoot: BlockStatement,
+  functions: SymbolTable<FunctionSymbol, BlockStatement>
+) {
   try {
-    const evaluator = new Evaluator(boundRoot, variables);
+    const evaluator = new Evaluator(boundRoot, variables, functions);
     Terminal.writeLine();
     const result = await evaluator.evaluate();
     if (result === undefined) {
@@ -139,8 +144,12 @@ function parseCode(inputText: string) {
   );
   // Bind function definitions first
   binder.bindFunctionDeclarations(functionDeclarations);
+  // Bind global statements
   const boundGlobalStatments = binder.bindGlobalStatements(globalStatements);
   const statement = BoundBlockStatement(boundGlobalStatments);
+  const functionTable = binder.bindFunctionBodies(
+    binder.scope.getDecalredFunctions().filter((f) => f.declaration)
+  );
   const boundScope = binder.scope;
 
   const diagnostics = new DiagnosticBag();
@@ -158,5 +167,5 @@ function parseCode(inputText: string) {
     globalScope = binder.scope;
   }
 
-  return { diagnostics, statement, boundScope };
+  return { diagnostics, statement, boundScope, functionTable };
 }

@@ -79,6 +79,11 @@ export const StatementSyntaxTypeNode = factory.createTypeReferenceNode(
   undefined
 );
 
+export const FunctionDeclarationSyntaxTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('FunctionDeclarationSyntax'),
+  undefined
+);
+
 export const IdentifierTokenSyntaxTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('IdentifierTokenSyntax'),
   undefined

@@ -1,5 +1,5 @@
 import { EvaluationResult } from '../evaluation/EvaluationResult';
-import { TypeSymbol } from '../symbols/Symbol';
+import { FunctionSymbol, TypeSymbol, VariableSymbol } from '../symbols/Symbol';
 import { BoundBinaryOperator } from './BoundBinaryOperator';
 import { BoundNode } from './BoundNode';
 import { BoundUnaryOperator } from './BoundUnaryOperator';
@@ -32,20 +32,20 @@ export type LiteralExpression = {
 export type VariableExpression = {
   kind: 'VariableExpression';
   type: TypeSymbol;
-  name: string;
+  variable: VariableSymbol;
   children: BoundNode[];
 };
 export type AssignmentExpression = {
   kind: 'AssignmentExpression';
   type: TypeSymbol;
-  name: string;
+  variable: VariableSymbol;
   expression: BoundExpression;
   children: BoundNode[];
 };
 export type OperatorAssignmentExpression = {
   kind: 'OperatorAssignmentExpression';
   type: TypeSymbol;
-  name: string;
+  variable: VariableSymbol;
   operator: BoundBinaryOperator;
   expression: BoundExpression;
   children: BoundNode[];
@@ -53,13 +53,13 @@ export type OperatorAssignmentExpression = {
 export type PostfixUnaryExpression = {
   kind: 'PostfixUnaryExpression';
   type: TypeSymbol;
-  name: string;
+  variable: VariableSymbol;
   operator: BoundUnaryOperator;
   children: BoundNode[];
 };
 export type CallExpression = {
   kind: 'CallExpression';
-  name: string;
+  functionSymbol: FunctionSymbol;
   type: TypeSymbol;
   args: BoundExpression[];
   children: BoundNode[];
@@ -128,32 +128,35 @@ export function BoundLiteralExpression(
     children,
   };
 }
-export function BoundVariableExpression(type: TypeSymbol, name: string): VariableExpression {
+export function BoundVariableExpression(
+  type: TypeSymbol,
+  variable: VariableSymbol
+): VariableExpression {
   const children: BoundNode[] = [];
   return {
     kind: 'VariableExpression',
     type,
-    name,
+    variable,
     children,
   };
 }
 export function BoundAssignmentExpression(
   type: TypeSymbol,
-  name: string,
+  variable: VariableSymbol,
   expression: BoundExpression
 ): AssignmentExpression {
   const children: BoundNode[] = [expression];
   return {
     kind: 'AssignmentExpression',
     type,
-    name,
+    variable,
     expression,
     children,
   };
 }
 export function BoundOperatorAssignmentExpression(
   type: TypeSymbol,
-  name: string,
+  variable: VariableSymbol,
   operator: BoundBinaryOperator,
   expression: BoundExpression
 ): OperatorAssignmentExpression {
@@ -161,7 +164,7 @@ export function BoundOperatorAssignmentExpression(
   return {
     kind: 'OperatorAssignmentExpression',
     type,
-    name,
+    variable,
     operator,
     expression,
     children,
@@ -169,27 +172,27 @@ export function BoundOperatorAssignmentExpression(
 }
 export function BoundPostfixUnaryExpression(
   type: TypeSymbol,
-  name: string,
+  variable: VariableSymbol,
   operator: BoundUnaryOperator
 ): PostfixUnaryExpression {
   const children: BoundNode[] = [operator];
   return {
     kind: 'PostfixUnaryExpression',
     type,
-    name,
+    variable,
     operator,
     children,
   };
 }
 export function BoundCallExpression(
-  name: string,
+  functionSymbol: FunctionSymbol,
   type: TypeSymbol,
   args: BoundExpression[]
 ): CallExpression {
   const children: BoundNode[] = [...args];
   return {
     kind: 'CallExpression',
-    name,
+    functionSymbol,
     type,
     args,
     children,

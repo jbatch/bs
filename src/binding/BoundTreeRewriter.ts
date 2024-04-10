@@ -172,17 +172,17 @@ export class BoundTreeRewriter {
   }
 
   protected rewriteAssignmentExpression(expression: AssignmentExpression): BoundExpression {
-    let { type, name, expression: right } = expression;
+    let { type, variable, expression: right } = expression;
     right = this.rewriteExpression(right);
-    return BoundAssignmentExpression(type, name, right);
+    return BoundAssignmentExpression(type, variable, right);
   }
 
   protected rewriteOperatorAssignmentExpression(
     expression: OperatorAssignmentExpression
   ): BoundExpression {
-    let { type, name, operator, expression: assignmentExpression } = expression;
+    let { type, variable, operator, expression: assignmentExpression } = expression;
     assignmentExpression = this.rewriteExpression(assignmentExpression);
-    return BoundOperatorAssignmentExpression(type, name, operator, assignmentExpression);
+    return BoundOperatorAssignmentExpression(type, variable, operator, assignmentExpression);
   }
 
   protected rewritePostfixUnaryExpression(expression: PostfixUnaryExpression): BoundExpression {
@@ -191,7 +191,7 @@ export class BoundTreeRewriter {
 
   protected rewriteCallExpression(expression: CallExpression): BoundExpression {
     const newArgs = expression.args.map((arg) => this.rewriteExpression(arg));
-    return BoundCallExpression(expression.name, expression.type, newArgs);
+    return BoundCallExpression(expression.functionSymbol, expression.type, newArgs);
   }
 
   protected rewriteTypeCastExpression(expression: TypeCastExpression): BoundExpression {

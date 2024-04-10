@@ -25,7 +25,7 @@ export function prettyPrintProgram(node: BoundNode, indent: string = '', isLast:
     process.stdout.write(' (' + node.name + ')');
   }
   if (node.kind === 'VariableExpression') {
-    process.stdout.write(' (' + node.name + ')');
+    process.stdout.write(' (' + node.variable.name + ')');
   }
   if (node.kind === 'LabelStatement') {
     process.stdout.write(' (' + node.label.name + ')');
@@ -37,7 +37,7 @@ export function prettyPrintProgram(node: BoundNode, indent: string = '', isLast:
     process.stdout.write(`(label=${node.label.name}, jumpIfTrue=${node.jumpIfTrue})`);
   }
   if (node.kind === 'CallExpression') {
-    process.stdout.write(' (' + node.name + ')');
+    process.stdout.write(' (' + node.functionSymbol.name + ')');
   }
   console.log();
   indent += isLast ? '   ' : '│  ';

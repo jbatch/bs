@@ -1,3 +1,5 @@
+import { FunctionDeclarationSyntax } from '../parsing/StatementSyntax';
+
 // Built in Types
 export const String: TypeSymbol = Type('string');
 export const Bool: TypeSymbol = Type('boolean');
@@ -13,9 +15,14 @@ export const CASTABLE_TYPES: Record<string, TypeSymbol | undefined> = {
 
 // Built in Functions
 export const BUILT_IN_FUNCTIONS: Record<string, FunctionSymbol | undefined> = {
-  print: Function('print', Void, [Variable('text', String, true)]),
-  input: Function('input', String, []),
-  rand: Function('rand', Int, [Variable('min', Int, true), Variable('max', Int, true)]),
+  print: Function('print', Void, [Variable('text', String, true, true)], undefined),
+  input: Function('input', String, [], undefined),
+  rand: Function(
+    'rand',
+    Int,
+    [Variable('min', Int, true, true), Variable('max', Int, true, true)],
+    undefined
+  ),
 };
 
 // Generated code
@@ -25,6 +32,7 @@ export type VariableSymbol = {
   name: string;
   type: TypeSymbol;
   readonly: boolean;
+  isLocal: boolean;
 };
 export type TypeSymbol = {
   kind: 'Type';
@@ -35,14 +43,21 @@ export type FunctionSymbol = {
   name: string;
   type: TypeSymbol;
   parameters: VariableSymbol[];
+  declaration: FunctionDeclarationSyntax | undefined;
 };
 export type Symbol = VariableSymbol | TypeSymbol | FunctionSymbol;
-export function Variable(name: string, type: TypeSymbol, readonly: boolean): VariableSymbol {
+export function Variable(
+  name: string,
+  type: TypeSymbol,
+  readonly: boolean,
+  isLocal: boolean
+): VariableSymbol {
   return {
     kind: 'Variable',
     name,
     type,
     readonly,
+    isLocal,
   };
 }
 export function Type(name: string): TypeSymbol {
@@ -54,12 +69,14 @@ export function Type(name: string): TypeSymbol {
 export function Function(
   name: string,
   type: TypeSymbol,
-  parameters: VariableSymbol[]
+  parameters: VariableSymbol[],
+  declaration: FunctionDeclarationSyntax | undefined
 ): FunctionSymbol {
   return {
     kind: 'Function',
     name,
     type,
     parameters,
+    declaration,
   };
 }

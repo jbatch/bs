@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import { Either, isLeft, left, right } from '../container/Either';
+import { Lowerer } from '../lowerer/Lowerer';
 import {
   AssignmentExpressionSyntax,
   CallExpressionSyntax,
@@ -45,6 +46,7 @@ import {
 } from './BoundExpression';
 import { BoundScope } from './BoundScope';
 import {
+  BlockStatement,
   BoundBlockStatement,
   BoundExpressionStatement,
   BoundForStatement,
@@ -54,13 +56,19 @@ import {
   BoundWhileStatement,
 } from './BoundStatement';
 import { BoundUnaryOperator, bindUnaryOperator } from './BoundUnaryOperator';
+import { SymbolTable } from './SymbolTable';
 
 export class Binder {
   scope: BoundScope;
   diagnostics: DiagnosticBag = new DiagnosticBag();
+  functionToBind?: FunctionSymbol;
 
-  constructor(parent: BoundScope) {
+  constructor(parent: BoundScope, functionToBind?: FunctionSymbol) {
     this.scope = new BoundScope(parent);
+    this.functionToBind = functionToBind;
+    if (this.functionToBind) {
+      this.functionToBind.parameters.forEach((param) => this.scope.tryDeclareVariable(param));
+    }
   }
 
   public bindGlobalStatements(statements: StatementSyntax[]): BoundStatement[] {
@@ -73,6 +81,25 @@ export class Binder {
     for (const declaration of functions) {
       this.bindFunctionDeclaration(declaration);
     }
+  }
+
+  public bindFunctionBodies(
+    functionDeclarations: FunctionSymbol[]
+  ): SymbolTable<FunctionSymbol, BlockStatement> {
+    const functions: { symbol: FunctionSymbol; value: BlockStatement }[] = [];
+
+    functionDeclarations.forEach((func) => {
+      const binder = new Binder(this.scope, func);
+
+      let boundStatement = binder.bindStatement(func.declaration!.functionBlock, 'BlockStatement');
+      boundStatement = new Lowerer().lower(boundStatement);
+      assert(boundStatement.kind === 'BlockStatement');
+
+      functions.push({ symbol: func, value: boundStatement });
+      this.diagnostics.addBag(binder.diagnostics);
+    });
+
+    return new SymbolTable(functions);
   }
 
   private bindFunctionDeclaration(declaration: FunctionDeclarationSyntax) {
@@ -89,7 +116,7 @@ export class Binder {
         );
       }
       const name = param.identifier.text;
-      return Variable(name, type, true);
+      return Variable(name, type, true, true);
     });
 
     // Check for repeated parameter names
@@ -105,6 +132,7 @@ export class Binder {
       name,
       type,
       parameters,
+      declaration,
     };
     this.scope.tryDeclareFunction(func);
   }
@@ -164,7 +192,7 @@ export class Binder {
       }
     }
 
-    const variable = Variable(name, type, readonly);
+    const variable = Variable(name, type, readonly, this.functionToBind !== undefined);
 
     if (!this.scope.tryDeclareVariable(variable)) {
       this.diagnostics.reportVariableAlreadyDeclared(declaration.equals.span, name);
@@ -295,8 +323,7 @@ export class Binder {
       this.diagnostics.reportUndefinedName(expression.identifier.span, name);
       return BoundErrorExpression(Err);
     }
-    const type = variable.type;
-    return BoundVariableExpression(type, name);
+    return BoundVariableExpression(variable.type, variable);
   }
 
   private bindAssignmentExpression(expression: AssignmentExpressionSyntax): BoundExpression {
@@ -307,7 +334,7 @@ export class Binder {
       return maybeVariable.left;
     }
 
-    return BoundAssignmentExpression(type, maybeVariable.right.name, boundExpression);
+    return BoundAssignmentExpression(type, maybeVariable.right, boundExpression);
   }
 
   private bindOperatorAssignmentExpression(
@@ -328,12 +355,7 @@ export class Binder {
       return maybeOperator.left;
     }
     const operator = maybeOperator.right;
-    return BoundOperatorAssignmentExpression(
-      operator.type,
-      variable.name,
-      operator,
-      boundExpression
-    );
+    return BoundOperatorAssignmentExpression(operator.type, variable, operator, boundExpression);
   }
 
   private bindPostfixUnaryExpression(expression: PostfixUnaryExpressionSyntax): BoundExpression {
@@ -348,14 +370,10 @@ export class Binder {
       return maybeOperator.left;
     }
     const operator = maybeOperator.right;
-    return BoundPostfixUnaryExpression(variable.type, variable.name, operator);
+    return BoundPostfixUnaryExpression(variable.type, variable, operator);
   }
 
   private bindCallExpression(expression: CallExpressionSyntax): BoundExpression {
-    function isNotComma(arg: TokenSyntax | ExpressionSyntax): arg is ExpressionSyntax {
-      return arg.kind !== 'CommaToken';
-    }
-
     const args = expression.args;
 
     // Check if function is a type cast call
@@ -392,7 +410,7 @@ export class Binder {
       boundArgs.push(boundArg);
     }
 
-    return BoundCallExpression(fn.name, fn.type, boundArgs);
+    return BoundCallExpression(fn, fn.type, boundArgs);
   }
 
   private tryGetVariable(

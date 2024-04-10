@@ -155,21 +155,21 @@ export class Lowerer extends BoundTreeRewriter {
      * TO
      * i = i + 1
      */
-    const { type, name, operator } = expression;
+    const { type, variable, operator } = expression;
     assert(operator.kind === 'Decrement' || operator.kind === 'Increment');
     const newOperator = bindBinaryOperator(
       operator.kind === 'Increment' ? 'PlusToken' : 'MinusToken',
       type,
       Int
     )!;
-    const variable = BoundVariableExpression(type, name);
+    const newVariable = BoundVariableExpression(type, variable);
     const right = BoundBinaryExpression(
       newOperator.type,
-      variable,
+      newVariable,
       newOperator,
       BoundLiteralExpression(Int, 1)
     );
-    return this.rewriteExpression(BoundAssignmentExpression(type, name, right));
+    return this.rewriteExpression(BoundAssignmentExpression(type, variable, right));
   }
 
   rewriteOperatorAssignmentExpression(expression: OperatorAssignmentExpression): BoundExpression {
@@ -179,15 +179,20 @@ export class Lowerer extends BoundTreeRewriter {
      * TO
      * i = i + <expression>
      */
-    const { type, name, operator, expression: rightExpression } = expression;
+    const { type, variable, operator, expression: rightExpression } = expression;
     assert(operator.kind === 'Addition' || operator.kind === 'Subtraction');
     const newOperator = bindBinaryOperator(
       operator.kind === 'Addition' ? 'PlusToken' : 'MinusToken',
       type,
       type
     )!;
-    const variable = BoundVariableExpression(type, name);
-    const right = BoundBinaryExpression(newOperator.type, variable, newOperator, rightExpression);
-    return this.rewriteExpression(BoundAssignmentExpression(type, name, right));
+    const newVariable = BoundVariableExpression(type, variable);
+    const right = BoundBinaryExpression(
+      newOperator.type,
+      newVariable,
+      newOperator,
+      rightExpression
+    );
+    return this.rewriteExpression(BoundAssignmentExpression(type, variable, right));
   }
 }

@@ -12,12 +12,24 @@ function completer(line: string) {
   const options = completions.filter((c) => c.startsWith(line));
   return [options, line];
 }
+// function Fib(n) {
+//   if (n <= 1) {
+//     return n;
+//   } else {
+//     return Fib(n - 1) + Fib(n - 2);
+//   }
+// }
 
 const rl = createInterface({
   input: process.stdin,
   output: process.stdout,
   terminal: true,
-  history: ['for(var i = 0; i < 10; i = i + 1) { i }', 'if(1 == 1) { 2 } else { 3 }', '1+1'],
+  history: [
+    'function count(n: Int) { print(string(n)) if (n > 0) { count(n - 1) } }',
+    'for(var i = 0; i < 10; i = i + 1) { i }',
+    'if(1 == 1) { 2 } else { 3 }',
+    '1+1',
+  ],
   completer,
 });
 

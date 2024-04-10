@@ -4,10 +4,11 @@ import {
   BoundNodeTypeNode,
   BoundUnaryOperatorTypeNode,
   EvaluationResultTypeNode,
+  FunctionSymbolTypeNode,
   Generator,
   GeneratorTypeDefinitions,
-  StringTypeNode,
   TypeSymbolTypeNode,
+  VariableSymbolTypeNode,
   array,
 } from '../codegeneration/Generator';
 
@@ -37,7 +38,7 @@ const boundExpressionTypes: GeneratorTypeDefinitions = {
     children: {},
     other: {
       type: TypeSymbolTypeNode,
-      name: StringTypeNode,
+      variable: VariableSymbolTypeNode,
     },
   },
   AssignmentExpression: {
@@ -46,7 +47,7 @@ const boundExpressionTypes: GeneratorTypeDefinitions = {
     },
     other: {
       type: TypeSymbolTypeNode,
-      name: StringTypeNode,
+      variable: VariableSymbolTypeNode,
     },
   },
   OperatorAssignmentExpression: {
@@ -56,7 +57,7 @@ const boundExpressionTypes: GeneratorTypeDefinitions = {
     },
     other: {
       type: TypeSymbolTypeNode,
-      name: StringTypeNode,
+      variable: VariableSymbolTypeNode,
     },
   },
   PostfixUnaryExpression: {
@@ -65,7 +66,7 @@ const boundExpressionTypes: GeneratorTypeDefinitions = {
     },
     other: {
       type: TypeSymbolTypeNode,
-      name: StringTypeNode,
+      variable: VariableSymbolTypeNode,
     },
   },
   CallExpression: {
@@ -73,7 +74,7 @@ const boundExpressionTypes: GeneratorTypeDefinitions = {
       args: array(BoundExpressionTypeNode),
     },
     other: {
-      name: StringTypeNode,
+      functionSymbol: FunctionSymbolTypeNode,
       type: TypeSymbolTypeNode,
     },
   },

@@ -1,5 +1,6 @@
 import {
   BooleanTypeNode,
+  FunctionDeclarationSyntaxTypeNode,
   Generator,
   GeneratorTypeDefinitions,
   StringTypeNode,
@@ -7,6 +8,7 @@ import {
   TypeSymbolTypeNode,
   VariableSymbolTypeNode,
   array,
+  optional,
 } from '../codegeneration/Generator';
 
 const symbolTypes: GeneratorTypeDefinitions = {
@@ -15,6 +17,7 @@ const symbolTypes: GeneratorTypeDefinitions = {
       name: StringTypeNode,
       type: TypeSymbolTypeNode,
       readonly: BooleanTypeNode,
+      isLocal: BooleanTypeNode,
     },
   },
   Type: {
@@ -27,6 +30,7 @@ const symbolTypes: GeneratorTypeDefinitions = {
       name: StringTypeNode,
       type: TypeSymbolTypeNode,
       parameters: array(VariableSymbolTypeNode),
+      declaration: optional(FunctionDeclarationSyntaxTypeNode),
     },
   },
 };
