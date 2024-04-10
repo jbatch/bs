@@ -17,6 +17,7 @@ import { textSpan } from '../text/TextSpan';
 import { getBinaryOperatorPrecedence, getUnaryOperatorPrecedence } from './SyntaxHelper';
 import {
   BooleanLiteral,
+  CommaToken,
   IdentifierTokenSyntax,
   NumberLiteral,
   NumberTokenSyntax,
@@ -34,7 +35,7 @@ import {
   WhileStatement,
 } from './StatementSyntax';
 import assert from 'node:assert';
-import { CompilationUnitNode, TypeClause, TypeClauseNode } from './ContainerNode';
+import { CompilationUnitNode, FunctionArgument, TypeClause, TypeClauseNode } from './ContainerNode';
 
 export class Parser {
   tokens: TokenSyntax[];
@@ -328,10 +329,9 @@ export class Parser {
     const open = this.matchToken('OpenParenthesisToken');
     const args = [];
     while (this.peek(0).kind !== 'CloseParenthesisToken') {
-      args.push(this.parseExpression());
-      if (this.peek(0).kind !== 'CloseParenthesisToken') {
-        args.push(this.matchToken('CommaToken'));
-      }
+      const expression = this.parseExpression();
+      const comma = this.matchOptionalToken('CommaToken');
+      args.push(FunctionArgument(expression, comma));
     }
     const close = this.matchToken('CloseParenthesisToken');
     return CallExpression(identifier, open, args, close);

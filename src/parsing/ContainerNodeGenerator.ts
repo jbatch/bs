@@ -1,10 +1,12 @@
 import {
+  ExpressionSyntaxTypeNode,
   Generator,
   GeneratorTypeDefinitions,
   IdentifierTokenSyntaxTypeNode,
   StatementSyntaxTypeNode,
   SyntaxNodeTypeNode,
   TokenSyntaxTypeNode,
+  optional,
 } from '../codegeneration/Generator';
 
 const containerNodeTypes: GeneratorTypeDefinitions = {
@@ -18,6 +20,12 @@ const containerNodeTypes: GeneratorTypeDefinitions = {
     children: {
       colon: TokenSyntaxTypeNode,
       identifier: IdentifierTokenSyntaxTypeNode,
+    },
+  },
+  FunctionArgument: {
+    children: {
+      expression: ExpressionSyntaxTypeNode,
+      comma: optional(TokenSyntaxTypeNode),
     },
   },
 };

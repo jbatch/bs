@@ -1,4 +1,5 @@
 import { TextSpan } from '../text/TextSpan';
+import { FunctionArgumentNode } from './ContainerNode';
 import { SyntaxNode } from './SyntaxNode';
 import {
   BooleanLiteralSyntax,
@@ -77,7 +78,7 @@ export type CallExpressionSyntax = {
   span: TextSpan;
   identifier: IdentifierTokenSyntax;
   open: TokenSyntax;
-  args: (ExpressionSyntax | TokenSyntax)[];
+  args: FunctionArgumentNode[];
   close: TokenSyntax;
   children: SyntaxNode[];
 };
@@ -208,7 +209,7 @@ export function PostfixUnaryExpression(
 export function CallExpression(
   identifier: IdentifierTokenSyntax,
   open: TokenSyntax,
-  args: (ExpressionSyntax | TokenSyntax)[],
+  args: FunctionArgumentNode[],
   close: TokenSyntax
 ): CallExpressionSyntax {
   const span = identifier.span;

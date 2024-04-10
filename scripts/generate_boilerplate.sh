@@ -1,10 +1,6 @@
 #! /usr/bin/env bash
 
-set -eo pipefail
-
-# if [[ ! -z "$GENERATE_ALL" || -z `git diff -s --exit-code` ]]  ; then echo "yes"; else echo "no"; fi
-
-# exit 0
+set -o pipefail
 
 main() {
   declare -a sources=(
@@ -18,8 +14,13 @@ main() {
   )
   for f in "${sources[@]}"
   do
+    
     # Only try to generate sources if generator file has changed 
-    if [[ ! -z "$GENERATE_ALL" || -z $"git diff -s --exit-code $f" ]]  ; then  yarn npx ts-node $f ; fi
+    git diff -s --exit-code $f
+    if [[ $? -ne 0 || ! -z "$GENERATE_ALL" ]] ; 
+    then 
+      yarn npx ts-node $f ; 
+    fi
   done  
  
   yarn prettier  --log-level silent  -w src

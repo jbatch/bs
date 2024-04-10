@@ -1,3 +1,4 @@
+import { ExpressionSyntax } from './ExpressionSyntax';
 import { StatementSyntax } from './StatementSyntax';
 import { SyntaxNode } from './SyntaxNode';
 import { IdentifierTokenSyntax, TokenSyntax } from './TokenSyntax';
@@ -20,7 +21,13 @@ export type TypeClauseNode = {
   identifier: IdentifierTokenSyntax;
   children: SyntaxNode[];
 };
-export type ContainerNode = CompilationUnitNode | TypeClauseNode;
+export type FunctionArgumentNode = {
+  kind: 'FunctionArgument';
+  expression: ExpressionSyntax;
+  comma: TokenSyntax | undefined;
+  children: SyntaxNode[];
+};
+export type ContainerNode = CompilationUnitNode | TypeClauseNode | FunctionArgumentNode;
 export function CompilationUnit(statement: StatementSyntax, eof: TokenSyntax): CompilationUnitNode {
   const children: SyntaxNode[] = [];
   return {
@@ -36,6 +43,18 @@ export function TypeClause(colon: TokenSyntax, identifier: IdentifierTokenSyntax
     kind: 'TypeClause',
     colon,
     identifier,
+    children,
+  };
+}
+export function FunctionArgument(
+  expression: ExpressionSyntax,
+  comma: TokenSyntax | undefined
+): FunctionArgumentNode {
+  const children: SyntaxNode[] = [expression, comma].filter(isDefined);
+  return {
+    kind: 'FunctionArgument',
+    expression,
+    comma,
     children,
   };
 }

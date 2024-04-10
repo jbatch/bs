@@ -1,6 +1,7 @@
 import {
   BooleanLiteralSyntaxTypeNode,
   ExpressionSyntaxTypeNode,
+  FunctionArgumentNodeTypeNode,
   Generator,
   GeneratorTypeDefinitions,
   IdentifierTokenSyntaxTypeNode,
@@ -71,7 +72,7 @@ const expressionTypes: GeneratorTypeDefinitions = {
     children: {
       identifier: IdentifierTokenSyntaxTypeNode,
       open: TokenSyntaxTypeNode,
-      args: array(or(ExpressionSyntaxTypeNode, TokenSyntaxTypeNode)),
+      args: array(FunctionArgumentNodeTypeNode),
       close: TokenSyntaxTypeNode,
     },
   },

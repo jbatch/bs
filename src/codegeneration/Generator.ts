@@ -43,6 +43,11 @@ export const TypeClauseNodeTypeNode = factory.createTypeReferenceNode(
   undefined
 );
 
+export const FunctionArgumentNodeTypeNode = factory.createTypeReferenceNode(
+  factory.createIdentifier('FunctionArgumentNode'),
+  undefined
+);
+
 // Syntax nodes
 export const SyntaxNodeTypeNode = factory.createTypeReferenceNode(
   factory.createIdentifier('SyntaxNode'),

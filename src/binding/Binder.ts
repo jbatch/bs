@@ -303,13 +303,13 @@ export class Binder {
       return arg.kind !== 'CommaToken';
     }
 
-    const args = expression.args.filter(isNotComma);
+    const args = expression.args;
 
     // Check if function is a type cast call
     if (args.length === 1) {
       const t = CASTABLE_TYPES[expression.identifier.text];
       if (t !== undefined) {
-        return this.bindTypeCast(t, args[0]);
+        return this.bindTypeCast(t, args[0].expression);
       }
     }
 
@@ -326,9 +326,14 @@ export class Binder {
     for (let i = 0; i < fn.parameters.length; i++) {
       const param = fn.parameters[i];
       const arg = args[i];
-      const boundArg = this.bindExpression(arg);
+      const boundArg = this.bindExpression(arg.expression);
       if (param.type.name !== boundArg.type.name) {
-        this.diagnostics.reportArguementTypeMismatch(arg.span, fn.name, param.type, boundArg.type);
+        this.diagnostics.reportArguementTypeMismatch(
+          arg.expression.span,
+          fn.name,
+          param.type,
+          boundArg.type
+        );
         return BoundErrorExpression(Err);
       }
       boundArgs.push(boundArg);
