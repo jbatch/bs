@@ -11,10 +11,10 @@ import {
 } from '../binding/BoundExpression';
 import {
   BlockStatement,
-  BoundStatement,
   ConditionalGoToStatement,
   GoToStatement,
   LabelStatement,
+  VariableDelcarationStatement,
 } from '../binding/BoundStatement';
 import { EvaluationResult } from './EvaluationResult';
 
@@ -41,7 +41,7 @@ export class Evaluator {
   }
 
   async evaluate() {
-    this.evaluateBlockStatement(this.root);
+    await this.evaluateBlockStatement(this.root);
   }
 
   async evaluateBlockStatement(block: BlockStatement): Promise<EvaluationResult> {
@@ -56,24 +56,12 @@ export class Evaluator {
     let index = 0;
     while (index < block.statements.length) {
       const statement = block.statements[index];
-
       switch (statement.kind) {
         case 'ExpressionStatement':
           this.lastResult = await this.evaluateExpression(statement.expression);
           break;
-        case 'BlockStatement':
-          // Should never happen because we flatten the statment tree
-          throw new Error('Encountered unexpected block statement');
         case 'VariableDelcarationStatement':
           await this.evaluateVariableDeclarationStatement(statement);
-          break;
-        case 'IfStatement':
-        case 'WhileStatement':
-        case 'ForStatement':
-          // Rewritten
-          throw new Error('Encountered node that should be rewritten');
-        case 'LabelStatement':
-          // No-op
           break;
         case 'GoToStatement':
           index = labelMap[statement.label.name];
@@ -87,6 +75,17 @@ export class Evaluator {
             // No op
             break;
           }
+        case 'BlockStatement':
+          // Should never happen because we flatten the statment tree
+          throw new Error('Encountered unexpected block statement');
+        case 'IfStatement':
+        case 'WhileStatement':
+        case 'ForStatement':
+          // Rewritten
+          throw new Error('Encountered node that should be rewritten');
+        case 'LabelStatement':
+          // No-op
+          break;
       }
       index++;
     }
@@ -94,9 +93,7 @@ export class Evaluator {
     return this.lastResult!;
   }
 
-  private async evaluateVariableDeclarationStatement(declaration: BoundStatement) {
-    assert(declaration.kind === 'VariableDelcarationStatement');
-
+  private async evaluateVariableDeclarationStatement(declaration: VariableDelcarationStatement) {
     var value = await this.evaluateExpression(declaration.expression);
     if (declaration.variable.isLocal) {
       this.locals[0].setValue(declaration.variable, value);
@@ -121,26 +118,27 @@ export class Evaluator {
   private async evaluateExpression(node: BoundExpression): Promise<EvaluationResult> {
     switch (node.kind) {
       case 'UnaryExpression':
-        return this.evaluateUnaryExpression(node);
+        return await this.evaluateUnaryExpression(node);
       case 'BinaryExpression':
-        return this.evaluateBinaryExpression(node);
+        return await this.evaluateBinaryExpression(node);
       case 'LiteralExpression':
-        return this.evaluateLiteralExpression(node);
+        return await this.evaluateLiteralExpression(node);
       case 'VariableExpression':
-        return this.evaluateVariableExpression(node);
+        return await this.evaluateVariableExpression(node);
       case 'AssignmentExpression':
-        return this.evaluateAssignmentExpression(node);
+        return await this.evaluateAssignmentExpression(node);
       case 'CallExpression':
-        return this.evaluateCallExpression(node);
+        return await this.evaluateCallExpression(node);
       case 'TypeCastExpression':
-        return this.evaluateTypeCastExpression(node);
+        return await this.evaluateTypeCastExpression(node);
     }
 
     throw new Error(`Unexpected expression type ${node.kind}`);
   }
 
   private async evaluateUnaryExpression(node: UnaryExpression): Promise<EvaluationResult> {
-    var operand = this.evaluateExpression(node.operand);
+    var operand = await this.evaluateExpression(node.operand);
+    assert(operand !== undefined);
     switch (node.operator.kind) {
       case 'Identity':
         return operand;
