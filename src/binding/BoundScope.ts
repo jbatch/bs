@@ -63,16 +63,16 @@ export class BoundScope {
     return this.parent.tryLookupFunction(name);
   }
 
-  public getDecalredVariables(): VariableSymbol[] {
+  public getDeclaredVariables(): VariableSymbol[] {
     if (this.parent) {
-      return [...this.parent.getDecalredVariables(), ...Object.values(this.variables)];
+      return [...this.parent.getDeclaredVariables(), ...Object.values(this.variables)];
     }
     return Object.values(this.variables);
   }
 
-  public getDecalredFunctions(): FunctionSymbol[] {
+  public getDeclaredFunctions(): FunctionSymbol[] {
     if (this.parent) {
-      return [...this.parent.getDecalredFunctions(), ...Object.values(this.functions)];
+      return [...this.parent.getDeclaredFunctions(), ...Object.values(this.functions)];
     }
     return Object.values(this.functions);
   }

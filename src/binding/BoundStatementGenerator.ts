@@ -1,5 +1,6 @@
 import {
   BooleanTypeNode,
+  BoundBlockStatementTypeNode,
   BoundExpressionTypeNode,
   BoundLabelTypeNode,
   BoundNodeTypeNode,
@@ -23,7 +24,7 @@ const boundStatementTypes: GeneratorTypeDefinitions = {
       statements: array(BoundStatementTypeNode),
     },
   },
-  VariableDelcarationStatement: {
+  VariableDeclarationStatement: {
     children: {
       variable: VariableSymbolTypeNode,
       expression: BoundExpressionTypeNode,
@@ -32,14 +33,14 @@ const boundStatementTypes: GeneratorTypeDefinitions = {
   IfStatement: {
     children: {
       condition: BoundExpressionTypeNode,
-      ifBlock: BoundStatementTypeNode,
-      elseBlock: optional(BoundStatementTypeNode),
+      ifBlock: BoundBlockStatementTypeNode,
+      elseBlock: optional(BoundBlockStatementTypeNode),
     },
   },
   WhileStatement: {
     children: {
       loopCondition: BoundExpressionTypeNode,
-      whileBlock: BoundStatementTypeNode,
+      whileBlock: BoundBlockStatementTypeNode,
     },
   },
   ForStatement: {
@@ -47,7 +48,7 @@ const boundStatementTypes: GeneratorTypeDefinitions = {
       beginStatement: BoundStatementTypeNode,
       loopCondition: BoundExpressionTypeNode,
       endStatement: BoundStatementTypeNode,
-      forBlock: BoundStatementTypeNode,
+      forBlock: BoundBlockStatementTypeNode,
     },
   },
   FunctionDeclarationStatement: {

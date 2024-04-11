@@ -6,19 +6,20 @@ import { DiagnosticBag } from './reporting/Diagnostic';
 import { Evaluator } from './evaluation/Evaluator';
 
 import fs from 'fs';
-import { prettyPrintProgram } from './binding/BoundNode';
 import { BoundScope } from './binding/BoundScope';
 import { BlockStatement, BoundBlockStatement } from './binding/BoundStatement';
 import { SymbolTable } from './binding/SymbolTable';
 import { Lowerer } from './lowerer/Lowerer';
 import { FunctionDeclarationSyntax } from './parsing/StatementSyntax';
 import { prettyPrintTree } from './parsing/SyntaxNode';
+import { BoundNodePrinter } from './repl/BoundNodePrinter';
 import { FunctionSymbol } from './symbols/Symbol';
 
 const variables = {};
 let globalScope = BoundScope.createRootScope();
 let showTree = false;
-let showProgram = false;
+let showProgram = true;
+let printLoweredTree = true;
 
 async function main() {
   console.log('Welcome to batchScript v0.0.1.');
@@ -47,9 +48,16 @@ async function main() {
       continue;
     }
 
+    if (['.l', '.lower'].includes(line)) {
+      printLoweredTree = !printLoweredTree;
+      const msg = `Print lowered tree ${printLoweredTree ? 'enabled' : 'disabled'}`;
+      Terminal.writeLine(msg);
+      continue;
+    }
+
     if (['.ls'].includes(line)) {
-      const variables = globalScope.getDecalredVariables();
-      const functions = globalScope.getDecalredFunctions();
+      const variables = globalScope.getDeclaredVariables();
+      const functions = globalScope.getDeclaredFunctions();
       Terminal.writeLine('Variables');
       variables.forEach((v) => Terminal.writeLine(`\t${v.name}: ${v.type}`));
       Terminal.writeLine();
@@ -100,14 +108,14 @@ async function main() {
     }
 
     // Rewrite tree
-    const loweredBlockStatment = new Lowerer().lower(statement);
+    const loweredBlockStatement = new Lowerer().lower(statement);
 
     if (showProgram) {
-      prettyPrintProgram(loweredBlockStatment);
+      new BoundNodePrinter(printLoweredTree ? loweredBlockStatement : statement).print();
     }
 
     // Evaluate
-    await evaluateBoundStatement(loweredBlockStatment, functionTable);
+    await evaluateBoundStatement(loweredBlockStatement, functionTable);
   }
   process.exit(0);
 }
@@ -148,7 +156,7 @@ function parseCode(inputText: string) {
   const boundGlobalStatments = binder.bindGlobalStatements(globalStatements);
   const statement = BoundBlockStatement(boundGlobalStatments);
   const functionTable = binder.bindFunctionBodies(
-    binder.scope.getDecalredFunctions().filter((f) => f.declaration)
+    binder.scope.getDeclaredFunctions().filter((f) => f.declaration)
   );
   const boundScope = binder.scope;
 

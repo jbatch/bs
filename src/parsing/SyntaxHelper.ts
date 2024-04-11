@@ -9,6 +9,7 @@ import {
   IdentifierToken,
   IfKeyword,
   TokenSyntax,
+  TokenSyntaxKind,
   TrueKeyword,
   VarKeyword,
   WhileKeyword,
@@ -80,7 +81,11 @@ export function getKeywordOrIdentifier(text: string, position: number): TokenSyn
 }
 
 export function getTokenText(token: TokenSyntax): string {
-  switch (token.kind) {
+  return getTokenTextForKind(token.kind);
+}
+
+export function getTokenTextForKind(kind: TokenSyntaxKind): string {
+  switch (kind) {
     case 'NumberToken':
       return '';
     case 'WhitespaceToken':

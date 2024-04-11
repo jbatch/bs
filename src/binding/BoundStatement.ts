@@ -19,8 +19,8 @@ export type BlockStatement = {
   statements: BoundStatement[];
   children: BoundNode[];
 };
-export type VariableDelcarationStatement = {
-  kind: 'VariableDelcarationStatement';
+export type VariableDeclarationStatement = {
+  kind: 'VariableDeclarationStatement';
   variable: VariableSymbol;
   expression: BoundExpression;
   children: BoundNode[];
@@ -28,14 +28,14 @@ export type VariableDelcarationStatement = {
 export type IfStatement = {
   kind: 'IfStatement';
   condition: BoundExpression;
-  ifBlock: BoundStatement;
-  elseBlock: BoundStatement | undefined;
+  ifBlock: BlockStatement;
+  elseBlock: BlockStatement | undefined;
   children: BoundNode[];
 };
 export type WhileStatement = {
   kind: 'WhileStatement';
   loopCondition: BoundExpression;
-  whileBlock: BoundStatement;
+  whileBlock: BlockStatement;
   children: BoundNode[];
 };
 export type ForStatement = {
@@ -43,7 +43,7 @@ export type ForStatement = {
   beginStatement: BoundStatement;
   loopCondition: BoundExpression;
   endStatement: BoundStatement;
-  forBlock: BoundStatement;
+  forBlock: BlockStatement;
   children: BoundNode[];
 };
 export type FunctionDeclarationStatement = {
@@ -71,7 +71,7 @@ export type ConditionalGoToStatement = {
 export type BoundStatement =
   | ExpressionStatement
   | BlockStatement
-  | VariableDelcarationStatement
+  | VariableDeclarationStatement
   | IfStatement
   | WhileStatement
   | ForStatement
@@ -95,13 +95,13 @@ export function BoundBlockStatement(statements: BoundStatement[]): BlockStatemen
     children,
   };
 }
-export function BoundVariableDelcarationStatement(
+export function BoundVariableDeclarationStatement(
   variable: VariableSymbol,
   expression: BoundExpression
-): VariableDelcarationStatement {
+): VariableDeclarationStatement {
   const children: BoundNode[] = [variable, expression];
   return {
-    kind: 'VariableDelcarationStatement',
+    kind: 'VariableDeclarationStatement',
     variable,
     expression,
     children,
@@ -109,8 +109,8 @@ export function BoundVariableDelcarationStatement(
 }
 export function BoundIfStatement(
   condition: BoundExpression,
-  ifBlock: BoundStatement,
-  elseBlock: BoundStatement | undefined
+  ifBlock: BlockStatement,
+  elseBlock: BlockStatement | undefined
 ): IfStatement {
   const children: BoundNode[] = [condition, ifBlock, elseBlock].filter(isDefined);
   return {
@@ -123,7 +123,7 @@ export function BoundIfStatement(
 }
 export function BoundWhileStatement(
   loopCondition: BoundExpression,
-  whileBlock: BoundStatement
+  whileBlock: BlockStatement
 ): WhileStatement {
   const children: BoundNode[] = [loopCondition, whileBlock];
   return {
@@ -137,7 +137,7 @@ export function BoundForStatement(
   beginStatement: BoundStatement,
   loopCondition: BoundExpression,
   endStatement: BoundStatement,
-  forBlock: BoundStatement
+  forBlock: BlockStatement
 ): ForStatement {
   const children: BoundNode[] = [beginStatement, loopCondition, endStatement, forBlock];
   return {

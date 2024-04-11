@@ -1,4 +1,4 @@
-import { SyntaxKind } from '../parsing/SyntaxNode';
+import { TokenSyntaxKind } from '../parsing/TokenSyntax';
 import { Bool, Int, TypeSymbol } from '../symbols/Symbol';
 import { BoundNode } from './BoundNode';
 
@@ -12,7 +12,7 @@ export type BoundUnaryOperatorKind =
 
 export type BoundUnaryOperator = {
   kind: BoundUnaryOperatorKind;
-  syntaxKind: SyntaxKind;
+  syntaxKind: TokenSyntaxKind;
   operandType: TypeSymbol;
   type: TypeSymbol;
   children: BoundNode[];
@@ -20,7 +20,7 @@ export type BoundUnaryOperator = {
 
 function boundUnaryOperator(
   kind: BoundUnaryOperatorKind,
-  syntaxKind: SyntaxKind,
+  syntaxKind: TokenSyntaxKind,
   type: TypeSymbol
 ): BoundUnaryOperator {
   const children: BoundNode[] = [];
@@ -37,7 +37,7 @@ const UNARY_OPERATORS: BoundUnaryOperator[] = [
 ];
 
 export function bindUnaryOperator(
-  syntaxKind: SyntaxKind,
+  syntaxKind: TokenSyntaxKind,
   operandType: TypeSymbol
 ): BoundUnaryOperator | undefined {
   return UNARY_OPERATORS.find(

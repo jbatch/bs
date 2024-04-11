@@ -52,7 +52,7 @@ import {
   BoundForStatement,
   BoundIfStatement,
   BoundStatement,
-  BoundVariableDelcarationStatement,
+  BoundVariableDeclarationStatement,
   BoundWhileStatement,
 } from './BoundStatement';
 import { BoundUnaryOperator, bindUnaryOperator } from './BoundUnaryOperator';
@@ -198,16 +198,18 @@ export class Binder {
       this.diagnostics.reportVariableAlreadyDeclared(declaration.equals.span, name);
     }
 
-    return BoundVariableDelcarationStatement(variable, expression);
+    return BoundVariableDeclarationStatement(variable, expression);
   }
 
   private bindIfStatement(statement: StatementSyntax): BoundStatement {
     assert(statement.kind === 'IfStatement');
     const condition = this.bindExpressionWithExpectedType(statement.condition, Bool);
     const ifBlock = this.bindStatement(statement.ifBlock, 'BlockStatement');
+    assert(ifBlock.kind === 'BlockStatement');
     let elseBlock;
     if (statement.elseBlock) {
       elseBlock = this.bindStatement(statement.elseBlock, 'BlockStatement');
+      assert(elseBlock.kind === 'BlockStatement');
     }
 
     return BoundIfStatement(condition, ifBlock, elseBlock);
@@ -217,6 +219,7 @@ export class Binder {
     assert(statement.kind === 'WhileStatement');
     const loopCondition = this.bindExpressionWithExpectedType(statement.loopCondition, Bool);
     const whileBlock = this.bindStatement(statement.whileBlock, 'BlockStatement');
+    assert(whileBlock.kind === 'BlockStatement');
     return BoundWhileStatement(loopCondition, whileBlock);
   }
 
@@ -230,6 +233,7 @@ export class Binder {
     const loopCondition = this.bindExpressionWithExpectedType(statement.loopCondition, Bool);
     const endStatement = this.bindStatement(statement.endStatement);
     const forBlock = this.bindStatement(statement.forBlock, 'BlockStatement');
+    assert(forBlock.kind === 'BlockStatement');
     this.scope = this.scope.parent!;
     return BoundForStatement(beginStatement, loopCondition, endStatement, forBlock);
   }

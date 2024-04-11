@@ -14,7 +14,7 @@ import {
   ConditionalGoToStatement,
   GoToStatement,
   LabelStatement,
-  VariableDelcarationStatement,
+  VariableDeclarationStatement,
 } from '../binding/BoundStatement';
 import { EvaluationResult } from './EvaluationResult';
 
@@ -60,7 +60,7 @@ export class Evaluator {
         case 'ExpressionStatement':
           this.lastResult = await this.evaluateExpression(statement.expression);
           break;
-        case 'VariableDelcarationStatement':
+        case 'VariableDeclarationStatement':
           await this.evaluateVariableDeclarationStatement(statement);
           break;
         case 'GoToStatement':
@@ -93,7 +93,7 @@ export class Evaluator {
     return this.lastResult!;
   }
 
-  private async evaluateVariableDeclarationStatement(declaration: VariableDelcarationStatement) {
+  private async evaluateVariableDeclarationStatement(declaration: VariableDeclarationStatement) {
     var value = await this.evaluateExpression(declaration.expression);
     if (declaration.variable.isLocal) {
       this.locals[0].setValue(declaration.variable, value);

@@ -1,4 +1,4 @@
-import { SyntaxKind } from '../parsing/SyntaxNode';
+import { TokenSyntaxKind } from '../parsing/TokenSyntax';
 import { Bool, Int, String, TypeSymbol } from '../symbols/Symbol';
 import { BoundNode } from './BoundNode';
 
@@ -21,7 +21,7 @@ export type BoundBinaryOperatorKind =
 
 export type BoundBinaryOperator = {
   kind: BoundBinaryOperatorKind;
-  syntaxKind: SyntaxKind;
+  syntaxKind: TokenSyntaxKind;
   leftType: TypeSymbol;
   rightType: TypeSymbol;
   type: TypeSymbol;
@@ -30,7 +30,7 @@ export type BoundBinaryOperator = {
 
 function boundBinaryOperator(
   kind: BoundBinaryOperatorKind,
-  syntaxKind: SyntaxKind,
+  syntaxKind: TokenSyntaxKind,
   operandType: TypeSymbol,
   type?: TypeSymbol
 ): BoundBinaryOperator {
@@ -82,7 +82,7 @@ const BINARY_OPERATORS: BoundBinaryOperator[] = [
 ];
 
 export function bindBinaryOperator(
-  syntaxKind: SyntaxKind,
+  syntaxKind: TokenSyntaxKind,
   leftType: TypeSymbol,
   rightType: TypeSymbol
 ): BoundBinaryOperator | undefined {

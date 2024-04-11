@@ -33,7 +33,7 @@ import {
   GoToStatement,
   IfStatement,
   LabelStatement,
-  VariableDelcarationStatement,
+  VariableDeclarationStatement,
   WhileStatement,
 } from './BoundStatement';
 
@@ -44,7 +44,7 @@ export class BoundTreeRewriter {
         return this.rewriteExpressionStatement(boundTreeRoot);
       case 'BlockStatement':
         return this.rewriteBlockStatement(boundTreeRoot);
-      case 'VariableDelcarationStatement':
+      case 'VariableDeclarationStatement':
         return this.rewriteVariableDelcarationStatement(boundTreeRoot);
       case 'IfStatement':
         return this.rewriteIfStatement(boundTreeRoot);
@@ -94,13 +94,13 @@ export class BoundTreeRewriter {
     }
   }
 
-  protected rewriteBlockStatement(statement: BlockStatement): BoundStatement {
+  protected rewriteBlockStatement(statement: BlockStatement): BlockStatement {
     const statements = statement.statements;
     return BoundBlockStatement(statements.map((s) => this.rewriteBoundStatement(s)));
   }
 
   protected rewriteVariableDelcarationStatement(
-    statement: VariableDelcarationStatement
+    statement: VariableDeclarationStatement
   ): BoundStatement {
     return statement;
   }
@@ -108,16 +108,16 @@ export class BoundTreeRewriter {
   rewriteIfStatement(statement: IfStatement): BoundStatement {
     let { condition, ifBlock, elseBlock } = statement;
     condition = this.rewriteExpression(condition);
-    const rewrittenIfBlock = this.rewriteBoundStatement(ifBlock);
+    const rewrittenIfBlock = this.rewriteBlockStatement(ifBlock);
     const rewrittenElseBlock =
-      elseBlock === undefined ? undefined : this.rewriteBoundStatement(elseBlock);
+      elseBlock === undefined ? undefined : this.rewriteBlockStatement(elseBlock);
     return BoundIfStatement(condition, rewrittenIfBlock, rewrittenElseBlock);
   }
 
   rewriteWhileStatement(statement: WhileStatement): BoundStatement {
     let { loopCondition, whileBlock } = statement;
     loopCondition = this.rewriteExpression(loopCondition);
-    whileBlock = this.rewriteBoundStatement(whileBlock);
+    whileBlock = this.rewriteBlockStatement(whileBlock);
     return BoundWhileStatement(loopCondition, whileBlock);
   }
 
@@ -126,7 +126,7 @@ export class BoundTreeRewriter {
     beginStatement = this.rewriteBoundStatement(beginStatement);
     loopCondition = this.rewriteExpression(loopCondition);
     endStatement = this.rewriteBoundStatement(endStatement);
-    forBlock = this.rewriteBoundStatement(forBlock);
+    forBlock = this.rewriteBlockStatement(forBlock);
     return BoundForStatement(beginStatement, loopCondition, endStatement, forBlock);
   }
 
