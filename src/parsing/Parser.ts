@@ -25,6 +25,8 @@ import {
 import { Lexer } from './Lexer';
 import {
   BlockStatement,
+  BreakStatement,
+  ContinueStatement,
   ExpressionStatement,
   ForStatement,
   FunctionDeclaration,
@@ -143,6 +145,10 @@ export class Parser {
         return this.parseForStatement();
       case 'FunctionKeyword':
         return this.parseFunctionDeclarationStatement();
+      case 'ContinueKeyword':
+        return this.parseContinueKeyword();
+      case 'BreakKeyword':
+        return this.parseBreakKeyword();
       default:
         return this.parseExpressionStatement();
     }
@@ -253,7 +259,7 @@ export class Parser {
     );
   }
 
-  parseFunctionParameters(): FunctionParameterNode[] {
+  private parseFunctionParameters(): FunctionParameterNode[] {
     const parameters = [];
     while (this.current().kind !== 'CloseParenthesisToken') {
       const identifier = this.matchToken('IdentifierToken');
@@ -264,6 +270,16 @@ export class Parser {
       parameters.push(parameter);
     }
     return parameters;
+  }
+
+  private parseContinueKeyword(): StatementSyntax {
+    const continueKeyword = this.matchToken('ContinueKeyword');
+    return ContinueStatement(continueKeyword);
+  }
+
+  private parseBreakKeyword(): StatementSyntax {
+    const breakKeyword = this.matchToken('BreakKeyword');
+    return BreakStatement(breakKeyword);
   }
 
   private parseExpressionStatement(): StatementSyntax {

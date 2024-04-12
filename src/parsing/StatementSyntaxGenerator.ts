@@ -76,6 +76,12 @@ const statmentTypes: GeneratorTypeDefinitions = {
       functionBlock: BlockStatementSyntaxTypeNode,
     },
   },
+  ContinueStatement: {
+    children: { continueKeyword: TokenSyntaxTypeNode },
+  },
+  BreakStatement: {
+    children: { breakKeyword: TokenSyntaxTypeNode },
+  },
 };
 
 const generator = new Generator(

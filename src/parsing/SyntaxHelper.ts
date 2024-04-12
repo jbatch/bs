@@ -1,7 +1,9 @@
 import { textSpan } from '../text/TextSpan';
 import { SyntaxKind } from './SyntaxNode';
 import {
+  BreakKeyword,
   ConstKeyword,
+  ContinueKeyword,
   ElseKeyword,
   FalseKeyword,
   ForKeyword,
@@ -75,6 +77,10 @@ export function getKeywordOrIdentifier(text: string, position: number): TokenSyn
       return ForKeyword(span);
     case 'function':
       return FunctionKeyword(span);
+    case 'continue':
+      return ContinueKeyword(span);
+    case 'break':
+      return BreakKeyword(span);
     default:
       return IdentifierToken(span, text);
   }

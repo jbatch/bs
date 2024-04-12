@@ -236,6 +236,16 @@ export type FunctionKeywordSyntax = {
   span: TextSpan;
   children: SyntaxNode[];
 };
+export type ContinueKeywordSyntax = {
+  kind: 'ContinueKeyword';
+  span: TextSpan;
+  children: SyntaxNode[];
+};
+export type BreakKeywordSyntax = {
+  kind: 'BreakKeyword';
+  span: TextSpan;
+  children: SyntaxNode[];
+};
 export type BadTokenSyntax = {
   kind: 'BadToken';
   span: TextSpan;
@@ -292,6 +302,8 @@ export type TokenSyntax =
   | WhileKeywordSyntax
   | ForKeywordSyntax
   | FunctionKeywordSyntax
+  | ContinueKeywordSyntax
+  | BreakKeywordSyntax
   | BadTokenSyntax
   | EndOfFileTokenSyntax;
 export function NumberToken(span: TextSpan, value: number): NumberTokenSyntax {
@@ -656,6 +668,22 @@ export function FunctionKeyword(span: TextSpan): FunctionKeywordSyntax {
   const children: SyntaxNode[] = [];
   return {
     kind: 'FunctionKeyword',
+    span,
+    children,
+  };
+}
+export function ContinueKeyword(span: TextSpan): ContinueKeywordSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'ContinueKeyword',
+    span,
+    children,
+  };
+}
+export function BreakKeyword(span: TextSpan): BreakKeywordSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'BreakKeyword',
     span,
     children,
   };

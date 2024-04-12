@@ -9,6 +9,8 @@ import {
   PostfixUnaryExpressionSyntax,
 } from '../parsing/ExpressionSyntax';
 import {
+  BreakStatementSyntax,
+  ContinueStatementSyntax,
   FunctionDeclarationSyntax,
   StatementKind,
   StatementSyntax,
@@ -44,12 +46,14 @@ import {
   BoundVariableExpression,
   ErrorExpression,
 } from './BoundExpression';
+import { BoundLabel } from './BoundLabel';
 import { BoundScope } from './BoundScope';
 import {
   BlockStatement,
   BoundBlockStatement,
   BoundExpressionStatement,
   BoundForStatement,
+  BoundGoToStatement,
   BoundIfStatement,
   BoundStatement,
   BoundVariableDeclarationStatement,
@@ -62,6 +66,8 @@ export class Binder {
   scope: BoundScope;
   diagnostics: DiagnosticBag = new DiagnosticBag();
   functionToBind?: FunctionSymbol;
+  labelCount: number = 0;
+  loopStack: { continueLabel: BoundLabel; breakLabel: BoundLabel }[] = [];
 
   constructor(parent: BoundScope, functionToBind?: FunctionSymbol) {
     this.scope = new BoundScope(parent);
@@ -156,6 +162,10 @@ export class Binder {
         return this.bindForStatement(statement);
       case 'FunctionDeclaration':
         throw new Error('Function declarations should not be bound');
+      case 'ContinueStatement':
+        return this.bindContinueStatement(statement);
+      case 'BreakStatement':
+        return this.bindBreakStatement(statement);
     }
   }
 
@@ -218,9 +228,13 @@ export class Binder {
   private bindWhileStatement(statement: StatementSyntax): BoundStatement {
     assert(statement.kind === 'WhileStatement');
     const loopCondition = this.bindExpressionWithExpectedType(statement.loopCondition, Bool);
-    const whileBlock = this.bindStatement(statement.whileBlock, 'BlockStatement');
+    const {
+      statement: whileBlock,
+      continueLabel,
+      breakLabel,
+    } = this.bindLoopBlock(statement.whileBlock);
     assert(whileBlock.kind === 'BlockStatement');
-    return BoundWhileStatement(loopCondition, whileBlock);
+    return BoundWhileStatement(continueLabel, breakLabel, loopCondition, whileBlock);
   }
 
   private bindForStatement(statement: StatementSyntax): BoundStatement {
@@ -232,10 +246,58 @@ export class Binder {
     );
     const loopCondition = this.bindExpressionWithExpectedType(statement.loopCondition, Bool);
     const endStatement = this.bindStatement(statement.endStatement);
-    const forBlock = this.bindStatement(statement.forBlock, 'BlockStatement');
+
+    const {
+      statement: forBlock,
+      continueLabel,
+      breakLabel,
+    } = this.bindLoopBlock(statement.forBlock);
     assert(forBlock.kind === 'BlockStatement');
     this.scope = this.scope.parent!;
-    return BoundForStatement(beginStatement, loopCondition, endStatement, forBlock);
+    return BoundForStatement(
+      continueLabel,
+      breakLabel,
+      beginStatement,
+      loopCondition,
+      endStatement,
+      forBlock
+    );
+  }
+
+  private bindContinueStatement(statement: ContinueStatementSyntax): BoundStatement {
+    if (this.loopStack.length == 0) {
+      this.diagnostics.reportBreakContinueStatementOutsideLoop(statement.continueKeyword.span);
+      return this.bindErrorStatement();
+    }
+    const label = this.loopStack[0].continueLabel;
+    return BoundGoToStatement(label);
+  }
+
+  private bindBreakStatement(statement: BreakStatementSyntax): BoundStatement {
+    if (this.loopStack.length == 0) {
+      this.diagnostics.reportBreakContinueStatementOutsideLoop(statement.breakKeyword.span);
+      return this.bindErrorStatement();
+    }
+    const label = this.loopStack[0].breakLabel;
+    return BoundGoToStatement(label);
+  }
+
+  private bindErrorStatement(): BoundStatement {
+    return BoundExpressionStatement(BoundErrorExpression(Err));
+  }
+
+  private bindLoopBlock(statement: StatementSyntax): {
+    statement: BoundStatement;
+    continueLabel: BoundLabel;
+    breakLabel: BoundLabel;
+  } {
+    this.labelCount++;
+    const continueLabel = { name: `continue${this.labelCount}` };
+    const breakLabel = { name: `break${this.labelCount}` };
+    this.loopStack.unshift({ continueLabel, breakLabel });
+    const boundStatement = this.bindStatement(statement);
+    this.loopStack.shift();
+    return { statement: boundStatement, continueLabel, breakLabel };
   }
 
   private bindExpression(expression: ExpressionSyntax): BoundExpression {
@@ -398,7 +460,7 @@ export class Binder {
     }
 
     if (fn.parameters.length != args.length) {
-      this.diagnostics.reportArguementCountMismatch(
+      this.diagnostics.reportArgumentCountMismatch(
         textSpanWithEnd(expression.open.span.start, expression.close.span.end),
         expression.identifier.text,
         fn.parameters.length,
@@ -413,7 +475,7 @@ export class Binder {
       const arg = args[i];
       const boundArg = this.bindExpression(arg.expression);
       if (param.type.name !== boundArg.type.name) {
-        this.diagnostics.reportArguementTypeMismatch(
+        this.diagnostics.reportArgumentTypeMismatch(
           arg.expression.span,
           fn.name,
           param.type,

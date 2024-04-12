@@ -34,12 +34,16 @@ export type IfStatement = {
 };
 export type WhileStatement = {
   kind: 'WhileStatement';
+  continueLabel: BoundLabel;
+  breakLabel: BoundLabel;
   loopCondition: BoundExpression;
   whileBlock: BlockStatement;
   children: BoundNode[];
 };
 export type ForStatement = {
   kind: 'ForStatement';
+  continueLabel: BoundLabel;
+  breakLabel: BoundLabel;
   beginStatement: BoundStatement;
   loopCondition: BoundExpression;
   endStatement: BoundStatement;
@@ -122,18 +126,24 @@ export function BoundIfStatement(
   };
 }
 export function BoundWhileStatement(
+  continueLabel: BoundLabel,
+  breakLabel: BoundLabel,
   loopCondition: BoundExpression,
   whileBlock: BlockStatement
 ): WhileStatement {
   const children: BoundNode[] = [loopCondition, whileBlock];
   return {
     kind: 'WhileStatement',
+    continueLabel,
+    breakLabel,
     loopCondition,
     whileBlock,
     children,
   };
 }
 export function BoundForStatement(
+  continueLabel: BoundLabel,
+  breakLabel: BoundLabel,
   beginStatement: BoundStatement,
   loopCondition: BoundExpression,
   endStatement: BoundStatement,
@@ -142,6 +152,8 @@ export function BoundForStatement(
   const children: BoundNode[] = [beginStatement, loopCondition, endStatement, forBlock];
   return {
     kind: 'ForStatement',
+    continueLabel,
+    breakLabel,
     beginStatement,
     loopCondition,
     endStatement,

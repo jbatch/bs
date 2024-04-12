@@ -28,11 +28,11 @@ export class Lowerer extends BoundTreeRewriter {
   curLabelIndex = 0;
   lower(root: BoundStatement): BlockStatement {
     const rewritten = this.rewriteBoundStatement(root);
-    const flattenedStatments = this.flatten(rewritten);
-    return BoundBlockStatement(flattenedStatments);
+    const flattenedStatements = this.flatten(rewritten);
+    return BoundBlockStatement(flattenedStatements);
   }
   flatten(statement: BoundStatement): BoundStatement[] {
-    const statments: BoundStatement[] = [];
+    const statements: BoundStatement[] = [];
     const stack: BoundStatement[] = [];
 
     stack.push(statement);
@@ -42,10 +42,10 @@ export class Lowerer extends BoundTreeRewriter {
       if (cur.kind === 'BlockStatement') {
         stack.push(...cur.statements.reverse());
       } else {
-        statments.push(cur);
+        statements.push(cur);
       }
     }
-    return statments;
+    return statements;
   }
 
   generateLabel(): string {
@@ -64,17 +64,28 @@ export class Lowerer extends BoundTreeRewriter {
      *   <begin>
      *   while( <condition> ) {
      *     <forBlock>
+     *     continue:
      *     <end>
      *   }
+     *  break:
      * }
      */
-    const { beginStatement, loopCondition, forBlock, endStatement } = statement;
+    const { beginStatement, loopCondition, forBlock, endStatement, continueLabel, breakLabel } =
+      statement;
     assert(forBlock.kind === 'BlockStatement');
-    const whileStatment = BoundWhileStatement(
+    const continueLabelStatement = BoundLabelStatement(continueLabel);
+    const whileBlock = BoundBlockStatement([
+      ...forBlock.statements,
+      continueLabelStatement,
+      endStatement,
+    ]);
+    const whileStatement = BoundWhileStatement(
+      { name: this.generateLabel() }, // unused
+      breakLabel,
       loopCondition,
-      BoundBlockStatement([...forBlock.statements, endStatement])
+      whileBlock
     );
-    const rewrittenBlock = BoundBlockStatement([beginStatement, whileStatment]);
+    const rewrittenBlock = BoundBlockStatement([beginStatement, whileStatement]);
     return this.rewriteBoundStatement(rewrittenBlock);
   }
 
@@ -126,25 +137,37 @@ export class Lowerer extends BoundTreeRewriter {
   rewriteWhileStatement(statement: WhileStatement): BoundStatement {
     /**
      * REWRITE
+     * continue:
      * while(<condition>) {
      *     <whileBlock>
      * }
+     * break:
      * TO
      *
-     * begin:
-     * conditionalGoTo <condition> <:end> jumpIfTrue=false
+     * continue:
+     * conditionalGoTo <condition> <:break> jumpIfTrue=false
      * <whileBlock>
-     * goto <begin:>
-     * end:
+     * goto <continue:>
+     * break:
      */
-    const { loopCondition, whileBlock } = statement;
-    const beginLabel = BoundLabelStatement({ name: this.generateLabel() });
-    const endLabel = BoundLabelStatement({ name: this.generateLabel() });
-    const goToEndIfFalse = BoundConditionalGoToStatement(endLabel.label, false, loopCondition);
-    const goToBegin = BoundGoToStatement(beginLabel.label);
+    const { loopCondition, whileBlock, continueLabel, breakLabel } = statement;
+    const continueLabelStatement = BoundLabelStatement(continueLabel);
+    const breakLabelStatement = BoundLabelStatement(breakLabel);
+    const goToBreakIfFalse = BoundConditionalGoToStatement(
+      breakLabelStatement.label,
+      false,
+      loopCondition
+    );
+    const goToContinue = BoundGoToStatement(continueLabelStatement.label);
 
     return this.rewriteBoundStatement(
-      BoundBlockStatement([beginLabel, goToEndIfFalse, whileBlock, goToBegin, endLabel])
+      BoundBlockStatement([
+        continueLabelStatement,
+        goToBreakIfFalse,
+        whileBlock,
+        goToContinue,
+        breakLabelStatement,
+      ])
     );
   }
 

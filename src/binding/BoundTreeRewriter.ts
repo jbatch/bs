@@ -115,19 +115,27 @@ export class BoundTreeRewriter {
   }
 
   rewriteWhileStatement(statement: WhileStatement): BoundStatement {
-    let { loopCondition, whileBlock } = statement;
+    let { loopCondition, whileBlock, continueLabel, breakLabel } = statement;
     loopCondition = this.rewriteExpression(loopCondition);
     whileBlock = this.rewriteBlockStatement(whileBlock);
-    return BoundWhileStatement(loopCondition, whileBlock);
+    return BoundWhileStatement(continueLabel, breakLabel, loopCondition, whileBlock);
   }
 
   rewriteForStatement(statement: ForStatement): BoundStatement {
-    let { beginStatement, loopCondition, endStatement, forBlock } = statement;
+    let { beginStatement, loopCondition, endStatement, forBlock, continueLabel, breakLabel } =
+      statement;
     beginStatement = this.rewriteBoundStatement(beginStatement);
     loopCondition = this.rewriteExpression(loopCondition);
     endStatement = this.rewriteBoundStatement(endStatement);
     forBlock = this.rewriteBlockStatement(forBlock);
-    return BoundForStatement(beginStatement, loopCondition, endStatement, forBlock);
+    return BoundForStatement(
+      continueLabel,
+      breakLabel,
+      beginStatement,
+      loopCondition,
+      endStatement,
+      forBlock
+    );
   }
 
   protected rewriteLabelStatement(statement: LabelStatement): BoundStatement {

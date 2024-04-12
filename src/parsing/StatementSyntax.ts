@@ -81,6 +81,18 @@ export type FunctionDeclarationSyntax = {
   functionBlock: BlockStatementSyntax;
   children: SyntaxNode[];
 };
+export type ContinueStatementSyntax = {
+  kind: 'ContinueStatement';
+  span: TextSpan;
+  continueKeyword: TokenSyntax;
+  children: SyntaxNode[];
+};
+export type BreakStatementSyntax = {
+  kind: 'BreakStatement';
+  span: TextSpan;
+  breakKeyword: TokenSyntax;
+  children: SyntaxNode[];
+};
 export type StatementSyntax =
   | ExpressionStatementSyntax
   | BlockStatementSyntax
@@ -88,7 +100,9 @@ export type StatementSyntax =
   | IfStatementSyntax
   | WhileStatementSyntax
   | ForStatementSyntax
-  | FunctionDeclarationSyntax;
+  | FunctionDeclarationSyntax
+  | ContinueStatementSyntax
+  | BreakStatementSyntax;
 export function ExpressionStatement(expression: ExpressionSyntax): ExpressionStatementSyntax {
   const span = expression.span;
   const children: SyntaxNode[] = [expression];
@@ -253,6 +267,26 @@ export function FunctionDeclaration(
     parameters,
     closeParenthesis,
     functionBlock,
+    children,
+  };
+}
+export function ContinueStatement(continueKeyword: TokenSyntax): ContinueStatementSyntax {
+  const span = continueKeyword.span;
+  const children: SyntaxNode[] = [continueKeyword];
+  return {
+    kind: 'ContinueStatement',
+    span,
+    continueKeyword,
+    children,
+  };
+}
+export function BreakStatement(breakKeyword: TokenSyntax): BreakStatementSyntax {
+  const span = breakKeyword.span;
+  const children: SyntaxNode[] = [breakKeyword];
+  return {
+    kind: 'BreakStatement',
+    span,
+    breakKeyword,
     children,
   };
 }

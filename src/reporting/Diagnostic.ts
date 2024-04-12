@@ -147,18 +147,23 @@ export class DiagnosticBag {
     this.report(message, span);
   }
 
-  reportArguementCountMismatch(span: TextSpan, name: string, expected: number, found: number) {
+  reportArgumentCountMismatch(span: TextSpan, name: string, expected: number, found: number) {
     const message = `Function '${name}' called with ${found} arguments, expected ${expected}`;
     this.report(message, span);
   }
 
-  reportArguementTypeMismatch(
+  reportArgumentTypeMismatch(
     span: TextSpan,
     name: string,
     expected: TypeSymbol,
     found: TypeSymbol
   ) {
     const message = `TypeError: ${name} expected [${expected.name}] argument but got [${found.name}]`;
+    this.report(message, span);
+  }
+
+  reportBreakContinueStatementOutsideLoop(span: TextSpan) {
+    const message = 'Continue or break statement not allowed outside loop';
     this.report(message, span);
   }
 }

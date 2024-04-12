@@ -42,6 +42,10 @@ const boundStatementTypes: GeneratorTypeDefinitions = {
       loopCondition: BoundExpressionTypeNode,
       whileBlock: BoundBlockStatementTypeNode,
     },
+    other: {
+      continueLabel: BoundLabelTypeNode,
+      breakLabel: BoundLabelTypeNode,
+    },
   },
   ForStatement: {
     children: {
@@ -49,6 +53,10 @@ const boundStatementTypes: GeneratorTypeDefinitions = {
       loopCondition: BoundExpressionTypeNode,
       endStatement: BoundStatementTypeNode,
       forBlock: BoundBlockStatementTypeNode,
+    },
+    other: {
+      continueLabel: BoundLabelTypeNode,
+      breakLabel: BoundLabelTypeNode,
     },
   },
   FunctionDeclarationStatement: {

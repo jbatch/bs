@@ -57,6 +57,8 @@ const statmentTypes: GeneratorTypeDefinitions = {
   WhileKeyword: { other: { span: TextSpanTypeNode } },
   ForKeyword: { other: { span: TextSpanTypeNode } },
   FunctionKeyword: { other: { span: TextSpanTypeNode } },
+  ContinueKeyword: { other: { span: TextSpanTypeNode } },
+  BreakKeyword: { other: { span: TextSpanTypeNode } },
   BadToken: { other: { span: TextSpanTypeNode } },
   EndOfFileToken: { other: { span: TextSpanTypeNode } },
 };
