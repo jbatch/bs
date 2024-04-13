@@ -1,11 +1,7 @@
-function fib(n: Int) {
-  var fiba = 0
-  var fibb = 1
-  var fibonacci = fibb
-  for (var i = 0; i < n; i++) {
-    print(string(fibonacci))
-    fibonacci = fiba + fibb
-    fiba = fibb
-    fibb = fibonacci
+function fib(n: Int): Int {
+  if (n <= 1) {
+    return n
+  } else {
+    return fib(n - 1) + fib(n - 2)
   }
 }

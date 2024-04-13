@@ -78,6 +78,7 @@ export type FunctionDeclarationSyntax = {
   openParenthesis: TokenSyntax;
   parameters: FunctionParameterNode[];
   closeParenthesis: TokenSyntax;
+  typeClause: TypeClauseNode | undefined;
   functionBlock: BlockStatementSyntax;
   children: SyntaxNode[];
 };
@@ -93,6 +94,13 @@ export type BreakStatementSyntax = {
   breakKeyword: TokenSyntax;
   children: SyntaxNode[];
 };
+export type ReturnStatementSyntax = {
+  kind: 'ReturnStatement';
+  span: TextSpan;
+  returnKeyword: TokenSyntax;
+  value: ExpressionSyntax | undefined;
+  children: SyntaxNode[];
+};
 export type StatementSyntax =
   | ExpressionStatementSyntax
   | BlockStatementSyntax
@@ -102,7 +110,8 @@ export type StatementSyntax =
   | ForStatementSyntax
   | FunctionDeclarationSyntax
   | ContinueStatementSyntax
-  | BreakStatementSyntax;
+  | BreakStatementSyntax
+  | ReturnStatementSyntax;
 export function ExpressionStatement(expression: ExpressionSyntax): ExpressionStatementSyntax {
   const span = expression.span;
   const children: SyntaxNode[] = [expression];
@@ -247,6 +256,7 @@ export function FunctionDeclaration(
   openParenthesis: TokenSyntax,
   parameters: FunctionParameterNode[],
   closeParenthesis: TokenSyntax,
+  typeClause: TypeClauseNode | undefined,
   functionBlock: BlockStatementSyntax
 ): FunctionDeclarationSyntax {
   const span = functionKeyword.span;
@@ -256,8 +266,9 @@ export function FunctionDeclaration(
     openParenthesis,
     ...parameters,
     closeParenthesis,
+    typeClause,
     functionBlock,
-  ];
+  ].filter(isDefined);
   return {
     kind: 'FunctionDeclaration',
     span,
@@ -266,6 +277,7 @@ export function FunctionDeclaration(
     openParenthesis,
     parameters,
     closeParenthesis,
+    typeClause,
     functionBlock,
     children,
   };
@@ -287,6 +299,20 @@ export function BreakStatement(breakKeyword: TokenSyntax): BreakStatementSyntax 
     kind: 'BreakStatement',
     span,
     breakKeyword,
+    children,
+  };
+}
+export function ReturnStatement(
+  returnKeyword: TokenSyntax,
+  value: ExpressionSyntax | undefined
+): ReturnStatementSyntax {
+  const span = returnKeyword.span;
+  const children: SyntaxNode[] = [returnKeyword, value].filter(isDefined);
+  return {
+    kind: 'ReturnStatement',
+    span,
+    returnKeyword,
+    value,
     children,
   };
 }

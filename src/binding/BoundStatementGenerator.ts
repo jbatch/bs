@@ -8,6 +8,7 @@ import {
   FunctionSymbolTypeNode,
   Generator,
   GeneratorTypeDefinitions,
+  TypeSymbolTypeNode,
   VariableSymbolTypeNode,
   array,
   optional,
@@ -62,7 +63,11 @@ const boundStatementTypes: GeneratorTypeDefinitions = {
   FunctionDeclarationStatement: {
     other: {
       functionSymbol: FunctionSymbolTypeNode,
+      type: optional(TypeSymbolTypeNode),
     },
+  },
+  ReturnStatement: {
+    children: { value: optional(BoundExpressionTypeNode) },
   },
   LabelStatement: {
     other: {

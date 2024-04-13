@@ -10,6 +10,7 @@ import {
   FunctionKeyword,
   IdentifierToken,
   IfKeyword,
+  ReturnKeyword,
   TokenSyntax,
   TokenSyntaxKind,
   TrueKeyword,
@@ -81,6 +82,8 @@ export function getKeywordOrIdentifier(text: string, position: number): TokenSyn
       return ContinueKeyword(span);
     case 'break':
       return BreakKeyword(span);
+    case 'return':
+      return ReturnKeyword(span);
     default:
       return IdentifierToken(span, text);
   }

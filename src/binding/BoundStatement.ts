@@ -1,4 +1,4 @@
-import { FunctionSymbol, VariableSymbol } from '../symbols/Symbol';
+import { FunctionSymbol, TypeSymbol, VariableSymbol } from '../symbols/Symbol';
 import { BoundExpression } from './BoundExpression';
 import { BoundLabel } from './BoundLabel';
 import { BoundNode } from './BoundNode';
@@ -53,6 +53,12 @@ export type ForStatement = {
 export type FunctionDeclarationStatement = {
   kind: 'FunctionDeclarationStatement';
   functionSymbol: FunctionSymbol;
+  type: TypeSymbol | undefined;
+  children: BoundNode[];
+};
+export type ReturnStatement = {
+  kind: 'ReturnStatement';
+  value: BoundExpression | undefined;
   children: BoundNode[];
 };
 export type LabelStatement = {
@@ -80,6 +86,7 @@ export type BoundStatement =
   | WhileStatement
   | ForStatement
   | FunctionDeclarationStatement
+  | ReturnStatement
   | LabelStatement
   | GoToStatement
   | ConditionalGoToStatement;
@@ -162,12 +169,22 @@ export function BoundForStatement(
   };
 }
 export function BoundFunctionDeclarationStatement(
-  functionSymbol: FunctionSymbol
+  functionSymbol: FunctionSymbol,
+  type: TypeSymbol | undefined
 ): FunctionDeclarationStatement {
   const children: BoundNode[] = [];
   return {
     kind: 'FunctionDeclarationStatement',
     functionSymbol,
+    type,
+    children,
+  };
+}
+export function BoundReturnStatement(value: BoundExpression | undefined): ReturnStatement {
+  const children: BoundNode[] = [value].filter(isDefined);
+  return {
+    kind: 'ReturnStatement',
+    value,
     children,
   };
 }

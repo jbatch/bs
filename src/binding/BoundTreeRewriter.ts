@@ -24,6 +24,7 @@ import {
   BoundExpressionStatement,
   BoundForStatement,
   BoundIfStatement,
+  BoundReturnStatement,
   BoundStatement,
   BoundWhileStatement,
   ConditionalGoToStatement,
@@ -33,6 +34,7 @@ import {
   GoToStatement,
   IfStatement,
   LabelStatement,
+  ReturnStatement,
   VariableDeclarationStatement,
   WhileStatement,
 } from './BoundStatement';
@@ -45,7 +47,7 @@ export class BoundTreeRewriter {
       case 'BlockStatement':
         return this.rewriteBlockStatement(boundTreeRoot);
       case 'VariableDeclarationStatement':
-        return this.rewriteVariableDelcarationStatement(boundTreeRoot);
+        return this.rewriteVariableDeclarationStatement(boundTreeRoot);
       case 'IfStatement':
         return this.rewriteIfStatement(boundTreeRoot);
       case 'WhileStatement':
@@ -60,6 +62,8 @@ export class BoundTreeRewriter {
         return this.rewriteConditionalGoToStatement(boundTreeRoot);
       case 'FunctionDeclarationStatement':
         return this.rewriteFunctionDeclarationStatement(boundTreeRoot);
+      case 'ReturnStatement':
+        return this.rewriteReturnStatement(boundTreeRoot);
     }
   }
 
@@ -99,7 +103,7 @@ export class BoundTreeRewriter {
     return BoundBlockStatement(statements.map((s) => this.rewriteBoundStatement(s)));
   }
 
-  protected rewriteVariableDelcarationStatement(
+  protected rewriteVariableDeclarationStatement(
     statement: VariableDeclarationStatement
   ): BoundStatement {
     return statement;
@@ -156,6 +160,12 @@ export class BoundTreeRewriter {
     statement: FunctionDeclarationStatement
   ): BoundStatement {
     return statement;
+  }
+
+  rewriteReturnStatement(statement: ReturnStatement): BoundStatement {
+    let { value } = statement;
+    value = value ? this.rewriteExpression(value) : undefined;
+    return BoundReturnStatement(value);
   }
 
   protected rewriteUnaryExpression(expression: UnaryExpression): BoundExpression {

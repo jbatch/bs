@@ -73,6 +73,7 @@ const statmentTypes: GeneratorTypeDefinitions = {
       openParenthesis: TokenSyntaxTypeNode,
       parameters: array(FunctionParameterNodeTypeNode),
       closeParenthesis: TokenSyntaxTypeNode,
+      typeClause: optional(TypeClauseNodeTypeNode),
       functionBlock: BlockStatementSyntaxTypeNode,
     },
   },
@@ -81,6 +82,9 @@ const statmentTypes: GeneratorTypeDefinitions = {
   },
   BreakStatement: {
     children: { breakKeyword: TokenSyntaxTypeNode },
+  },
+  ReturnStatement: {
+    children: { returnKeyword: TokenSyntaxTypeNode, value: optional(ExpressionSyntaxTypeNode) },
   },
 };
 

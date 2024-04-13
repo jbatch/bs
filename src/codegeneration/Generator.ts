@@ -214,7 +214,7 @@ export function createSpanDeclarationStatement(properties: TypeNodeMap) {
   );
 }
 
-export function createChildrenDeclarationStatment(parentType: TypeNode, properties: TypeNodeMap) {
+export function createChildrenDeclarationStatement(parentType: TypeNode, properties: TypeNodeMap) {
   const hasOptionalTypes = Object.values(properties).some(ts.isUnionTypeNode);
 
   let expressions: Expression = factory.createArrayLiteralExpression(
@@ -267,7 +267,7 @@ function generateTypeDeclaration(
 ) {
   const otherFields = fields.other ?? {};
   const childrenFields = fields.children ?? {};
-  const chdilrenProperties = Object.entries({ ...otherFields, ...childrenFields }).map(
+  const childrenProperties = Object.entries({ ...otherFields, ...childrenFields }).map(
     ([propertyName, propertyType]) =>
       factory.createPropertySignature(
         undefined,
@@ -300,7 +300,7 @@ function generateTypeDeclaration(
       factory.createLiteralTypeNode(factory.createStringLiteral(name))
     ),
     span,
-    ...chdilrenProperties,
+    ...childrenProperties,
     children,
   ].filter(isDefined);
 
@@ -335,9 +335,9 @@ function generateConstructor(
   const allFields = { ...otherFields, ...childrenFields };
 
   const parameters = createConstructorParameters(allFields);
-  const spanDeclareation = hasSpan ? createSpanDeclarationStatement(childrenFields) : undefined;
+  const spanDeclaration = hasSpan ? createSpanDeclarationStatement(childrenFields) : undefined;
   const childrenDeclaration = hasChildren
-    ? createChildrenDeclarationStatment(parentType, childrenFields)
+    ? createChildrenDeclarationStatement(parentType, childrenFields)
     : undefined;
   const propertyAssignments = createPropertyAssignments(allFields);
 
@@ -362,7 +362,7 @@ function generateConstructor(
     )
   );
 
-  const statements: Statement[] = [spanDeclareation, childrenDeclaration, returnNode].filter(
+  const statements: Statement[] = [spanDeclaration, childrenDeclaration, returnNode].filter(
     isDefined
   );
   const blockStatement = factory.createBlock(statements, true);

@@ -170,6 +170,12 @@ export class BoundNodePrinter {
         this.printExpression(statement.condition);
         this.newLine();
         break;
+      case 'ReturnStatement':
+        this.printKeyword('return ');
+        if (statement.value) {
+          this.printExpression(statement.value);
+        }
+        this.newLine();
     }
   }
 

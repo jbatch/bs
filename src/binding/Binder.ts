@@ -12,6 +12,7 @@ import {
   BreakStatementSyntax,
   ContinueStatementSyntax,
   FunctionDeclarationSyntax,
+  ReturnStatementSyntax,
   StatementKind,
   StatementSyntax,
 } from '../parsing/StatementSyntax';
@@ -55,6 +56,7 @@ import {
   BoundForStatement,
   BoundGoToStatement,
   BoundIfStatement,
+  BoundReturnStatement,
   BoundStatement,
   BoundVariableDeclarationStatement,
   BoundWhileStatement,
@@ -110,8 +112,9 @@ export class Binder {
 
   private bindFunctionDeclaration(declaration: FunctionDeclarationSyntax) {
     const name = declaration.identifier.text;
-    // We only support void functions right now
-    const type = Void;
+    const type = declaration.typeClause
+      ? this.bindTypeSymbol(declaration.typeClause.identifier) ?? Void
+      : Void;
 
     const parameters = declaration.parameters.map((param) => {
       const type = this.bindTypeSymbol(param.type.identifier) ?? Err;
@@ -166,6 +169,8 @@ export class Binder {
         return this.bindContinueStatement(statement);
       case 'BreakStatement':
         return this.bindBreakStatement(statement);
+      case 'ReturnStatement':
+        return this.bindReturnStatement(statement);
     }
   }
 
@@ -280,6 +285,29 @@ export class Binder {
     }
     const label = this.loopStack[0].breakLabel;
     return BoundGoToStatement(label);
+  }
+
+  private bindReturnStatement(statement: ReturnStatementSyntax): BoundStatement {
+    const value = statement.value ? this.bindExpression(statement.value) : undefined;
+
+    const expectedType = this.functionToBind?.type;
+    const foundType = value?.type ?? Void;
+    const isVoidFunction = expectedType?.name === Void.name;
+    const isEmptyReturn = foundType.name === Void.name;
+    if (!this.functionToBind) {
+      this.diagnostics.reportReturnOutsideFunction(statement.returnKeyword.span);
+    } else if (isVoidFunction && !isEmptyReturn) {
+      this.diagnostics.reportReturningValueFromVoidFunction(statement.value!.span);
+    } else if (!isVoidFunction && isEmptyReturn) {
+      this.diagnostics.reportNoReturnValueForNonVoidFunction(
+        statement.returnKeyword.span,
+        expectedType!
+      );
+    } else if (expectedType!.name !== foundType.name) {
+      this.diagnostics.reportReturnTypeMismatch(statement.value!.span, expectedType!, foundType);
+    }
+
+    return BoundReturnStatement(value);
   }
 
   private bindErrorStatement(): BoundStatement {

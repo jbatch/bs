@@ -31,6 +31,7 @@ import {
   ForStatement,
   FunctionDeclaration,
   IfStatement,
+  ReturnStatement,
   StatementSyntax,
   VariableDeclarationStatement,
   WhileStatement,
@@ -41,6 +42,7 @@ import {
   IdentifierTokenSyntax,
   NumberLiteral,
   NumberTokenSyntax,
+  ReturnKeyword,
   StringLiteral,
   TokenSyntax,
   TokenSyntaxKind,
@@ -149,6 +151,8 @@ export class Parser {
         return this.parseContinueKeyword();
       case 'BreakKeyword':
         return this.parseBreakKeyword();
+      case 'ReturnKeyword':
+        return this.parseReturnStatement();
       default:
         return this.parseExpressionStatement();
     }
@@ -246,6 +250,7 @@ export class Parser {
     const openParenthesis = this.matchToken('OpenParenthesisToken');
     const parameters = this.parseFunctionParameters();
     const closeParenthesis = this.matchToken('CloseParenthesisToken');
+    const typeClause = this.parseOptionalTypeClause();
     const functionBlock = this.parseBlockStatement();
     assert(functionBlock.kind === 'BlockStatement');
 
@@ -255,6 +260,7 @@ export class Parser {
       openParenthesis,
       parameters,
       closeParenthesis,
+      typeClause,
       functionBlock
     );
   }
@@ -280,6 +286,21 @@ export class Parser {
   private parseBreakKeyword(): StatementSyntax {
     const breakKeyword = this.matchToken('BreakKeyword');
     return BreakStatement(breakKeyword);
+  }
+
+  parseReturnStatement(): StatementSyntax {
+    const breakKeyword = this.matchToken('ReturnKeyword');
+    const start = this.position;
+    // TODO find a nicer way to implement parseOptionalExpression()
+    let value: ExpressionSyntax | undefined = this.parseExpression();
+    if (value.kind === 'LiteralExpression' && value.literal.value === undefined) {
+      // We didn't read in an actual expression, roll back the read.
+      this.position--;
+      // Suppress last diagnostic
+      this.diagnostics.diagnostics.pop();
+      value = undefined;
+    }
+    return ReturnStatement(breakKeyword, value);
   }
 
   private parseExpressionStatement(): StatementSyntax {
@@ -371,7 +392,10 @@ export class Parser {
         assert(stringToken.kind === 'StringToken');
         return LiteralExpression(StringLiteral(stringToken.span, stringToken.value));
       }
-
+      case 'NumberToken': {
+        const number = this.matchToken('NumberToken') as NumberTokenSyntax;
+        return LiteralExpression(NumberLiteral(number.span, number.value));
+      }
       default: {
         const number = this.matchToken('NumberToken') as NumberTokenSyntax;
         return LiteralExpression(NumberLiteral(number.span, number.value));

@@ -166,4 +166,21 @@ export class DiagnosticBag {
     const message = 'Continue or break statement not allowed outside loop';
     this.report(message, span);
   }
+
+  reportReturnOutsideFunction(span: TextSpan) {
+    const message = 'Cannot return outside of a function';
+    this.report(message, span);
+  }
+  reportReturningValueFromVoidFunction(span: TextSpan) {
+    const message = 'Cannot return value from void function';
+    this.report(message, span);
+  }
+  reportNoReturnValueForNonVoidFunction(span: TextSpan, expectedType: TypeSymbol) {
+    const message = `Cannot return void from [${expectedType.name}] function`;
+    this.report(message, span);
+  }
+  reportReturnTypeMismatch(span: TextSpan, expectedType: TypeSymbol, foundType: TypeSymbol) {
+    const message = `TypeError: Function returned wrong type. Expected [${expectedType.name}] but found [${foundType.name}]`;
+    this.report(message, span);
+  }
 }

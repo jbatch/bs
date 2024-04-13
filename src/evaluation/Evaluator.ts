@@ -24,7 +24,7 @@ import { FunctionSymbol, Int, String as StringTypeSymbol, VariableSymbol } from 
 
 export class Evaluator {
   root: BlockStatement;
-  gloablVariables: Record<string, EvaluationResult>;
+  globalVariables: Record<string, EvaluationResult>;
   functions: SymbolTable<FunctionSymbol, BlockStatement>;
   // Stack to hold current lock variable values
   locals: SymbolTable<VariableSymbol, EvaluationResult>[] = [];
@@ -32,16 +32,16 @@ export class Evaluator {
 
   constructor(
     root: BlockStatement,
-    gloablVariables: Record<string, EvaluationResult>,
+    globalVariables: Record<string, EvaluationResult>,
     functions: SymbolTable<FunctionSymbol, BlockStatement>
   ) {
     this.root = root;
-    this.gloablVariables = gloablVariables;
+    this.globalVariables = globalVariables;
     this.functions = functions;
   }
 
   async evaluate() {
-    await this.evaluateBlockStatement(this.root);
+    return await this.evaluateBlockStatement(this.root);
   }
 
   async evaluateBlockStatement(block: BlockStatement): Promise<EvaluationResult> {
@@ -59,9 +59,15 @@ export class Evaluator {
       switch (statement.kind) {
         case 'ExpressionStatement':
           this.lastResult = await this.evaluateExpression(statement.expression);
+          index++;
           break;
         case 'VariableDeclarationStatement':
           await this.evaluateVariableDeclarationStatement(statement);
+          index++;
+          break;
+        case 'LabelStatement':
+          // No-op
+          index++;
           break;
         case 'GoToStatement':
           index = labelMap[statement.label.name];
@@ -73,21 +79,31 @@ export class Evaluator {
             continue;
           } else {
             // No op
+            index++;
             break;
           }
+        case 'ReturnStatement':
+          if (!statement.value) {
+            return;
+          }
+          const value = await this.evaluateExpression(statement.value);
+          this.lastResult = value;
+          // Get out of the loop
+          return value;
+        case 'FunctionDeclarationStatement':
+          // Function declarations do not get evaluated, only bound.
+          throw new Error('Encountered unexpected function declaration');
         case 'BlockStatement':
-          // Should never happen because we flatten the statment tree
+          // Should never happen because we flatten the statement tree
           throw new Error('Encountered unexpected block statement');
         case 'IfStatement':
         case 'WhileStatement':
         case 'ForStatement':
           // Rewritten
           throw new Error('Encountered node that should be rewritten');
-        case 'LabelStatement':
-          // No-op
-          break;
+        default:
+          throw new Error(`Unexpected bound statement kind: ${statement}`);
       }
-      index++;
     }
 
     return this.lastResult!;
@@ -98,7 +114,7 @@ export class Evaluator {
     if (declaration.variable.isLocal) {
       this.locals[0].setValue(declaration.variable, value);
     } else {
-      this.gloablVariables[declaration.variable.name] = value;
+      this.globalVariables[declaration.variable.name] = value;
     }
     this.lastResult = await value;
   }
@@ -206,7 +222,7 @@ export class Evaluator {
     if (node.variable.isLocal) {
       return this.locals[0].getValue(node.variable);
     }
-    return this.gloablVariables[node.variable.name];
+    return this.globalVariables[node.variable.name];
   }
 
   private async evaluateAssignmentExpression(
@@ -216,7 +232,7 @@ export class Evaluator {
     if (node.variable.isLocal) {
       this.locals[0].setValue(node.variable, value);
     } else {
-      this.gloablVariables[node.variable.name] = value;
+      this.globalVariables[node.variable.name] = value;
     }
     return value;
   }
@@ -232,9 +248,9 @@ export class Evaluator {
         functionLocals.setValue(param, value);
       }
       this.locals.unshift(functionLocals);
-      await this.evaluateBlockStatement(userDefinedFunction);
+      const returnValue = await this.evaluateBlockStatement(userDefinedFunction);
       this.locals.shift();
-      return;
+      return returnValue;
     }
     switch (node.functionSymbol.name) {
       case 'print':

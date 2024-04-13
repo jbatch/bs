@@ -246,6 +246,11 @@ export type BreakKeywordSyntax = {
   span: TextSpan;
   children: SyntaxNode[];
 };
+export type ReturnKeywordSyntax = {
+  kind: 'ReturnKeyword';
+  span: TextSpan;
+  children: SyntaxNode[];
+};
 export type BadTokenSyntax = {
   kind: 'BadToken';
   span: TextSpan;
@@ -304,6 +309,7 @@ export type TokenSyntax =
   | FunctionKeywordSyntax
   | ContinueKeywordSyntax
   | BreakKeywordSyntax
+  | ReturnKeywordSyntax
   | BadTokenSyntax
   | EndOfFileTokenSyntax;
 export function NumberToken(span: TextSpan, value: number): NumberTokenSyntax {
@@ -684,6 +690,14 @@ export function BreakKeyword(span: TextSpan): BreakKeywordSyntax {
   const children: SyntaxNode[] = [];
   return {
     kind: 'BreakKeyword',
+    span,
+    children,
+  };
+}
+export function ReturnKeyword(span: TextSpan): ReturnKeywordSyntax {
+  const children: SyntaxNode[] = [];
+  return {
+    kind: 'ReturnKeyword',
     span,
     children,
   };
