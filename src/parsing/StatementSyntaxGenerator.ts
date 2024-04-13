@@ -13,7 +13,7 @@ import {
   optional,
 } from '../codegeneration/Generator';
 
-const statmentTypes: GeneratorTypeDefinitions = {
+const statementTypes: GeneratorTypeDefinitions = {
   ExpressionStatement: {
     children: {
       expression: ExpressionSyntaxTypeNode,
@@ -92,7 +92,7 @@ const generator = new Generator(
   'StatementSyntax',
   'src/parsing/StatementSyntax.ts',
   SyntaxNodeTypeNode,
-  statmentTypes,
+  statementTypes,
   {
     typeSuffix: 'Syntax',
     hasChildren: true,

@@ -1,7 +1,7 @@
-{
-  const r = rand(1, 10)
-  var guess = 11
-  print("Guess the number between 1-10")
+function guess(max: Int) {
+  const r = rand(1, max)
+  var guess = max + 1
+  print("Guess the number between 1-" + string(max))
   while(guess != r) {
     guess = int(input())
     if(guess < r) { print("Higher!") }

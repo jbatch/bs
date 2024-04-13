@@ -19,11 +19,11 @@ export class DiagnosticBag {
     this.diagnostics.forEach((diagnostic) => {
       const lineIndex = sourceText.getLineIndex(diagnostic.span.start);
       const lineNumber = lineIndex + 1;
-      const errorLine = sourceText.lines[lineNumber - 1];
       const character = diagnostic.span.start - sourceText.lines[lineIndex].start + 1;
       Terminal.writeLine(`[${lineNumber}:${character}] ${diagnostic.message}`);
 
-      const prefixSpan = textSpanWithEnd(0, diagnostic.span.start);
+      const errorLine = sourceText.lines[lineIndex];
+      const prefixSpan = textSpanWithEnd(errorLine.start, diagnostic.span.start);
       const suffixSpan = textSpanWithEnd(diagnostic.span.end, errorLine.end);
       const prefix = sourceText.getText(prefixSpan);
       const error = sourceText.getText(diagnostic.span);

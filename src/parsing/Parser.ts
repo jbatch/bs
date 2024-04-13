@@ -76,7 +76,7 @@ export class Parser {
       const start = this.position;
       const statement = this.parseStatement();
       statements.push(statement);
-      // If we didn't make any progress parsing a statment skip the current token (the error was already reported)
+      // If we didn't make any progress parsing a statement skip the current token (the error was already reported)
       if (this.position === start) {
         this.position++;
       }

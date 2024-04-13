@@ -153,8 +153,8 @@ function parseCode(inputText: string) {
   // Bind function definitions first
   binder.bindFunctionDeclarations(functionDeclarations);
   // Bind global statements
-  const boundGlobalStatments = binder.bindGlobalStatements(globalStatements);
-  const statement = BoundBlockStatement(boundGlobalStatments);
+  const boundGlobalStatements = binder.bindGlobalStatements(globalStatements);
+  const statement = BoundBlockStatement(boundGlobalStatements);
   const functionTable = binder.bindFunctionBodies(
     binder.scope.getDeclaredFunctions().filter((f) => f.declaration)
   );

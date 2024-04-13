@@ -8,7 +8,7 @@ import {
   TextSpanTypeNode,
 } from '../codegeneration/Generator';
 
-const statmentTypes: GeneratorTypeDefinitions = {
+const statementTypes: GeneratorTypeDefinitions = {
   // Tokens
   NumberToken: { other: { span: TextSpanTypeNode, value: NumberTypeNode } },
   StringToken: { other: { span: TextSpanTypeNode, value: StringTypeNode } },
@@ -68,7 +68,7 @@ const generator = new Generator(
   'TokenSyntax',
   'src/parsing/TokenSyntax.ts',
   SyntaxNodeTypeNode,
-  statmentTypes,
+  statementTypes,
   {
     typeSuffix: 'Syntax',
     hasChildren: true,

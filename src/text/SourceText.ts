@@ -65,11 +65,8 @@ export class SourceText {
   private getLineBreakWidth(position: number): number {
     var c = this.text[position];
     var l = position + 1 >= this.text.length ? '\0' : this.text[position + 1];
-
     if (c == '\r' && l == '\n') return 2;
-
     if (c == '\r' || c == '\n') return 1;
-
     return 0;
   }
 }
