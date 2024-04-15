@@ -63,6 +63,7 @@ import {
 } from './BoundStatement';
 import { BoundUnaryOperator, bindUnaryOperator } from './BoundUnaryOperator';
 import { SymbolTable } from './SymbolTable';
+import { ControlFlowAnalyzer } from './ControlFlowAnalyzer';
 
 export class Binder {
   scope: BoundScope;
@@ -102,6 +103,14 @@ export class Binder {
       let boundStatement = binder.bindStatement(func.declaration!.functionBlock, 'BlockStatement');
       boundStatement = new Lowerer().lower(boundStatement);
       assert(boundStatement.kind === 'BlockStatement');
+
+      // Check function body returns
+      if (func.type.name !== Void.name) {
+        const controlFlowAnalyzer = new ControlFlowAnalyzer(boundStatement);
+        if (!controlFlowAnalyzer.allPathsReturn()) {
+          this.diagnostics.reportAllPathsMustReturn(func.declaration!.identifier.span);
+        }
+      }
 
       functions.push({ symbol: func, value: boundStatement });
       this.diagnostics.addBag(binder.diagnostics);

@@ -25,6 +25,7 @@ const rl = createInterface({
   output: process.stdout,
   terminal: true,
   history: [
+    'function getInt(n: Int): Int { print(string(n)) var i = n + 1 for(var a = 0; a < 10; i++) { print(string(a)) } if(n == 5) { return n } }',
     '{ var a = 1 print(string(a)) if ( a < 2 ) { print("less") } else { print("not less") } }',
     'function count(n: Int) { print(string(n)) if (n > 0) { count(n - 1) } }',
     'for(var i = 0; i < 10; i = i + 1) { i }',

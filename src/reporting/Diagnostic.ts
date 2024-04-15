@@ -183,4 +183,9 @@ export class DiagnosticBag {
     const message = `TypeError: Function returned wrong type. Expected [${expectedType.name}] but found [${foundType.name}]`;
     this.report(message, span);
   }
+
+  reportAllPathsMustReturn(span: TextSpan) {
+    const message = 'All paths for non-voice function must end in a return statement.';
+    this.report(message, span);
+  }
 }
