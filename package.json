@@ -3,6 +3,7 @@
     "build": "tsc",
     "dev": "NODE_NO_WARNINGS=1 node --watch build/index.js",
     "debug": "node --inspect --enable-source-maps build/index.js",
+    "bsc": "node build/compiler/bsc.js ",
     "generate": "./scripts/generate_boilerplate.sh",
     "generate:all": "GENERATE_ALL=1 ./scripts/generate_boilerplate.sh"
   },

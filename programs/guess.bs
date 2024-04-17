@@ -9,3 +9,5 @@ function guess(max: Int) {
   }
   print("Correct!")
 }
+
+guess(10)

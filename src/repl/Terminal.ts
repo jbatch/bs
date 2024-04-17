@@ -12,13 +12,6 @@ function completer(line: string) {
   const options = completions.filter((c) => c.startsWith(line));
   return [options, line];
 }
-// function Fib(n) {
-//   if (n <= 1) {
-//     return n;
-//   } else {
-//     return Fib(n - 1) + Fib(n - 2);
-//   }
-// }
 
 const rl = createInterface({
   input: process.stdin,

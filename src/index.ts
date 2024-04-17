@@ -1,18 +1,12 @@
-import { Binder } from './binding/Binder';
-import { Parser } from './parsing/Parser';
 import Terminal from './repl/Terminal';
-import { DiagnosticBag } from './reporting/Diagnostic';
 
 import { Evaluator } from './evaluation/Evaluator';
 
 import fs from 'fs';
 import { BoundScope } from './binding/BoundScope';
-import { BlockStatement, BoundBlockStatement } from './binding/BoundStatement';
+import { BlockStatement } from './binding/BoundStatement';
 import { SymbolTable } from './binding/SymbolTable';
-import { Lowerer } from './lowerer/Lowerer';
-import { FunctionDeclarationSyntax } from './parsing/StatementSyntax';
-import { prettyPrintTree } from './parsing/SyntaxNode';
-import { BoundNodePrinter } from './repl/BoundNodePrinter';
+import { Compiler } from './compiler/Compiler';
 import { FunctionSymbol } from './symbols/Symbol';
 
 const variables = {};
@@ -20,6 +14,7 @@ let globalScope = BoundScope.createRootScope();
 let showTree = false;
 let showProgram = true;
 let printLoweredTree = true;
+let verbose = false;
 
 async function main() {
   console.log('Welcome to batchScript v0.0.1.');
@@ -51,6 +46,13 @@ async function main() {
     if (['.l', '.lower'].includes(line)) {
       printLoweredTree = !printLoweredTree;
       const msg = `Print lowered tree ${printLoweredTree ? 'enabled' : 'disabled'}`;
+      Terminal.writeLine(msg);
+      continue;
+    }
+
+    if (['.v', '.verbose'].includes(line)) {
+      verbose = !verbose;
+      const msg = `Verbose error messages ${verbose ? 'enabled' : 'disabled'}`;
       Terminal.writeLine(msg);
       continue;
     }
@@ -101,21 +103,25 @@ async function main() {
     // Reset collected lines
     lines = [];
 
-    let { diagnostics, statement, functionTable } = parseCode(inputText);
+    const compiler = new Compiler(globalScope);
+    const compilationResult = compiler.compile(inputText, {
+      showProgram,
+      showTree,
+      printLoweredTree,
+    });
+    const { sourceText, diagnostics, blockStatement, functionTable, updatedGlobalScope } =
+      compilationResult;
 
     if (diagnostics.hasDiagnostics()) {
+      // Print errors and reset
+      diagnostics.printDiagnostic(sourceText);
       continue;
-    }
-
-    // Rewrite tree
-    const loweredBlockStatement = new Lowerer().lower(statement);
-
-    if (showProgram) {
-      new BoundNodePrinter(printLoweredTree ? loweredBlockStatement : statement).print();
+    } else {
+      globalScope = updatedGlobalScope;
     }
 
     // Evaluate
-    await evaluateBoundStatement(loweredBlockStatement, functionTable);
+    await evaluateBoundStatement(blockStatement, functionTable);
   }
   process.exit(0);
 }
@@ -135,45 +141,10 @@ async function evaluateBoundStatement(
     }
     Terminal.writeLine(result);
   } catch (error: any) {
-    console.error(error.message);
+    if (verbose) {
+      console.error(error);
+    } else {
+      console.error(`Unhandled Error: ${error.message}`);
+    }
   }
-}
-
-function parseCode(inputText: string) {
-  const parser = new Parser(inputText);
-  const sourceText = parser.source;
-  const compilationUnit = parser.parse();
-  const binder = new Binder(globalScope);
-  const globalStatements = compilationUnit.statements.filter(
-    (s) => s.kind !== 'FunctionDeclaration'
-  );
-  const functionDeclarations = compilationUnit.statements.filter(
-    (s): s is FunctionDeclarationSyntax => s.kind === 'FunctionDeclaration'
-  );
-  // Bind function definitions first
-  binder.bindFunctionDeclarations(functionDeclarations);
-  // Bind global statements
-  const boundGlobalStatements = binder.bindGlobalStatements(globalStatements);
-  const statement = BoundBlockStatement(boundGlobalStatements);
-  const functionTable = binder.bindFunctionBodies(
-    binder.scope.getDeclaredFunctions().filter((f) => f.declaration)
-  );
-  const boundScope = binder.scope;
-
-  const diagnostics = new DiagnosticBag();
-  diagnostics.addBag(parser.diagnostics);
-  diagnostics.addBag(binder.diagnostics);
-
-  if (showTree) {
-    prettyPrintTree(compilationUnit.statements[0]);
-  }
-
-  // Print errors
-  if (diagnostics.hasDiagnostics()) {
-    diagnostics.printDiagnostic(sourceText);
-  } else {
-    globalScope = binder.scope;
-  }
-
-  return { diagnostics, statement, boundScope, functionTable };
 }
