@@ -7,7 +7,7 @@ function guess(max: Int) {
     if(guess < r) { print("Higher!") }
     if(guess > r) { print("Lower!") }
   }
-  print("Correct!")
+  print("Correct!" 1)
 }
 
 guess(10)
