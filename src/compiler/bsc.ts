@@ -4,11 +4,13 @@ import { Compiler } from './Compiler';
 import { BoundScope } from '../binding/BoundScope';
 import { Evaluator } from '../evaluation/Evaluator';
 import Terminal from '../repl/Terminal';
+import { NasmCompiler } from './NasmCompiler';
 
 type Args = {
   verbose: boolean;
   showProgram: boolean;
   showTree: boolean;
+  compileToNasm: boolean;
   filename: string;
 };
 
@@ -19,22 +21,24 @@ function getCommandLineArgs(): Args {
       verbose: { type: 'boolean', short: 'v' },
       program: { type: 'boolean', short: 'p' },
       tree: { type: 'boolean', short: 't' },
+      nasm: { type: 'boolean', short: 'n' },
     },
     allowPositionals: true,
   });
   const verbose = values.verbose ?? false;
   const showProgram = values.program ?? false;
   const showTree = values.tree ?? false;
+  const compileToNasm = values.nasm ?? false;
   const filename = positionals[2];
   if (!filename) {
     console.error('Usage: yarn bsc [filename]');
     process.exit(1);
   }
-  return { verbose, showProgram, showTree, filename };
+  return { verbose, showProgram, showTree, compileToNasm, filename };
 }
 
 async function main() {
-  const { verbose, showProgram, showTree, filename } = getCommandLineArgs();
+  const { verbose, showProgram, showTree, compileToNasm, filename } = getCommandLineArgs();
 
   if (!fs.existsSync(filename)) {
     console.error(`File not found: ${filename}`);
@@ -56,6 +60,12 @@ async function main() {
     // Print errors and reset
     diagnostics.printDiagnostic(sourceText);
     process.exit(1);
+  }
+
+  if (compileToNasm) {
+    const nasmCompiler = new NasmCompiler(blockStatement, functionTable);
+    nasmCompiler.compile();
+    process.exit(0);
   }
 
   const evaluator = new Evaluator(blockStatement, {}, functionTable);

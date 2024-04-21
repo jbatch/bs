@@ -6,8 +6,10 @@ import {
   BoundExpression,
   BoundLiteralExpression,
   BoundVariableExpression,
+  CallExpression,
   OperatorAssignmentExpression,
   PostfixUnaryExpression,
+  TypeCastExpression,
 } from '../binding/BoundExpression';
 import {
   BlockStatement,
@@ -22,7 +24,7 @@ import {
   WhileStatement,
 } from '../binding/BoundStatement';
 import { BoundTreeRewriter } from '../binding/BoundTreeRewriter';
-import { Int } from '../symbols/Symbol';
+import { Int, String as StringTypeSymbol } from '../symbols/Symbol';
 
 export class Lowerer extends BoundTreeRewriter {
   curLabelIndex = 0;
@@ -217,5 +219,18 @@ export class Lowerer extends BoundTreeRewriter {
       rightExpression
     );
     return this.rewriteExpression(BoundAssignmentExpression(type, variable, right));
+  }
+
+  /**
+   * REWRITE
+   * string(1)
+   * TO
+   * "1"
+   */
+  protected rewriteTypeCastExpression(expression: TypeCastExpression): BoundExpression {
+    if (expression.type.name === 'string' && expression.expression.kind === 'LiteralExpression') {
+      return BoundLiteralExpression(StringTypeSymbol, String(expression.expression.value));
+    }
+    return expression;
   }
 }

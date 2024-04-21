@@ -58,6 +58,10 @@ export class Compiler {
       new BoundNodePrinter(
         options.printLoweredTree ? loweredBlockStatement : blockStatement
       ).print();
+      for (const [fn, body] of Object.entries(functionTable.symbolTable)) {
+        console.log(fn + '()');
+        new BoundNodePrinter(body!).print();
+      }
     }
 
     return {
