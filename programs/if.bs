@@ -1,0 +1,5 @@
+if(1 < 5) {
+    print(string(5))
+} else {
+    print(string(10))
+}
