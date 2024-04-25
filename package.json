@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
+    "llvm-bindings": "^0.4.2",
     "nodemon": "^3.1.0",
     "npm": "^10.5.1",
     "prettier": "^3.2.5",
