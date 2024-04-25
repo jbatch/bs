@@ -1,4 +1,4 @@
-print(string(1))
-print(string(2))
-print(string(3))
-print(string(4))
+print(string(100))
+print(string(true))
+print(string(35))
+print("hello, world")

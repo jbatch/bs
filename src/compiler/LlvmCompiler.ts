@@ -1,10 +1,20 @@
 import { execSync } from 'node:child_process';
-import { BlockStatement, BoundStatement } from '../binding/BoundStatement';
+import {
+  BlockStatement,
+  BoundStatement,
+  VariableDeclarationStatement,
+} from '../binding/BoundStatement';
 import { SymbolTable } from '../binding/SymbolTable';
 import { FunctionSymbol } from '../symbols/Symbol';
 import fs from 'node:fs';
-import llvm from 'llvm-bindings';
-import { BoundExpression, CallExpression, LiteralExpression } from '../binding/BoundExpression';
+import llvm, { Constant } from 'llvm-bindings';
+import {
+  BoundExpression,
+  CallExpression,
+  LiteralExpression,
+  TypeCastExpression,
+  VariableExpression,
+} from '../binding/BoundExpression';
 
 export class LlvmCompiler {
   rootNode: BlockStatement;
@@ -48,18 +58,23 @@ export class LlvmCompiler {
       'printf',
       llvm.FunctionType.get(this.builder.getInt32Ty(), [bytePtrTy], true)
     );
+    this.module.getOrInsertFunction(
+      'sprintf',
+      llvm.FunctionType.get(this.builder.getInt32Ty(), [bytePtrTy, bytePtrTy], true)
+    );
   }
 
   private createFunction(name: string, functionType: llvm.FunctionType) {
     const fnProto = this.createFunctionProto(name, functionType);
     const fnBody = this.createFunctionBlock(fnProto);
   }
-  createFunctionBlock(fnProto: llvm.Function) {
+
+  private createFunctionBlock(fnProto: llvm.Function) {
     const entry = this.createBB('entry', fnProto);
     this.builder.SetInsertPoint(entry);
   }
 
-  createBB(name: string, fnProto?: llvm.Function): llvm.BasicBlock {
+  private createBB(name: string, fnProto?: llvm.Function): llvm.BasicBlock {
     return llvm.BasicBlock.Create(this.context, name, fnProto);
   }
 
@@ -84,7 +99,7 @@ export class LlvmCompiler {
       case 'ExpressionStatement':
         return this.genExpression(statement.expression);
       case 'VariableDeclarationStatement':
-
+        return this.genVariableDeclaration(statement);
       case 'ReturnStatement':
       case 'LabelStatement':
       case 'GoToStatement':
@@ -97,19 +112,40 @@ export class LlvmCompiler {
     }
   }
 
+  private genVariableDeclaration(statement: VariableDeclarationStatement): llvm.GlobalVariable {
+    if (!statement.variable.isLocal && statement.expression.kind === 'LiteralExpression') {
+      // Global variable
+      const initializer: Constant = llvm.ConstantInt.get(this.builder.getInt32Ty(), 42, true);
+      const gv = new llvm.GlobalVariable(
+        this.module,
+        this.builder.getInt32Ty(),
+        statement.variable.readonly,
+        llvm.GlobalVariable.LinkageTypes.InternalLinkage,
+        initializer,
+        statement.variable.name
+      );
+
+      return gv;
+    }
+    throw new Error('Local variables not implemented');
+  }
+
   private genExpression(expression: BoundExpression): llvm.Value {
     switch (expression.kind) {
       case 'CallExpression':
         return this.genCallExpression(expression);
       case 'LiteralExpression':
         return this.genLiteralExpression(expression);
+      case 'TypeCastExpression':
+        return this.genTypeCast(expression);
+      case 'VariableExpression':
+        return this.genVariableExpression(expression);
       case 'UnaryExpression':
       case 'BinaryExpression':
-      case 'VariableExpression':
+
       case 'AssignmentExpression':
       case 'OperatorAssignmentExpression':
       case 'PostfixUnaryExpression':
-      case 'TypeCastExpression':
       case 'ErrorExpression':
         console.warn(
           `\x1b[31mERROR\x1b[0m: Code generation for node type ${expression.kind} not implemented yet.`
@@ -118,17 +154,49 @@ export class LlvmCompiler {
     }
   }
 
-  genLiteralExpression(expression: LiteralExpression): llvm.Value {
+  private genVariableExpression(expression: VariableExpression): llvm.Value {
+    const variable = this.module.getGlobalVariable(expression.variable.name, true);
+    return this.builder.CreateLoad(this.builder.getInt32Ty(), variable!);
+  }
+
+  private genTypeCast(expression: TypeCastExpression): llvm.Value {
+    switch (expression.type.name) {
+      case 'string':
+        const value = this.genExpression(expression.expression);
+        switch (expression.expression.type.name) {
+          case 'int':
+            return this.intToString(value);
+          case 'boolean':
+            return this.boolToString(value);
+        }
+      case 'int':
+      case 'bool':
+    }
+    console.warn(
+      `\x1b[31mERROR\x1b[0m: Code generation for node type ${expression.kind} not implemented yet.`
+    );
+    return this.builder.CreateUnreachable();
+  }
+
+  private boolToString(value: llvm.Value): llvm.Value {
+    throw new Error('Method not implemented.');
+  }
+  private intToString(value: llvm.Value): llvm.Value {
+    const fmt = this.builder.CreateGlobalStringPtr('%d', 'format_str');
+    const buffer = this.builder.CreateAlloca(this.builder.getInt8Ty(), this.builder.getInt32(20));
+    const sprintfFn = this.module.getFunction('sprintf')!;
+    const args = [buffer, fmt, value];
+    this.builder.CreateCall(sprintfFn, args);
+    return buffer;
+  }
+
+  private genLiteralExpression(expression: LiteralExpression): llvm.Value {
     switch (expression.type.name) {
       case 'int':
         return this.builder.getInt32(Number(expression.value));
       case 'bool':
         return this.builder.getInt1(Boolean(expression.value));
       case 'string':
-        /**
-       * %str = private unnamed_addr constant [14 x i8] c"Hello, World!\00"
-         %cast210 = bitcast [14 x i8]* %str to i8*
-       */
         return this.builder.CreateGlobalStringPtr(String(expression.value + '\n'));
     }
     console.warn(
@@ -137,7 +205,7 @@ export class LlvmCompiler {
     return this.builder.CreateUnreachable();
   }
 
-  genCallExpression(expression: CallExpression): llvm.Value {
+  private genCallExpression(expression: CallExpression): llvm.Value {
     switch (expression.functionSymbol.name) {
       case 'print':
         return this.genPrint(expression);
@@ -148,7 +216,7 @@ export class LlvmCompiler {
     return this.builder.CreateUnreachable();
   }
 
-  genPrint(expression: CallExpression): llvm.Value {
+  private genPrint(expression: CallExpression): llvm.Value {
     const printFn = this.module.getFunction('printf')!;
     const args = [this.genExpression(expression.args[0])];
     return this.builder.CreateCall(printFn, args);
