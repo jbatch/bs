@@ -5,10 +5,11 @@ import {
   VariableDeclarationStatement,
 } from '../binding/BoundStatement';
 import { SymbolTable } from '../binding/SymbolTable';
-import { FunctionSymbol } from '../symbols/Symbol';
+import { FunctionSymbol, TypeSymbol } from '../symbols/Symbol';
 import fs from 'node:fs';
 import llvm, { Constant } from 'llvm-bindings';
 import {
+  AssignmentExpression,
   BoundExpression,
   CallExpression,
   LiteralExpression,
@@ -115,10 +116,11 @@ export class LlvmCompiler {
   private genVariableDeclaration(statement: VariableDeclarationStatement): llvm.GlobalVariable {
     if (!statement.variable.isLocal && statement.expression.kind === 'LiteralExpression') {
       // Global variable
-      const initializer: Constant = llvm.ConstantInt.get(this.builder.getInt32Ty(), 42, true);
+      // const initializer: Constant = llvm.ConstantInt.get(this.builder.getInt32Ty(), 42, true);
+      const initializer: Constant = this.genExpression(statement.expression) as Constant;
       const gv = new llvm.GlobalVariable(
         this.module,
-        this.builder.getInt32Ty(),
+        this.getLlvmType(statement.variable.type),
         statement.variable.readonly,
         llvm.GlobalVariable.LinkageTypes.InternalLinkage,
         initializer,
@@ -140,10 +142,10 @@ export class LlvmCompiler {
         return this.genTypeCast(expression);
       case 'VariableExpression':
         return this.genVariableExpression(expression);
+      case 'AssignmentExpression':
+        return this.getAssignmentExpression(expression);
       case 'UnaryExpression':
       case 'BinaryExpression':
-
-      case 'AssignmentExpression':
       case 'OperatorAssignmentExpression':
       case 'PostfixUnaryExpression':
       case 'ErrorExpression':
@@ -156,7 +158,12 @@ export class LlvmCompiler {
 
   private genVariableExpression(expression: VariableExpression): llvm.Value {
     const variable = this.module.getGlobalVariable(expression.variable.name, true);
-    return this.builder.CreateLoad(this.builder.getInt32Ty(), variable!);
+    return this.builder.CreateLoad(this.getLlvmType(expression.variable.type), variable!);
+  }
+
+  private getAssignmentExpression(expression: AssignmentExpression): llvm.Value {
+    const variable = this.module.getGlobalVariable(expression.variable.name, true);
+    return this.builder.CreateStore(this.genExpression(expression.expression), variable!);
   }
 
   private genTypeCast(expression: TypeCastExpression): llvm.Value {
@@ -173,7 +180,7 @@ export class LlvmCompiler {
       case 'bool':
     }
     console.warn(
-      `\x1b[31mERROR\x1b[0m: Code generation for node type ${expression.kind} not implemented yet.`
+      `\x1b[31mERROR\x1b[0m: Code generation for type cast ${expression.expression.type.name} to ${expression.type.name} not implemented yet.`
     );
     return this.builder.CreateUnreachable();
   }
@@ -181,6 +188,7 @@ export class LlvmCompiler {
   private boolToString(value: llvm.Value): llvm.Value {
     throw new Error('Method not implemented.');
   }
+
   private intToString(value: llvm.Value): llvm.Value {
     const fmt = this.builder.CreateGlobalStringPtr('%d', 'format_str');
     const buffer = this.builder.CreateAlloca(this.builder.getInt8Ty(), this.builder.getInt32(20));
@@ -197,7 +205,7 @@ export class LlvmCompiler {
       case 'bool':
         return this.builder.getInt1(Boolean(expression.value));
       case 'string':
-        return this.builder.CreateGlobalStringPtr(String(expression.value + '\n'));
+        return this.builder.CreateGlobalStringPtr(String(expression.value).replace(/\\n/g, '\n'));
     }
     console.warn(
       `\x1b[31mERROR\x1b[0m: Code generation for literal type ${expression.type.name} not implemented yet.`
@@ -220,6 +228,18 @@ export class LlvmCompiler {
     const printFn = this.module.getFunction('printf')!;
     const args = [this.genExpression(expression.args[0])];
     return this.builder.CreateCall(printFn, args);
+  }
+
+  private getLlvmType(bsType: TypeSymbol): llvm.Type {
+    switch (bsType.name) {
+      case 'int':
+        return this.builder.getInt32Ty();
+      case 'string':
+        return this.builder.getInt8PtrTy();
+      case 'bool':
+        return this.builder.getInt1Ty();
+    }
+    throw new Error('Not supported type');
   }
 
   private writeToFile(nasm: string) {
