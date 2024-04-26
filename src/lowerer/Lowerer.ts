@@ -30,8 +30,8 @@ export class Lowerer extends BoundTreeRewriter {
   curLabelIndex = 0;
   lower(root: BoundStatement): BlockStatement {
     const rewritten = this.rewriteBoundStatement(root);
-    const flattenedStatements = this.flatten(rewritten);
-    return BoundBlockStatement(flattenedStatements);
+    // const flattenedStatements = this.flatten(rewritten);
+    return BoundBlockStatement([rewritten]);
   }
   flatten(statement: BoundStatement): BoundStatement[] {
     const statements: BoundStatement[] = [];

@@ -11,6 +11,8 @@ import {
 } from '../binding/BoundExpression';
 import {
   BlockStatement,
+  BoundBlockStatement,
+  BoundStatement,
   ConditionalGoToStatement,
   GoToStatement,
   LabelStatement,
@@ -44,8 +46,26 @@ export class Evaluator {
     return await this.evaluateBlockStatement(this.root);
   }
 
+  private flatten(statement: BoundStatement): BoundStatement[] {
+    const statements: BoundStatement[] = [];
+    const stack: BoundStatement[] = [];
+
+    stack.push(statement);
+    while (stack.length > 0) {
+      const cur = stack.pop()!;
+
+      if (cur.kind === 'BlockStatement') {
+        stack.push(...cur.statements.reverse());
+      } else {
+        statements.push(cur);
+      }
+    }
+    return statements;
+  }
+
   async evaluateBlockStatement(block: BlockStatement): Promise<EvaluationResult> {
     const labelMap: Record<string, number> = {};
+    block = BoundBlockStatement(this.flatten(block));
 
     block.statements.forEach((statement, index) => {
       if (statement.kind === 'LabelStatement') {

@@ -7,7 +7,7 @@ import {
 import { SymbolTable } from '../binding/SymbolTable';
 import { FunctionSymbol, TypeSymbol } from '../symbols/Symbol';
 import fs from 'node:fs';
-import llvm, { Constant } from 'llvm-bindings';
+import llvm from 'llvm-bindings';
 import {
   AssignmentExpression,
   BoundExpression,
@@ -20,6 +20,7 @@ import {
 export class LlvmCompiler {
   rootNode: BlockStatement;
   functionTable: SymbolTable<FunctionSymbol, BlockStatement>;
+  globalEnvironment: Env = new Env();
 
   context = new llvm.LLVMContext();
   module = new llvm.Module('bsc', this.context);
@@ -35,6 +36,7 @@ export class LlvmCompiler {
 
   compile() {
     this.setupExternFunctions();
+    this.setupGlobalEnvironment();
     this.moduleInit();
 
     const llvmIR = this.module.print();
@@ -44,10 +46,14 @@ export class LlvmCompiler {
 
   moduleInit() {
     // Create main function prototype
-    this.createFunction('main', llvm.FunctionType.get(this.builder.getInt32Ty(), [], false));
+    this.createFunction(
+      'main',
+      llvm.FunctionType.get(this.builder.getInt32Ty(), [], false),
+      this.globalEnvironment
+    );
 
     // Compiler main body
-    this.gen(this.rootNode);
+    this.gen(this.rootNode, this.globalEnvironment);
 
     // return 0
     this.builder.CreateRet(this.builder.getInt32(0));
@@ -65,8 +71,17 @@ export class LlvmCompiler {
     );
   }
 
-  private createFunction(name: string, functionType: llvm.FunctionType) {
-    const fnProto = this.createFunctionProto(name, functionType);
+  private setupGlobalEnvironment() {
+    const globals = { version: this.builder.getInt32(42) };
+
+    for (const [name, value] of Object.entries(globals)) {
+      const globalVariable = this.declareGlobalVariable(name, value, true);
+      this.globalEnvironment.define(name, globalVariable);
+    }
+  }
+
+  private createFunction(name: string, functionType: llvm.FunctionType, env: Env) {
+    const fnProto = this.createFunctionProto(name, functionType, env);
     const fnBody = this.createFunctionBlock(fnProto);
   }
 
@@ -79,7 +94,11 @@ export class LlvmCompiler {
     return llvm.BasicBlock.Create(this.context, name, fnProto);
   }
 
-  private createFunctionProto(name: string, functionType: llvm.FunctionType): llvm.Function {
+  private createFunctionProto(
+    name: string,
+    functionType: llvm.FunctionType,
+    env: Env
+  ): llvm.Function {
     const fn = llvm.Function.Create(
       functionType,
       llvm.Function.LinkageTypes.ExternalLinkage,
@@ -87,20 +106,22 @@ export class LlvmCompiler {
       this.module
     );
     llvm.verifyFunction(fn);
+    env.define(name, fn);
     return fn;
   }
 
-  private gen(statement: BoundStatement) {
+  private gen(statement: BoundStatement, env: Env) {
     switch (statement.kind) {
       case 'BlockStatement':
+        const blockEnv = new Env(env);
         for (const s of statement.statements) {
-          this.gen(s);
+          this.gen(s, blockEnv);
         }
         return;
       case 'ExpressionStatement':
-        return this.genExpression(statement.expression);
+        return this.genExpression(statement.expression, env);
       case 'VariableDeclarationStatement':
-        return this.genVariableDeclaration(statement);
+        return this.genVariableDeclaration(statement, env);
       case 'ReturnStatement':
       case 'LabelStatement':
       case 'GoToStatement':
@@ -113,37 +134,57 @@ export class LlvmCompiler {
     }
   }
 
-  private genVariableDeclaration(statement: VariableDeclarationStatement): llvm.GlobalVariable {
-    if (!statement.variable.isLocal && statement.expression.kind === 'LiteralExpression') {
-      // Global variable
-      // const initializer: Constant = llvm.ConstantInt.get(this.builder.getInt32Ty(), 42, true);
-      const initializer: Constant = this.genExpression(statement.expression) as Constant;
-      const gv = new llvm.GlobalVariable(
-        this.module,
-        this.getLlvmType(statement.variable.type),
-        statement.variable.readonly,
-        llvm.GlobalVariable.LinkageTypes.InternalLinkage,
-        initializer,
-        statement.variable.name
-      );
-
-      return gv;
-    }
-    throw new Error('Local variables not implemented');
+  private genVariableDeclaration(
+    statement: VariableDeclarationStatement,
+    env: Env
+  ): llvm.GlobalVariable {
+    const initializer: llvm.Constant = this.genExpression(
+      statement.expression,
+      env
+    ) as llvm.Constant;
+    // const localVar = this.builder.CreateAlloca(
+    //   this.getLlvmType(statement.variable.type),
+    //   this.builder.getInt32(0),
+    //   statement.variable.name
+    // );
+    const variable = this.declareGlobalVariable(
+      statement.variable.name,
+      initializer,
+      statement.variable.readonly
+    );
+    env.define(statement.variable.name, variable);
+    return variable;
   }
 
-  private genExpression(expression: BoundExpression): llvm.Value {
+  private declareGlobalVariable(
+    name: string,
+    initializer: llvm.Constant,
+    readonly: boolean = false
+  ): llvm.GlobalVariable {
+    const gv = new llvm.GlobalVariable(
+      this.module,
+      initializer.getType(),
+      readonly,
+      llvm.GlobalVariable.LinkageTypes.InternalLinkage,
+      initializer,
+      name
+    );
+
+    return gv;
+  }
+
+  private genExpression(expression: BoundExpression, env: Env): llvm.Value {
     switch (expression.kind) {
       case 'CallExpression':
-        return this.genCallExpression(expression);
+        return this.genCallExpression(expression, env);
       case 'LiteralExpression':
         return this.genLiteralExpression(expression);
       case 'TypeCastExpression':
-        return this.genTypeCast(expression);
+        return this.genTypeCast(expression, env);
       case 'VariableExpression':
-        return this.genVariableExpression(expression);
+        return this.genVariableExpression(expression, env);
       case 'AssignmentExpression':
-        return this.getAssignmentExpression(expression);
+        return this.getAssignmentExpression(expression, env);
       case 'UnaryExpression':
       case 'BinaryExpression':
       case 'OperatorAssignmentExpression':
@@ -156,20 +197,21 @@ export class LlvmCompiler {
     }
   }
 
-  private genVariableExpression(expression: VariableExpression): llvm.Value {
-    const variable = this.module.getGlobalVariable(expression.variable.name, true);
-    return this.builder.CreateLoad(this.getLlvmType(expression.variable.type), variable!);
+  private genVariableExpression(expression: VariableExpression, env: Env): llvm.Value {
+    console.log('Looking up ', expression.variable.name);
+    const variable = env.lookup(expression.variable.name);
+    return this.builder.CreateLoad(this.getLlvmType(expression.variable.type), variable);
   }
 
-  private getAssignmentExpression(expression: AssignmentExpression): llvm.Value {
+  private getAssignmentExpression(expression: AssignmentExpression, env: Env): llvm.Value {
     const variable = this.module.getGlobalVariable(expression.variable.name, true);
-    return this.builder.CreateStore(this.genExpression(expression.expression), variable!);
+    return this.builder.CreateStore(this.genExpression(expression.expression, env), variable!);
   }
 
-  private genTypeCast(expression: TypeCastExpression): llvm.Value {
+  private genTypeCast(expression: TypeCastExpression, env: Env): llvm.Value {
     switch (expression.type.name) {
       case 'string':
-        const value = this.genExpression(expression.expression);
+        const value = this.genExpression(expression.expression, env);
         switch (expression.expression.type.name) {
           case 'int':
             return this.intToString(value);
@@ -213,10 +255,10 @@ export class LlvmCompiler {
     return this.builder.CreateUnreachable();
   }
 
-  private genCallExpression(expression: CallExpression): llvm.Value {
+  private genCallExpression(expression: CallExpression, env: Env): llvm.Value {
     switch (expression.functionSymbol.name) {
       case 'print':
-        return this.genPrint(expression);
+        return this.genPrint(expression, env);
     }
     console.warn(
       `\x1b[31mERROR\x1b[0m: Code generation for function ${expression.functionSymbol.name} not implemented yet.`
@@ -224,9 +266,9 @@ export class LlvmCompiler {
     return this.builder.CreateUnreachable();
   }
 
-  private genPrint(expression: CallExpression): llvm.Value {
+  private genPrint(expression: CallExpression, env: Env): llvm.Value {
     const printFn = this.module.getFunction('printf')!;
-    const args = [this.genExpression(expression.args[0])];
+    const args = [this.genExpression(expression.args[0], env)];
     return this.builder.CreateCall(printFn, args);
   }
 
@@ -249,5 +291,35 @@ export class LlvmCompiler {
   private compileLlvm() {
     execSync('clang build/llvm/out.ll -o build/llvm/out');
     console.log('Wrote output to build/llvm/out');
+  }
+}
+
+class Env {
+  variables: Record<string, llvm.Value>;
+  parent?: Env;
+  constructor(parent?: Env) {
+    this.parent = parent;
+    this.variables = {};
+  }
+
+  define(name: string, value: llvm.Value) {
+    this.variables[name] = value;
+    return value;
+  }
+
+  lookup(name: string): llvm.Value {
+    return this.resolve(name).variables[name];
+  }
+
+  private resolve(name: string): Env {
+    if (this.variables[name] !== undefined) {
+      return this;
+    }
+
+    if (this.parent === undefined) {
+      throw new Error(`Variable ${name} not found`);
+    }
+
+    return this.parent.resolve(name);
   }
 }
