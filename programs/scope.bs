@@ -1,0 +1,13 @@
+var a = "first"
+print(a)
+print("\n")
+{
+    var a = "second"
+    print(a)
+    print("\n")
+}
+print(a)
+print("\n")
+a = "third"
+print(a)
+print("\n")

@@ -134,26 +134,18 @@ export class LlvmCompiler {
     }
   }
 
-  private genVariableDeclaration(
-    statement: VariableDeclarationStatement,
-    env: Env
-  ): llvm.GlobalVariable {
+  private genVariableDeclaration(statement: VariableDeclarationStatement, env: Env) {
     const initializer: llvm.Constant = this.genExpression(
       statement.expression,
       env
     ) as llvm.Constant;
-    // const localVar = this.builder.CreateAlloca(
-    //   this.getLlvmType(statement.variable.type),
-    //   this.builder.getInt32(0),
-    //   statement.variable.name
-    // );
-    const variable = this.declareGlobalVariable(
-      statement.variable.name,
-      initializer,
-      statement.variable.readonly
+    const localVar = this.builder.CreateAlloca(
+      this.getLlvmType(statement.variable.type),
+      this.builder.getInt32(0),
+      statement.variable.name
     );
-    env.define(statement.variable.name, variable);
-    return variable;
+    this.builder.CreateStore(initializer, localVar);
+    env.define(statement.variable.name, localVar);
   }
 
   private declareGlobalVariable(
@@ -204,8 +196,9 @@ export class LlvmCompiler {
   }
 
   private getAssignmentExpression(expression: AssignmentExpression, env: Env): llvm.Value {
-    const variable = this.module.getGlobalVariable(expression.variable.name, true);
-    return this.builder.CreateStore(this.genExpression(expression.expression, env), variable!);
+    const variable = env.lookup(expression.variable.name);
+    const value = this.genExpression(expression.expression, env);
+    return this.builder.CreateStore(value, variable!);
   }
 
   private genTypeCast(expression: TypeCastExpression, env: Env): llvm.Value {
