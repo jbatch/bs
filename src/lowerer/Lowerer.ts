@@ -103,36 +103,62 @@ export class Lowerer extends BoundTreeRewriter {
      * TO
      *
      * {
-     *  conditionGoTo <condition> <end:> jumpIfTrue=false
-     *  <ifBlock>
+     *  conditionGoTo <condition> <ifblock:> else: <end:>
+     *  ifblock:
+     *    <ifBlock>
+     *    goto: <end:>
      *  end:
      * }
      * OR
      * {
-     *  conditionalGoTo <condition> <else:> jumpIfTrue=false
-     *  <ifBlock>
-     *  goto <end:>
-     *  else:
-     *  <elseblock>
+     *  conditionalGoTo <condition> <ifblock:> else: <elseblock:>
+     *  ifblock:
+     *    <ifBlock>
+     *    goto <end:>
+     *  elseblock:
+     *    <elseblock>
+     *    goto <end:>
      *  end:
      * }
      */
     const { condition, ifBlock, elseBlock } = statement;
+    const ifLabel = BoundLabelStatement({ name: this.generateLabel() });
 
     if (elseBlock === undefined) {
       const endLabel = BoundLabelStatement({ name: this.generateLabel() });
-      const goToEndIfFalse = BoundConditionalGoToStatement(endLabel.label, false, condition);
+      const elseLabel = endLabel;
+      const goToEndIfFalse = BoundConditionalGoToStatement(
+        ifLabel.label,
+        elseLabel.label,
+        endLabel.label,
+        condition
+      );
+      const goToEnd = BoundGoToStatement(endLabel.label);
 
-      return BoundBlockStatement([goToEndIfFalse, ifBlock, endLabel]);
+      return BoundBlockStatement([goToEndIfFalse, ifLabel, ifBlock, goToEnd, endLabel]);
     }
 
     const elseLabel = BoundLabelStatement({ name: this.generateLabel() });
     const endLabel = BoundLabelStatement({ name: this.generateLabel() });
-    const goToTElseIfFalse = BoundConditionalGoToStatement(elseLabel.label, false, condition);
+    const goToTElseIfFalse = BoundConditionalGoToStatement(
+      ifLabel.label,
+      elseLabel.label,
+      endLabel.label,
+      condition
+    );
     const goToEnd = BoundGoToStatement(endLabel.label);
 
     return this.rewriteBoundStatement(
-      BoundBlockStatement([goToTElseIfFalse, ifBlock, goToEnd, elseLabel, elseBlock, endLabel])
+      BoundBlockStatement([
+        goToTElseIfFalse,
+        ifLabel,
+        ifBlock,
+        goToEnd,
+        elseLabel,
+        elseBlock,
+        goToEnd,
+        endLabel,
+      ])
     );
   }
 
@@ -147,17 +173,20 @@ export class Lowerer extends BoundTreeRewriter {
      * TO
      *
      * continue:
-     * conditionalGoTo <condition> <:break> jumpIfTrue=false
-     * <whileBlock>
+     * conditionalGoTo <condition> <:whileblock> else <:break>
+     * whileblock:
+     *  <whileBlock>
      * goto <continue:>
      * break:
      */
     const { loopCondition, whileBlock, continueLabel, breakLabel } = statement;
     const continueLabelStatement = BoundLabelStatement(continueLabel);
+    const whileLabelStatement = BoundLabelStatement(continueLabel);
     const breakLabelStatement = BoundLabelStatement(breakLabel);
     const goToBreakIfFalse = BoundConditionalGoToStatement(
+      whileLabelStatement.label,
       breakLabelStatement.label,
-      false,
+      breakLabelStatement.label,
       loopCondition
     );
     const goToContinue = BoundGoToStatement(continueLabelStatement.label);

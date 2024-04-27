@@ -73,8 +73,9 @@ export type GoToStatement = {
 };
 export type ConditionalGoToStatement = {
   kind: 'ConditionalGoToStatement';
-  label: BoundLabel;
-  jumpIfTrue: boolean;
+  ifLabel: BoundLabel;
+  elseLabel: BoundLabel;
+  endLabel: BoundLabel;
   condition: BoundExpression;
   children: BoundNode[];
 };
@@ -205,15 +206,17 @@ export function BoundGoToStatement(label: BoundLabel): GoToStatement {
   };
 }
 export function BoundConditionalGoToStatement(
-  label: BoundLabel,
-  jumpIfTrue: boolean,
+  ifLabel: BoundLabel,
+  elseLabel: BoundLabel,
+  endLabel: BoundLabel,
   condition: BoundExpression
 ): ConditionalGoToStatement {
   const children: BoundNode[] = [condition];
   return {
     kind: 'ConditionalGoToStatement',
-    label,
-    jumpIfTrue,
+    ifLabel,
+    elseLabel,
+    endLabel,
     condition,
     children,
   };

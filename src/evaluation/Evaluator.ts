@@ -94,13 +94,12 @@ export class Evaluator {
           continue;
         case 'ConditionalGoToStatement':
           const condition = Boolean(await this.evaluateExpression(statement.condition));
-          if (condition === statement.jumpIfTrue) {
-            index = labelMap[statement.label.name];
+          if (condition) {
+            index = labelMap[statement.ifLabel.name];
             continue;
           } else {
-            // No op
-            index++;
-            break;
+            index = labelMap[statement.elseLabel.name];
+            continue;
           }
         case 'ReturnStatement':
           if (!statement.value) {

@@ -2,6 +2,9 @@ import { execSync } from 'node:child_process';
 import {
   BlockStatement,
   BoundStatement,
+  ConditionalGoToStatement,
+  GoToStatement,
+  LabelStatement,
   VariableDeclarationStatement,
 } from '../binding/BoundStatement';
 import { SymbolTable } from '../binding/SymbolTable';
@@ -10,6 +13,7 @@ import fs from 'node:fs';
 import llvm from 'llvm-bindings';
 import {
   AssignmentExpression,
+  BinaryExpression,
   BoundExpression,
   CallExpression,
   LiteralExpression,
@@ -25,6 +29,8 @@ export class LlvmCompiler {
   context = new llvm.LLVMContext();
   module = new llvm.Module('bsc', this.context);
   builder = new llvm.IRBuilder(this.context);
+  blocks: Record<string, llvm.BasicBlock> = {};
+  functions: Record<string, llvm.Function> = {};
 
   constructor(
     rootNode: BlockStatement,
@@ -46,17 +52,43 @@ export class LlvmCompiler {
 
   moduleInit() {
     // Create main function prototype
-    this.createFunction(
+    const { block: mainBlock, fn: mainFn } = this.createFunction(
       'main',
       llvm.FunctionType.get(this.builder.getInt32Ty(), [], false),
       this.globalEnvironment
     );
+    this.blocks['main'] = mainBlock;
+    this.functions['main'] = mainFn;
 
-    // Compiler main body
+    // Build basic blocks
+    this.generateLabelBlocks(this.rootNode);
+
+    // Compile main body
+    this.builder.SetInsertPoint(this.blocks['main']);
     this.gen(this.rootNode, this.globalEnvironment);
 
     // return 0
     this.builder.CreateRet(this.builder.getInt32(0));
+  }
+
+  private generateLabelBlocks(rootNode: BlockStatement) {
+    const stack: BoundStatement[] = [];
+    stack.push(...[...rootNode.statements].reverse());
+    while (stack.length > 0) {
+      const cur = stack.pop()!;
+      if (cur.kind === 'BlockStatement') {
+        stack.push(...[...cur.statements].reverse());
+      }
+      if (cur.kind === 'LabelStatement') {
+        const basicBlock = llvm.BasicBlock.Create(
+          this.context,
+          cur.label.name,
+          // TODO: Use stack for block parent once we support functions
+          this.functions['main']
+        );
+        this.blocks[cur.label.name] = basicBlock;
+      }
+    }
   }
 
   private setupExternFunctions() {
@@ -80,14 +112,20 @@ export class LlvmCompiler {
     }
   }
 
-  private createFunction(name: string, functionType: llvm.FunctionType, env: Env) {
+  private createFunction(
+    name: string,
+    functionType: llvm.FunctionType,
+    env: Env
+  ): { fn: llvm.Function; block: llvm.BasicBlock } {
     const fnProto = this.createFunctionProto(name, functionType, env);
     const fnBody = this.createFunctionBlock(fnProto);
+    return { fn: fnProto, block: fnBody };
   }
 
-  private createFunctionBlock(fnProto: llvm.Function) {
+  private createFunctionBlock(fnProto: llvm.Function): llvm.BasicBlock {
     const entry = this.createBB('entry', fnProto);
-    this.builder.SetInsertPoint(entry);
+    // this.builder.SetInsertPoint(entry);
+    return entry;
   }
 
   private createBB(name: string, fnProto?: llvm.Function): llvm.BasicBlock {
@@ -122,16 +160,37 @@ export class LlvmCompiler {
         return this.genExpression(statement.expression, env);
       case 'VariableDeclarationStatement':
         return this.genVariableDeclaration(statement, env);
-      case 'ReturnStatement':
       case 'LabelStatement':
-      case 'GoToStatement':
+        return this.genLabelStatement(statement);
       case 'ConditionalGoToStatement':
+        return this.genConditionalGoTo(statement, env);
+      case 'GoToStatement':
+        return this.genGoTo(statement);
+      case 'ReturnStatement':
       default:
         console.warn(
           `\x1b[31mERROR\x1b[0m: Code generation for node type ${statement.kind} not implemented yet.`
         );
         return this.builder.CreateUnreachable();
     }
+  }
+
+  private genConditionalGoTo(statement: ConditionalGoToStatement, env: Env) {
+    const cond = this.genExpression(statement.condition, env);
+    this.builder.CreateCondBr(
+      cond,
+      this.blocks[statement.ifLabel.name]!,
+      this.blocks[statement.elseLabel.name]!
+    );
+  }
+
+  private genGoTo(statement: GoToStatement) {
+    this.builder.CreateBr(this.blocks[statement.label.name]);
+  }
+
+  private genLabelStatement(statement: LabelStatement) {
+    const basicBlock = this.blocks[statement.label.name];
+    this.builder.SetInsertPoint(basicBlock);
   }
 
   private genVariableDeclaration(statement: VariableDeclarationStatement, env: Env) {
@@ -176,9 +235,10 @@ export class LlvmCompiler {
       case 'VariableExpression':
         return this.genVariableExpression(expression, env);
       case 'AssignmentExpression':
-        return this.getAssignmentExpression(expression, env);
-      case 'UnaryExpression':
+        return this.genAssignmentExpression(expression, env);
       case 'BinaryExpression':
+        return this.genBinaryExpression(expression, env);
+      case 'UnaryExpression':
       case 'OperatorAssignmentExpression':
       case 'PostfixUnaryExpression':
       case 'ErrorExpression':
@@ -189,13 +249,49 @@ export class LlvmCompiler {
     }
   }
 
+  private genBinaryExpression(expression: BinaryExpression, env: Env): llvm.Value {
+    const left = this.genExpression(expression.left, env);
+    const right = this.genExpression(expression.right, env);
+    switch (expression.operator.kind) {
+      case 'Addition':
+        return this.builder.CreateAdd(left, right);
+      case 'Subtraction':
+        return this.builder.CreateSub(left, right);
+      case 'Multiplication':
+        return this.builder.CreateMul(left, right);
+      case 'Division':
+        return this.builder.CreateSDiv(left, right);
+      case 'BitwiseAnd':
+        return this.builder.CreateAnd(left, right);
+      case 'BitwiseOr':
+        return this.builder.CreateOr(left, right);
+      case 'BitwiseXor':
+        return this.builder.CreateXor(left, right);
+      case 'LogicalAnd':
+        return this.builder.CreateAnd(left, right);
+      case 'LogicalOr':
+        return this.builder.CreateOr(left, right);
+      case 'Equals':
+        return this.builder.CreateICmpEQ(left, right);
+      case 'NotEquals':
+        return this.builder.CreateICmpNE(left, right);
+      case 'LessThan':
+        return this.builder.CreateICmpSLT(left, right);
+      case 'LessThanOrEqual':
+        return this.builder.CreateICmpSLE(left, right);
+      case 'GreaterThan':
+        return this.builder.CreateICmpSGT(left, right);
+      case 'GreaterThanOrEqual':
+        return this.builder.CreateICmpSLE(left, right);
+    }
+  }
+
   private genVariableExpression(expression: VariableExpression, env: Env): llvm.Value {
-    console.log('Looking up ', expression.variable.name);
     const variable = env.lookup(expression.variable.name);
     return this.builder.CreateLoad(this.getLlvmType(expression.variable.type), variable);
   }
 
-  private getAssignmentExpression(expression: AssignmentExpression, env: Env): llvm.Value {
+  private genAssignmentExpression(expression: AssignmentExpression, env: Env): llvm.Value {
     const variable = env.lookup(expression.variable.name);
     const value = this.genExpression(expression.expression, env);
     return this.builder.CreateStore(value, variable!);

@@ -84,8 +84,9 @@ const boundStatementTypes: GeneratorTypeDefinitions = {
       condition: BoundExpressionTypeNode,
     },
     other: {
-      label: BoundLabelTypeNode,
-      jumpIfTrue: BooleanTypeNode,
+      ifLabel: BoundLabelTypeNode,
+      elseLabel: BoundLabelTypeNode,
+      endLabel: BoundLabelTypeNode,
     },
   },
 };

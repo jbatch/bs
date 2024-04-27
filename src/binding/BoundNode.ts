@@ -34,7 +34,7 @@ export function prettyPrintProgram(node: BoundNode, indent: string = '', isLast:
     process.stdout.write(`(label=${node.label.name})`);
   }
   if (node.kind === 'ConditionalGoToStatement') {
-    process.stdout.write(`(label=${node.label.name}, jumpIfTrue=${node.jumpIfTrue})`);
+    process.stdout.write(`(ifLabel=${node.ifLabel.name}, elseLabel=${node.elseLabel.name})`);
   }
   if (node.kind === 'CallExpression') {
     process.stdout.write(' (' + node.functionSymbol.name + ')');

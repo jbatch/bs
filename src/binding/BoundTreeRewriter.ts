@@ -151,9 +151,9 @@ export class BoundTreeRewriter {
   }
 
   protected rewriteConditionalGoToStatement(statement: ConditionalGoToStatement): BoundStatement {
-    let { label, jumpIfTrue, condition } = statement;
+    let { ifLabel, elseLabel, endLabel, condition } = statement;
     condition = this.rewriteExpression(condition);
-    return BoundConditionalGoToStatement(label, jumpIfTrue, condition);
+    return BoundConditionalGoToStatement(ifLabel, elseLabel, endLabel, condition);
   }
 
   protected rewriteFunctionDeclarationStatement(

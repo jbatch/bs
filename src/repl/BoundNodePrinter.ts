@@ -164,10 +164,12 @@ export class BoundNodePrinter {
         this.newLine();
         break;
       case 'ConditionalGoToStatement':
-        this.printKeyword('goto ');
-        this.printLabel(statement.label.name);
-        this.printKeyword(statement.jumpIfTrue ? ' if ' : ' unless ');
+        this.printKeyword(' if ');
         this.printExpression(statement.condition);
+        this.printKeyword('goto ');
+        this.printLabel(statement.ifLabel.name);
+        this.printKeyword(' else goto ');
+        this.printLabel(statement.elseLabel.name);
         this.newLine();
         break;
       case 'ReturnStatement':

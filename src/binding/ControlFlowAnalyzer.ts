@@ -176,13 +176,11 @@ export class ControlFlowAnalyzer {
             connect(current.id, toBlock.id);
             break;
           case 'ConditionalGoToStatement':
-            const thenBlock = labelToBlock[statement.label.name];
-            const elseBlock = next;
+            const thenBlock = labelToBlock[statement.ifLabel.name];
+            const elseBlock = labelToBlock[statement.ifLabel.name];
             const negatedCondition = this.negateExpression(statement.condition);
-            const thenCondition = statement.jumpIfTrue ? statement.condition : negatedCondition;
-            const elseCondition = statement.jumpIfTrue ? negatedCondition : statement.condition;
-            connect(current.id, thenBlock.id, thenCondition);
-            connect(current.id, elseBlock.id, elseCondition);
+            connect(current.id, thenBlock.id, statement.condition);
+            connect(current.id, elseBlock.id, negatedCondition);
             break;
           case 'ReturnStatement':
             // Return == connect current block to end
