@@ -6,7 +6,6 @@ import {
   BoundExpression,
   BoundLiteralExpression,
   BoundVariableExpression,
-  CallExpression,
   OperatorAssignmentExpression,
   PostfixUnaryExpression,
   TypeCastExpression,
@@ -66,7 +65,8 @@ export class Lowerer extends BoundTreeRewriter {
      *   <begin>
      *   while( <condition> ) {
      *     <forBlock>
-     *     continue:
+     *     goto <continue:>
+     * continue:
      *     <end>
      *   }
      *  break:
@@ -76,8 +76,10 @@ export class Lowerer extends BoundTreeRewriter {
       statement;
     assert(forBlock.kind === 'BlockStatement');
     const continueLabelStatement = BoundLabelStatement(continueLabel);
+    const gotoContinue = BoundGoToStatement(continueLabel);
     const whileBlock = BoundBlockStatement([
       ...forBlock.statements,
+      gotoContinue,
       continueLabelStatement,
       endStatement,
     ]);
@@ -172,16 +174,17 @@ export class Lowerer extends BoundTreeRewriter {
      * break:
      * TO
      *
+     *  goto <continue:>
      * continue:
-     * conditionalGoTo <condition> <:whileblock> else <:break>
-     * whileblock:
-     *  <whileBlock>
-     * goto <continue:>
+     *  conditionalGoTo <condition> <:whileblock> else <:break>
+     *  whileblock:
+     *   <whileBlock>
+     *   goto <continue:>
      * break:
      */
     const { loopCondition, whileBlock, continueLabel, breakLabel } = statement;
     const continueLabelStatement = BoundLabelStatement(continueLabel);
-    const whileLabelStatement = BoundLabelStatement(continueLabel);
+    const whileLabelStatement = BoundLabelStatement({ name: this.generateLabel() });
     const breakLabelStatement = BoundLabelStatement(breakLabel);
     const goToBreakIfFalse = BoundConditionalGoToStatement(
       whileLabelStatement.label,
@@ -193,8 +196,10 @@ export class Lowerer extends BoundTreeRewriter {
 
     return this.rewriteBoundStatement(
       BoundBlockStatement([
+        goToContinue,
         continueLabelStatement,
         goToBreakIfFalse,
+        whileLabelStatement,
         whileBlock,
         goToContinue,
         breakLabelStatement,
