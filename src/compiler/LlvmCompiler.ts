@@ -32,6 +32,7 @@ export class LlvmCompiler {
   context = new llvm.LLVMContext();
   module = new llvm.Module('bsc', this.context);
   builder = new llvm.IRBuilder(this.context);
+  mainStartIp: llvm.IRBuilder.InsertPoint = 0;
   blocks: Record<string, llvm.BasicBlock> = {};
   functions: Record<string, llvm.Function> = {};
 
@@ -341,7 +342,7 @@ export class LlvmCompiler {
     }
   }
 
-  stringConcat(left: llvm.Value, right: llvm.Value): llvm.Value {
+  private stringConcat(left: llvm.Value, right: llvm.Value): llvm.Value {
     /**
      %len1 = call i64 @strlen(i8* %str1) # get length of str1
      %len2 = call i64 @strlen(i8* %str2) # get length of str2
@@ -361,6 +362,20 @@ export class LlvmCompiler {
     this.genMemcpy(mem, left, l1);
     this.genMemcpy(this.builder.CreateGEP(this.builder.getInt8Ty(), mem, l1), right, l2);
     return mem;
+  }
+
+  private randInRange(min: llvm.Value, max: llvm.Value) {
+    /**
+     %rand = call i32 @rand() ; Call 'rand' to get a random integer.
+     %range = sub i32 %high, %low ; Compute the size of the range.
+     %rand_mod_range = srem i32 %rand, %range ; Limit the random number to the size of the range.
+     %rand_in_range = add i32 %rand_mod_range, %low ; Shift the random number into the desired range.
+     ret i32 %rand_in_range
+     */
+    const r = this.genRand();
+    const range = this.builder.CreateSub(max, min);
+    const rMod = this.builder.CreateSRem(r, range);
+    return this.builder.CreateAdd(rMod, min);
   }
 
   private genVariableExpression(expression: VariableExpression, env: Env): llvm.Value {
@@ -421,6 +436,8 @@ export class LlvmCompiler {
     switch (expression.functionSymbol.name) {
       case 'print':
         return this.genPrint(expression, env);
+      case 'rand':
+        return this.genRandCall(expression, env);
     }
     const foundFunction = this.functions[expression.functionSymbol.name];
     if (foundFunction !== undefined) {
@@ -431,6 +448,12 @@ export class LlvmCompiler {
       `\x1b[31mERROR\x1b[0m: Code generation for function ${expression.functionSymbol.name} not implemented yet.`
     );
     return this.builder.CreateUnreachable();
+  }
+
+  private genRandCall(expression: CallExpression, env: Env): llvm.Value {
+    const min = this.genExpression(expression.args[0], env);
+    const max = this.genExpression(expression.args[1], env);
+    return this.randInRange(min, max);
   }
 
   private genPrint(expression: CallExpression, env: Env): llvm.Value {
@@ -509,6 +532,30 @@ export class LlvmCompiler {
     }
     const memcopy = this.module.getFunction('llvm.memcpy.p0i8.p0i8.i64')!;
     return this.builder.CreateCall(memcopy, [src, dest, n, this.builder.getFalse()]);
+  }
+
+  private genRand() {
+    if (!this.usedBuiltIns.has('rand')) {
+      this.module.getOrInsertFunction(
+        'rand',
+        llvm.FunctionType.get(this.builder.getInt32Ty(), [], false)
+      );
+      // If this is the first time rand has been called add a call to srand and time too
+      this.module.getOrInsertFunction(
+        'srand',
+        llvm.FunctionType.get(this.builder.getVoidTy(), [this.builder.getInt64Ty()], false)
+      );
+      this.module.getOrInsertFunction(
+        'time',
+        llvm.FunctionType.get(this.builder.getInt64Ty(), [this.builder.getInt32Ty()], false)
+      );
+      const srand = this.module.getFunction('srand')!;
+      const time = this.module.getFunction('time')!;
+      this.builder.CreateCall(srand, [this.builder.CreateCall(time, [this.builder.getInt32(0)])]);
+      this.usedBuiltIns.add('rand');
+    }
+    const rand = this.module.getFunction('rand')!;
+    return this.builder.CreateCall(rand, []);
   }
 
   private getLlvmType(bsType: TypeSymbol): llvm.Type {
