@@ -36,6 +36,10 @@ export class LlvmCompiler {
   blocks: Record<string, llvm.BasicBlock> = {};
   functions: Record<string, llvm.Function> = {};
 
+  // For Scanf
+  buffer: llvm.GlobalVariable | undefined = undefined;
+  fmt: llvm.GlobalVariable | undefined = undefined;
+
   constructor(
     rootNode: BlockStatement,
     functionTable: SymbolTable<FunctionSymbol, BlockStatement>
@@ -161,7 +165,6 @@ export class LlvmCompiler {
 
   private createFunctionBlock(fnProto: llvm.Function): llvm.BasicBlock {
     const entry = this.createBB('entry', fnProto);
-    // this.builder.SetInsertPoint(entry);
     return entry;
   }
 
@@ -438,6 +441,8 @@ export class LlvmCompiler {
         return this.genPrint(expression, env);
       case 'rand':
         return this.genRandCall(expression, env);
+      case 'input':
+        return this.genInputCall();
     }
     const foundFunction = this.functions[expression.functionSymbol.name];
     if (foundFunction !== undefined) {
@@ -454,6 +459,10 @@ export class LlvmCompiler {
     const min = this.genExpression(expression.args[0], env);
     const max = this.genExpression(expression.args[1], env);
     return this.randInRange(min, max);
+  }
+
+  private genInputCall(): llvm.Value {
+    return this.genScanf();
   }
 
   private genPrint(expression: CallExpression, env: Env): llvm.Value {
@@ -556,6 +565,41 @@ export class LlvmCompiler {
     }
     const rand = this.module.getFunction('rand')!;
     return this.builder.CreateCall(rand, []);
+  }
+
+  private genScanf() {
+    if (!this.usedBuiltIns.has('scanf')) {
+      this.module.getOrInsertFunction(
+        'scanf',
+        llvm.FunctionType.get(this.builder.getInt32Ty(), [this.builder.getInt8PtrTy()], true)
+      );
+      // If this is the first call set up a global fmt string and buffer to store input
+      const fmtString = llvm.ConstantDataArray.getString(this.context, '%s', true);
+      this.fmt = new llvm.GlobalVariable(
+        this.module,
+        fmtString.getType(),
+        true,
+        llvm.GlobalVariable.LinkageTypes.InternalLinkage,
+        fmtString,
+        'scanf_fmt_str'
+      );
+      const arrayType = llvm.ArrayType.get(this.builder.getInt8Ty(), 100);
+      this.buffer = new llvm.GlobalVariable(
+        this.module,
+        arrayType,
+        false,
+        llvm.GlobalVariable.LinkageTypes.InternalLinkage,
+        llvm.Constant.getNullValue(arrayType),
+        'scanf_buffer'
+      );
+      this.usedBuiltIns.add('scanf');
+    }
+    const scanfFn = this.module.getFunction('scanf')!;
+    this.builder.CreateCall(scanfFn, [
+      this.builder.CreatePointerCast(this.fmt!, this.builder.getInt8PtrTy()),
+      this.builder.CreatePointerCast(this.buffer!, this.builder.getInt8PtrTy()),
+    ]);
+    return this.builder.CreatePointerCast(this.buffer!, this.builder.getInt8PtrTy());
   }
 
   private getLlvmType(bsType: TypeSymbol): llvm.Type {

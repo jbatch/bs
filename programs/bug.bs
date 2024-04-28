@@ -1,0 +1,6 @@
+var i = rand(1, 10)
+while(i != 5) {
+    i = rand(1, 10)
+    print(string(i) + "\n")
+}
+print("Ok")

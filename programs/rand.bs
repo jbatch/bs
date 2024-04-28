@@ -1,0 +1,10 @@
+print(string(rand(1, 100))+"\n")
+
+var i = rand(1, 100)
+var count = 0
+while(i != 50) {
+    count++
+    print(string(i) + "\n")
+    i = rand(1, 100)
+}
+print("Finished in: " + string(count) + "\n")
