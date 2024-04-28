@@ -1,6 +1,4 @@
 var i = "Hello, World"
-print(i)
-print("\n")
+print(i + "\n")
 i = "New string"
-print(i)
-print("\n")
+print(i + "\n")

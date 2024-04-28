@@ -1,13 +1,9 @@
-var a = "first"
+var a = "first\n"
 print(a)
-print("\n")
 {
-    var a = "second"
+    var a = "second\n"
     print(a)
-    print("\n")
 }
 print(a)
-print("\n")
-a = "third"
+a = "third\n"
 print(a)
-print("\n")

@@ -132,14 +132,24 @@ export class LlvmCompiler {
 
   private setupExternFunctions() {
     const bytePtrTy = this.builder.getInt8PtrTy();
-    this.module.getOrInsertFunction(
-      'printf',
-      llvm.FunctionType.get(this.builder.getInt32Ty(), [bytePtrTy], true)
-    );
+    const int32Ty = this.builder.getInt32Ty();
+    const int64Ty = this.builder.getInt64Ty();
+    const boolTy = this.builder.getInt1Ty();
+    this.module.getOrInsertFunction('printf', llvm.FunctionType.get(int32Ty, [bytePtrTy], true));
     this.module.getOrInsertFunction(
       'sprintf',
-      llvm.FunctionType.get(this.builder.getInt32Ty(), [bytePtrTy, bytePtrTy], true)
+      llvm.FunctionType.get(int32Ty, [bytePtrTy, bytePtrTy], true)
     );
+    this.module.getOrInsertFunction('strlen', llvm.FunctionType.get(int64Ty, [bytePtrTy], false));
+    this.module.getOrInsertFunction(
+      'llvm.memcpy.p0i8.p0i8.i64',
+      llvm.FunctionType.get(
+        this.builder.getVoidTy(),
+        [bytePtrTy, bytePtrTy, int64Ty, boolTy],
+        false
+      )
+    );
+    this.module.getOrInsertFunction('malloc', llvm.FunctionType.get(bytePtrTy, [int64Ty], false));
   }
 
   private setupGlobalEnvironment() {
@@ -308,6 +318,12 @@ export class LlvmCompiler {
     const right = this.genExpression(expression.right, env);
     switch (expression.operator.kind) {
       case 'Addition':
+        if (expression.left.type.name === 'string' && expression.right.type.name === 'string') {
+          console.log('BEFORE');
+          const r = this.stringConcat(left, right);
+          console.log('After');
+          return r;
+        }
         return this.builder.CreateAdd(left, right);
       case 'Subtraction':
         return this.builder.CreateSub(left, right);
@@ -338,6 +354,35 @@ export class LlvmCompiler {
       case 'GreaterThanOrEqual':
         return this.builder.CreateICmpSLE(left, right);
     }
+  }
+
+  stringConcat(left: llvm.Value, right: llvm.Value): llvm.Value {
+    /**
+     %len1 = call i64 @strlen(i8* %str1) # get length of str1
+     %len2 = call i64 @strlen(i8* %str2) # get length of str2
+     %total_len = add i64 %len1, %len2    # total length = len1 + len2
+     %mem = call i8* @malloc(i64 %total_len)  # Allocate memory
+     call void @llvm.memcpy.p0i8.p0i8.i64(i8* %mem, i8* %str1, i64 %len1, i1 0)  # copy str1 to mem
+     call void @llvm.memcpy.p0i8.p0i8.i64(i8* getelementptr inbounds(i8, i8* %mem, i64 %len1), i8* %str2, i64 %len2, i1 0)  # copy str2 to mem[len1]
+     ret i8* %mem  # return pointer to concatenated string
+     */
+    const strlen = this.module.getFunction('strlen')!;
+    const malloc = this.module.getFunction('malloc')!;
+    const memcopy = this.module.getFunction('llvm.memcpy.p0i8.p0i8.i64')!;
+    console.log(strlen, malloc, memcopy);
+    const l1 = this.builder.CreateCall(strlen, [left]);
+    const l2 = this.builder.CreateCall(strlen, [right]);
+    const sum = this.builder.CreateAdd(l1, l2);
+    const len = this.builder.CreateAdd(sum, this.builder.getInt64(1)); // Add one to account for \0
+    const mem = this.builder.CreateCall(malloc, [len]);
+    this.builder.CreateCall(memcopy, [mem, left, l1, this.builder.getFalse()]);
+    this.builder.CreateCall(memcopy, [
+      this.builder.CreateGEP(this.builder.getInt8Ty(), mem, l1),
+      right,
+      l2,
+      this.builder.getFalse(),
+    ]);
+    return mem;
   }
 
   private genVariableExpression(expression: VariableExpression, env: Env): llvm.Value {

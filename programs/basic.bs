@@ -1,4 +1,4 @@
-print(string(100))
-print(string(true))
-print(string(35))
-print("hello, world")
+print(string(100) + "\n")
+print(string(true) + "\n")
+print(string(35) + "\n")
+print("hello, world" + "\n")

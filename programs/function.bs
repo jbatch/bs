@@ -3,6 +3,4 @@ function square(x: Int): Int {
 }
 
 const d = square(13)
-print("13 squared is: ")
-print(string(d))
-print("\n")
+print("13 squared is: " + string(d) + "\n")
