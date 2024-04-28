@@ -5,6 +5,7 @@ import {
   ConditionalGoToStatement,
   GoToStatement,
   LabelStatement,
+  ReturnStatement,
   VariableDeclarationStatement,
 } from '../binding/BoundStatement';
 import { SymbolTable } from '../binding/SymbolTable';
@@ -60,6 +61,9 @@ export class LlvmCompiler {
     this.blocks['main'] = mainBlock;
     this.functions['main'] = mainFn;
 
+    // Generate function declarations
+    this.generateFunctions(this.functionTable, this.globalEnvironment);
+
     // Build basic blocks
     this.generateLabelBlocks(this.rootNode);
 
@@ -69,6 +73,41 @@ export class LlvmCompiler {
 
     // return 0
     this.builder.CreateRet(this.builder.getInt32(0));
+  }
+
+  private generateFunctions(functionTable: SymbolTable<FunctionSymbol, BlockStatement>, env: Env) {
+    for (const { symbol, value: body } of functionTable.symbols) {
+      this.generateFunction(symbol, body, env);
+    }
+  }
+
+  private generateFunction(symbol: FunctionSymbol, functionBody: BlockStatement, env: Env) {
+    const { name, type, parameters } = symbol;
+    const fnEnv = new Env(env);
+    const fnType = llvm.FunctionType.get(
+      this.getLlvmType(type),
+      parameters.map((p) => this.getLlvmType(p.type)),
+      false
+    );
+    const { fn, block } = this.createFunction(name, fnType, fnEnv);
+    this.functions[name] = fn;
+    this.builder.SetInsertPoint(block);
+    // Give params names
+    for (let i = 0; i < fn.arg_size(); i++) {
+      const arg = fn.getArg(i);
+      const param = parameters[i];
+      arg.setName(param.name);
+
+      const localVar = this.builder.CreateAlloca(
+        this.getLlvmType(param.type),
+        this.builder.getInt32(0),
+        param.name
+      );
+      const value = fnEnv.define(param.name, localVar);
+      this.builder.CreateStore(arg, value);
+    }
+
+    const functionResult = this.gen(functionBody, fnEnv);
   }
 
   private generateLabelBlocks(rootNode: BlockStatement) {
@@ -148,14 +187,18 @@ export class LlvmCompiler {
     return fn;
   }
 
-  private gen(statement: BoundStatement, env: Env) {
+  private gen(statement: BoundStatement, env: Env): llvm.Value {
     switch (statement.kind) {
       case 'BlockStatement':
         const blockEnv = new Env(env);
+        let last = undefined;
         for (const s of statement.statements) {
-          this.gen(s, blockEnv);
+          last = this.gen(s, blockEnv);
         }
-        return;
+        if (last === undefined) {
+          return this.builder.CreateUnreachable();
+        }
+        return last;
       case 'ExpressionStatement':
         return this.genExpression(statement.expression, env);
       case 'VariableDeclarationStatement':
@@ -167,6 +210,7 @@ export class LlvmCompiler {
       case 'GoToStatement':
         return this.genGoTo(statement);
       case 'ReturnStatement':
+        return this.genReturn(statement, env);
       default:
         console.warn(
           `\x1b[31mERROR\x1b[0m: Code generation for node type ${statement.kind} not implemented yet.`
@@ -177,7 +221,7 @@ export class LlvmCompiler {
 
   private genConditionalGoTo(statement: ConditionalGoToStatement, env: Env) {
     const cond = this.genExpression(statement.condition, env);
-    this.builder.CreateCondBr(
+    return this.builder.CreateCondBr(
       cond,
       this.blocks[statement.ifLabel.name]!,
       this.blocks[statement.elseLabel.name]!
@@ -185,12 +229,22 @@ export class LlvmCompiler {
   }
 
   private genGoTo(statement: GoToStatement) {
-    this.builder.CreateBr(this.blocks[statement.label.name]);
+    return this.builder.CreateBr(this.blocks[statement.label.name]);
+  }
+
+  private genReturn(statement: ReturnStatement, env: Env) {
+    if (statement.value === undefined) {
+      // Void type
+      return this.builder.CreateRetVoid();
+    }
+    const retValue = this.genExpression(statement.value, env);
+    return this.builder.CreateRet(retValue);
   }
 
   private genLabelStatement(statement: LabelStatement) {
     const basicBlock = this.blocks[statement.label.name];
     this.builder.SetInsertPoint(basicBlock);
+    return basicBlock;
   }
 
   private genVariableDeclaration(statement: VariableDeclarationStatement, env: Env) {
@@ -204,7 +258,7 @@ export class LlvmCompiler {
       statement.variable.name
     );
     this.builder.CreateStore(initializer, localVar);
-    env.define(statement.variable.name, localVar);
+    return env.define(statement.variable.name, localVar);
   }
 
   private declareGlobalVariable(
@@ -349,6 +403,11 @@ export class LlvmCompiler {
       case 'print':
         return this.genPrint(expression, env);
     }
+    const foundFunction = this.functions[expression.functionSymbol.name];
+    if (foundFunction !== undefined) {
+      const args = expression.args.map((arg) => this.genExpression(arg, env));
+      return this.builder.CreateCall(foundFunction, args);
+    }
     console.warn(
       `\x1b[31mERROR\x1b[0m: Code generation for function ${expression.functionSymbol.name} not implemented yet.`
     );
@@ -369,8 +428,10 @@ export class LlvmCompiler {
         return this.builder.getInt8PtrTy();
       case 'bool':
         return this.builder.getInt1Ty();
+      case 'void':
+        return this.builder.getVoidTy();
     }
-    throw new Error('Not supported type');
+    throw new Error('Not supported type: ' + bsType.name);
   }
 
   private writeToFile(nasm: string) {

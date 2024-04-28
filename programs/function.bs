@@ -1,0 +1,8 @@
+function square(x: Int): Int {
+  return x * x
+}
+
+const d = square(13)
+print("13 squared is: ")
+print(string(d))
+print("\n")

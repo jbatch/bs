@@ -106,10 +106,10 @@ export class Binder {
 
       // Check function body returns
       if (func.type.name !== Void.name) {
-        const controlFlowAnalyzer = new ControlFlowAnalyzer(boundStatement);
-        if (!controlFlowAnalyzer.allPathsReturn()) {
-          this.diagnostics.reportAllPathsMustReturn(func.declaration!.identifier.span);
-        }
+        // const controlFlowAnalyzer = new ControlFlowAnalyzer(boundStatement);
+        // if (!controlFlowAnalyzer.allPathsReturn()) {
+        //   this.diagnostics.reportAllPathsMustReturn(func.declaration!.identifier.span);
+        // }
       }
 
       functions.push({ symbol: func, value: boundStatement });
