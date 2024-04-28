@@ -27,6 +27,8 @@ export class LlvmCompiler {
   functionTable: SymbolTable<FunctionSymbol, BlockStatement>;
   globalEnvironment: Env = new Env();
 
+  usedBuiltIns: Set<string> = new Set();
+
   context = new llvm.LLVMContext();
   module = new llvm.Module('bsc', this.context);
   builder = new llvm.IRBuilder(this.context);
@@ -135,21 +137,6 @@ export class LlvmCompiler {
     const int32Ty = this.builder.getInt32Ty();
     const int64Ty = this.builder.getInt64Ty();
     const boolTy = this.builder.getInt1Ty();
-    this.module.getOrInsertFunction('printf', llvm.FunctionType.get(int32Ty, [bytePtrTy], true));
-    this.module.getOrInsertFunction(
-      'sprintf',
-      llvm.FunctionType.get(int32Ty, [bytePtrTy, bytePtrTy], true)
-    );
-    this.module.getOrInsertFunction('strlen', llvm.FunctionType.get(int64Ty, [bytePtrTy], false));
-    this.module.getOrInsertFunction(
-      'llvm.memcpy.p0i8.p0i8.i64',
-      llvm.FunctionType.get(
-        this.builder.getVoidTy(),
-        [bytePtrTy, bytePtrTy, int64Ty, boolTy],
-        false
-      )
-    );
-    this.module.getOrInsertFunction('malloc', llvm.FunctionType.get(bytePtrTy, [int64Ty], false));
   }
 
   private setupGlobalEnvironment() {
@@ -319,9 +306,7 @@ export class LlvmCompiler {
     switch (expression.operator.kind) {
       case 'Addition':
         if (expression.left.type.name === 'string' && expression.right.type.name === 'string') {
-          console.log('BEFORE');
           const r = this.stringConcat(left, right);
-          console.log('After');
           return r;
         }
         return this.builder.CreateAdd(left, right);
@@ -366,22 +351,15 @@ export class LlvmCompiler {
      call void @llvm.memcpy.p0i8.p0i8.i64(i8* getelementptr inbounds(i8, i8* %mem, i64 %len1), i8* %str2, i64 %len2, i1 0)  # copy str2 to mem[len1]
      ret i8* %mem  # return pointer to concatenated string
      */
-    const strlen = this.module.getFunction('strlen')!;
-    const malloc = this.module.getFunction('malloc')!;
-    const memcopy = this.module.getFunction('llvm.memcpy.p0i8.p0i8.i64')!;
-    console.log(strlen, malloc, memcopy);
-    const l1 = this.builder.CreateCall(strlen, [left]);
-    const l2 = this.builder.CreateCall(strlen, [right]);
+
+    const l1 = this.genStrlen(left);
+    const l2 = this.genStrlen(right);
     const sum = this.builder.CreateAdd(l1, l2);
     const len = this.builder.CreateAdd(sum, this.builder.getInt64(1)); // Add one to account for \0
-    const mem = this.builder.CreateCall(malloc, [len]);
-    this.builder.CreateCall(memcopy, [mem, left, l1, this.builder.getFalse()]);
-    this.builder.CreateCall(memcopy, [
-      this.builder.CreateGEP(this.builder.getInt8Ty(), mem, l1),
-      right,
-      l2,
-      this.builder.getFalse(),
-    ]);
+    const mem = this.genMalloc(len);
+
+    this.genMemcpy(mem, left, l1);
+    this.genMemcpy(this.builder.CreateGEP(this.builder.getInt8Ty(), mem, l1), right, l2);
     return mem;
   }
 
@@ -415,17 +393,13 @@ export class LlvmCompiler {
     return this.builder.CreateUnreachable();
   }
 
-  private boolToString(value: llvm.Value): llvm.Value {
-    throw new Error('Method not implemented.');
+  private intToString(value: llvm.Value) {
+    const fmt = this.builder.CreateGlobalStringPtr('%d', 'format_str');
+    return this.genSprintf(fmt, value);
   }
 
-  private intToString(value: llvm.Value): llvm.Value {
-    const fmt = this.builder.CreateGlobalStringPtr('%d', 'format_str');
-    const buffer = this.builder.CreateAlloca(this.builder.getInt8Ty(), this.builder.getInt32(20));
-    const sprintfFn = this.module.getFunction('sprintf')!;
-    const args = [buffer, fmt, value];
-    this.builder.CreateCall(sprintfFn, args);
-    return buffer;
+  private boolToString(value: llvm.Value): llvm.Value {
+    throw new Error('Method not implemented.');
   }
 
   private genLiteralExpression(expression: LiteralExpression): llvm.Value {
@@ -460,9 +434,81 @@ export class LlvmCompiler {
   }
 
   private genPrint(expression: CallExpression, env: Env): llvm.Value {
+    if (!this.usedBuiltIns.has('printf')) {
+      this.module.getOrInsertFunction(
+        'printf',
+        llvm.FunctionType.get(this.builder.getInt32Ty(), [this.builder.getInt8PtrTy()], true)
+      );
+      this.usedBuiltIns.add('printf');
+    }
     const printFn = this.module.getFunction('printf')!;
     const args = [this.genExpression(expression.args[0], env)];
     return this.builder.CreateCall(printFn, args);
+  }
+
+  private genSprintf(fmt: llvm.Constant, value: llvm.Value) {
+    if (!this.usedBuiltIns.has('sprintf')) {
+      this.module.getOrInsertFunction(
+        'sprintf',
+        llvm.FunctionType.get(
+          this.builder.getInt32Ty(),
+          [this.builder.getInt8PtrTy(), this.builder.getInt8PtrTy()],
+          true
+        )
+      );
+      this.usedBuiltIns.add('sprintf');
+    }
+
+    const buffer = this.builder.CreateAlloca(this.builder.getInt8Ty(), this.builder.getInt32(20));
+    const sprintfFn = this.module.getFunction('sprintf')!;
+    const args = [buffer, fmt, value];
+    this.builder.CreateCall(sprintfFn, args);
+    return buffer;
+  }
+
+  private genMalloc(len: llvm.Value) {
+    if (!this.usedBuiltIns.has('malloc')) {
+      this.module.getOrInsertFunction(
+        'malloc',
+        llvm.FunctionType.get(this.builder.getInt8PtrTy(), [this.builder.getInt64Ty()], false)
+      );
+      this.usedBuiltIns.add('malloc');
+    }
+    const malloc = this.module.getFunction('malloc')!;
+    return this.builder.CreateCall(malloc, [len]);
+  }
+
+  private genStrlen(stringValue: llvm.Value) {
+    if (!this.usedBuiltIns.has('strlen')) {
+      this.module.getOrInsertFunction(
+        'strlen',
+        llvm.FunctionType.get(this.builder.getInt64Ty(), [this.builder.getInt8PtrTy()], false)
+      );
+      this.usedBuiltIns.add('strlen');
+    }
+    const strlen = this.module.getFunction('strlen')!;
+    return this.builder.CreateCall(strlen, [stringValue]);
+  }
+
+  private genMemcpy(src: llvm.Value, dest: llvm.Value, n: llvm.Value) {
+    if (!this.usedBuiltIns.has('memcpy')) {
+      this.module.getOrInsertFunction(
+        'llvm.memcpy.p0i8.p0i8.i64',
+        llvm.FunctionType.get(
+          this.builder.getVoidTy(),
+          [
+            this.builder.getInt8PtrTy(),
+            this.builder.getInt8PtrTy(),
+            this.builder.getInt64Ty(),
+            this.builder.getInt1Ty(),
+          ],
+          false
+        )
+      );
+      this.usedBuiltIns.add('memcpy');
+    }
+    const memcopy = this.module.getFunction('llvm.memcpy.p0i8.p0i8.i64')!;
+    return this.builder.CreateCall(memcopy, [src, dest, n, this.builder.getFalse()]);
   }
 
   private getLlvmType(bsType: TypeSymbol): llvm.Type {
