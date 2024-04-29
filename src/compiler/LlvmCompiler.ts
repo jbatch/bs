@@ -72,7 +72,7 @@ export class LlvmCompiler {
     this.generateFunctions(this.functionTable, this.globalEnvironment);
 
     // Build basic blocks
-    this.generateLabelBlocks(this.rootNode);
+    this.generateLabelBlocks(this.rootNode, this.functions['main']);
 
     // Compile main body
     this.builder.SetInsertPoint(this.blocks['main']);
@@ -99,6 +99,7 @@ export class LlvmCompiler {
     const { fn, block } = this.createFunction(name, fnType, fnEnv);
     this.functions[name] = fn;
     this.builder.SetInsertPoint(block);
+    this.generateLabelBlocks(functionBody, fn);
     // Give params names
     for (let i = 0; i < fn.arg_size(); i++) {
       const arg = fn.getArg(i);
@@ -115,9 +116,12 @@ export class LlvmCompiler {
     }
 
     const functionResult = this.gen(functionBody, fnEnv);
+    if (symbol.type.name === 'void') {
+      this.builder.CreateRetVoid();
+    }
   }
 
-  private generateLabelBlocks(rootNode: BlockStatement) {
+  private generateLabelBlocks(rootNode: BlockStatement, parentFunction: llvm.Function) {
     const stack: BoundStatement[] = [];
     stack.push(...[...rootNode.statements].reverse());
     while (stack.length > 0) {
@@ -126,12 +130,7 @@ export class LlvmCompiler {
         stack.push(...[...cur.statements].reverse());
       }
       if (cur.kind === 'LabelStatement') {
-        const basicBlock = llvm.BasicBlock.Create(
-          this.context,
-          cur.label.name,
-          // TODO: Use stack for block parent once we support functions
-          this.functions['main']
-        );
+        const basicBlock = llvm.BasicBlock.Create(this.context, cur.label.name, parentFunction);
         this.blocks[cur.label.name] = basicBlock;
       }
     }
@@ -393,9 +392,9 @@ export class LlvmCompiler {
   }
 
   private genTypeCast(expression: TypeCastExpression, env: Env): llvm.Value {
+    const value = this.genExpression(expression.expression, env);
     switch (expression.type.name) {
       case 'string':
-        const value = this.genExpression(expression.expression, env);
         switch (expression.expression.type.name) {
           case 'int':
             return this.intToString(value);
@@ -403,6 +402,7 @@ export class LlvmCompiler {
             return this.boolToString(value);
         }
       case 'int':
+        return this.stringToInt(value);
       case 'bool':
     }
     console.warn(
@@ -418,6 +418,10 @@ export class LlvmCompiler {
 
   private boolToString(value: llvm.Value): llvm.Value {
     throw new Error('Method not implemented.');
+  }
+
+  private stringToInt(value: llvm.Value): llvm.Value {
+    return this.genAtoi(value);
   }
 
   private genLiteralExpression(expression: LiteralExpression): llvm.Value {
@@ -600,6 +604,18 @@ export class LlvmCompiler {
       this.builder.CreatePointerCast(this.buffer!, this.builder.getInt8PtrTy()),
     ]);
     return this.builder.CreatePointerCast(this.buffer!, this.builder.getInt8PtrTy());
+  }
+
+  private genAtoi(numberString: llvm.Value): llvm.Value {
+    if (!this.usedBuiltIns.has('atoi')) {
+      this.module.getOrInsertFunction(
+        'atoi',
+        llvm.FunctionType.get(this.builder.getInt32Ty(), [this.builder.getInt8PtrTy()], false)
+      );
+      this.usedBuiltIns.add('atoi');
+    }
+    const atoi = this.module.getFunction('atoi')!;
+    return this.builder.CreateCall(atoi, [numberString]);
   }
 
   private getLlvmType(bsType: TypeSymbol): llvm.Type {
