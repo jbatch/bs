@@ -1,5 +1,4 @@
 import {
-  BooleanTypeNode,
   BoundBlockStatementTypeNode,
   BoundExpressionTypeNode,
   BoundLabelTypeNode,
